@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PranaOS — Admin Integrations</title>
+<title>PranaOS — Deployed Agents</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -157,9 +157,21 @@
   .breadcrumb .current { color: var(--text); font-weight: 600; }
 
   /* Page header */
-  .page-header { margin-bottom: 28px; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+  .page-header-left {}
   .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
   .page-sub { font-size: 14px; color: var(--text-muted); font-weight: 300; margin-top: 2px; }
+
+  .btn-deploy {
+    padding: 10px 20px; border-radius: var(--radius-xs);
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; border: none;
+    background: var(--accent); color: #fff;
+    box-shadow: 0 1px 4px rgba(24,133,106,0.2);
+    display: flex; align-items: center; gap: 6px;
+    text-decoration: none; white-space: nowrap;
+  }
+  .btn-deploy:hover { background: var(--accent-hover); transform: scale(1.02); }
 
   /* ===== SUMMARY CARDS ===== */
   .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
@@ -184,37 +196,37 @@
   .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .section-title { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; }
 
-  /* ===== ACTIVE INTEGRATIONS TABLE ===== */
+  /* ===== AGENT TABLE ===== */
   .table-wrap {
     background: var(--bg-card); border: 1px solid var(--border);
     border-radius: var(--radius); box-shadow: var(--shadow-sm);
     overflow: hidden; margin-bottom: 36px;
   }
-  .int-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .int-table thead { background: var(--bg-elevated); }
-  .int-table th {
+  .agent-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .agent-table thead { background: var(--bg-elevated); }
+  .agent-table th {
     padding: 12px 18px; text-align: left;
     font-size: 10px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 1px; color: var(--text-dim);
     border-bottom: 1px solid var(--border); white-space: nowrap;
   }
-  .int-table td {
+  .agent-table td {
     padding: 16px 18px; border-bottom: 1px solid var(--border-subtle);
     vertical-align: middle;
   }
-  .int-table tbody tr { transition: background 0.1s; }
-  .int-table tbody tr:hover { background: rgba(24,133,106,0.02); }
-  .int-table tbody tr:last-child td { border-bottom: none; }
+  .agent-table tbody tr { transition: background 0.1s; cursor: pointer; }
+  .agent-table tbody tr:hover { background: rgba(24,133,106,0.02); }
+  .agent-table tbody tr:last-child td { border-bottom: none; }
 
-  .int-name { display: flex; align-items: center; gap: 12px; }
-  .int-icon {
+  .agent-name { display: flex; align-items: center; gap: 12px; }
+  .agent-icon {
     width: 36px; height: 36px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; flex-shrink: 0;
     background: var(--bg-elevated); border: 1px solid var(--border);
   }
-  .int-label { font-weight: 600; font-size: 13px; }
-  .int-label-sub { font-size: 11px; color: var(--text-dim); font-weight: 400; }
+  .agent-label { font-weight: 600; font-size: 13px; }
+  .agent-label-sub { font-size: 11px; color: var(--text-dim); font-weight: 400; }
 
   /* Status badges */
   .status-badge {
@@ -222,69 +234,38 @@
     font-size: 11px; font-weight: 700; padding: 4px 10px;
     border-radius: 6px; white-space: nowrap;
   }
-  .status-badge.connected { background: var(--accent-bg); color: var(--accent); }
-  .status-badge.pending { background: var(--warn-bg); color: var(--warn); }
-  .status-badge.failed { background: var(--error-bg); color: var(--error); }
+  .status-badge.active { background: var(--accent-bg); color: var(--accent); }
+  .status-badge.paused { background: var(--warn-bg); color: var(--warn); }
   .status-dot {
     width: 6px; height: 6px; border-radius: 50%;
   }
-  .status-dot.connected { background: var(--accent-bright); }
-  .status-dot.pending { background: var(--warn); animation: pulse 2s infinite; }
-  .status-dot.failed { background: var(--error); }
+  .status-dot.active { background: var(--accent-bright); }
+  .status-dot.paused { background: var(--warn); }
 
-  .used-by { font-size: 12px; color: var(--text-muted); }
-  .used-by-tag {
-    display: inline-block; padding: 2px 8px; border-radius: 4px;
-    background: var(--bg-elevated); border: 1px solid var(--border-subtle);
-    font-size: 10px; font-weight: 600; color: var(--text-secondary);
-    margin: 1px 2px;
-  }
+  .metric { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--text-secondary); }
+  .last-run { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
 
-  .last-sync { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
-
-  .int-actions { display: flex; gap: 6px; }
+  .agent-actions { display: flex; gap: 6px; }
   .btn-sm {
     padding: 6px 14px; border-radius: 6px; font-family: inherit;
     font-size: 11px; font-weight: 600; cursor: pointer;
     transition: all 0.15s; border: none; white-space: nowrap;
   }
-  .btn-sm.configure {
+  .btn-sm.edit {
     background: var(--bg-elevated); color: var(--text-muted);
     border: 1px solid var(--border);
   }
-  .btn-sm.configure:hover { border-color: var(--accent-border); color: var(--text); background: var(--accent-bg); }
-  .btn-sm.disconnect {
+  .btn-sm.edit:hover { border-color: var(--accent-border); color: var(--text); background: var(--accent-bg); }
+  .btn-sm.pause {
     background: transparent; color: var(--text-dim);
     border: 1px solid var(--border-subtle);
   }
-  .btn-sm.disconnect:hover { border-color: var(--error-border); color: var(--error); background: var(--error-bg); }
-
-  /* ===== AVAILABLE INTEGRATIONS GRID ===== */
-  .avail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 36px; }
-  .avail-card {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 22px;
-    box-shadow: var(--shadow-sm); transition: all 0.2s;
-    display: flex; flex-direction: column;
+  .btn-sm.pause:hover { border-color: var(--warn-border); color: var(--warn); background: var(--warn-bg); }
+  .btn-sm.resume {
+    background: transparent; color: var(--accent);
+    border: 1px solid var(--accent-border);
   }
-  .avail-card:hover { box-shadow: var(--shadow-md); border-color: var(--accent-border); transform: translateY(-2px); }
-  .avail-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-  .avail-card-icon {
-    width: 40px; height: 40px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; flex-shrink: 0;
-    background: var(--bg-elevated); border: 1px solid var(--border);
-  }
-  .avail-card-name { font-size: 14px; font-weight: 700; }
-  .avail-card-desc { font-size: 12px; color: var(--text-muted); font-weight: 300; line-height: 1.6; margin-bottom: 16px; flex: 1; }
-  .btn-connect {
-    padding: 8px 18px; border-radius: var(--radius-xs);
-    font-family: inherit; font-size: 12px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s; border: none;
-    background: var(--accent); color: #fff; width: 100%;
-    box-shadow: 0 1px 4px rgba(24,133,106,0.2);
-  }
-  .btn-connect:hover { background: var(--accent-hover); transform: scale(1.01); }
+  .btn-sm.resume:hover { background: var(--accent-bg); }
 
   /* Powered by */
   .powered-by {
@@ -304,26 +285,22 @@
   .screen-id strong { color: var(--accent); }
 
   /* ===== RESPONSIVE ===== */
-  @media (max-width: 1100px) {
-    .avail-grid { grid-template-columns: repeat(2, 1fr); }
-  }
   @media (max-width: 900px) {
     .summary-row { grid-template-columns: 1fr 1fr; }
-    .avail-grid { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 600px) {
     .shell { grid-template-columns: 1fr; }
     .sidebar { display: none; }
     .main { padding: 24px 20px 100px; }
     .summary-row { grid-template-columns: 1fr; }
-    .avail-grid { grid-template-columns: 1fr; }
+    .page-header { flex-direction: column; gap: 12px; }
   }
 </style>
 </head>
 <body>
 <a href="../index.html" style="position:fixed;bottom:24px;left:24px;z-index:99999;display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:#18856a;border:2px solid #14705a;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#ffffff;text-decoration:none;box-shadow:0 4px 12px rgba(24,133,106,0.35);cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#14705a';this.style.transform='scale(1.05)'" onmouseout="this.style.background='#18856a';this.style.transform='scale(1)'">← Prototype Hub</a>
 
-<div class="screen-id"><strong>A-19</strong> Admin Integrations</div>
+<div class="screen-id"><strong>A-21</strong> Deployed Agents</div>
 
 <!-- ===== ADMIN BAR ===== -->
 <div class="admin-bar" id="admin-bar">
@@ -350,9 +327,9 @@
   <div class="ab-spacer"></div>
 
   <div class="ab-shortcuts" id="admin-shortcuts">
-    <div class="ab-shortcut active">🔗 Integrations</div>
-    <div class="ab-shortcut" onclick="window.location.href='A-06-agent-config-integrations.html'">📚 Knowledge</div>
-    <div class="ab-shortcut" onclick="window.location.href='A-21-deployed-agents.html'">🤖 Agents</div>
+    <div class="ab-shortcut" onclick="window.location.href='A-19-admin-integrations.html'">🔗 Integrations</div>
+    <div class="ab-shortcut" onclick="window.location.href='A-20-admin-knowledge.html'">📚 Knowledge</div>
+    <div class="ab-shortcut active">🤖 Agents</div>
     <div class="ab-shortcut" onclick="window.location.href='A-12-billing-management.html'">💳 Billing</div>
     <div class="ab-shortcut" onclick="window.location.href='A-18-audit-log.html'">📋 Activity Log</div>
   </div>
@@ -383,7 +360,7 @@
   </div>
   <div class="sb-nav">
     <div class="sb-item" onclick="navTo('dashboard')">📊 Dashboard</div>
-    <div class="sb-item" onclick="navTo('agents')">🤖 Agents</div>
+    <div class="sb-item active" onclick="navTo('agents')">🤖 Agents</div>
     <div class="sb-item" onclick="navTo('chat')">💬 Chat</div>
     <div class="sb-item" onclick="navTo('decisions')">📥 Decisions <span class="sb-badge">4</span></div>
     <div class="sb-divider"></div>
@@ -408,294 +385,186 @@
   <div class="breadcrumb">
     <a href="A-08-agency-admin-view.html">Dashboard</a>
     <span class="sep">›</span>
-    <span class="current">Integrations</span>
+    <span class="current">Deployed Agents</span>
   </div>
 
   <!-- Page Header -->
   <div class="page-header">
-    <div class="page-title">Integrations</div>
-    <div class="page-sub">Manage third-party connections for AMC Theatres' agents and workflows.</div>
+    <div class="page-header-left">
+      <div class="page-title">Deployed Agents</div>
+      <div class="page-sub">Manage and monitor all agents for this client</div>
+    </div>
+    <a href="A-04-agent-marketplace.html" class="btn-deploy">+ Deploy Agent</a>
   </div>
 
   <!-- Summary Cards -->
   <div class="summary-row">
     <div class="summary-card">
       <div class="summary-indicator green"></div>
-      <div class="summary-label">Connected</div>
-      <div class="summary-value green">5</div>
+      <div class="summary-label">Active Agents</div>
+      <div class="summary-value green" id="card-active">5</div>
     </div>
     <div class="summary-card">
       <div class="summary-indicator amber"></div>
-      <div class="summary-label">Pending</div>
-      <div class="summary-value amber">1</div>
+      <div class="summary-label">Paused</div>
+      <div class="summary-value amber" id="card-paused">1</div>
     </div>
     <div class="summary-card">
-      <div class="summary-label">Failed</div>
-      <div class="summary-value green">0</div>
+      <div class="summary-label">Total Decisions</div>
+      <div class="summary-value neutral">34</div>
     </div>
     <div class="summary-card">
-      <div class="summary-label">Available</div>
-      <div class="summary-value neutral">12</div>
+      <div class="summary-label">Time Saved</div>
+      <div class="summary-value green">47h</div>
     </div>
   </div>
 
-  <!-- Active Integrations -->
+  <!-- Agent Table -->
   <div class="section-header">
-    <div class="section-title">Active Integrations</div>
+    <div class="section-title">All Agents</div>
   </div>
 
   <div class="table-wrap">
-    <table class="int-table">
+    <table class="agent-table">
       <thead>
         <tr>
-          <th>Integration</th>
+          <th>Agent</th>
           <th>Status</th>
-          <th>Used By</th>
-          <th>Last Sync</th>
+          <th>Decisions</th>
+          <th>Time Saved</th>
+          <th>Last Run</th>
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
+      <tbody id="agent-tbody">
+        <tr onclick="window.location.href='A-06-agent-config-integrations.html'" data-agent="final-sale" data-status="active">
           <td>
-            <div class="int-name">
-              <div class="int-icon">📣</div>
+            <div class="agent-name">
+              <div class="agent-icon">🏷️</div>
               <div>
-                <div class="int-label">Google Ads</div>
-                <div class="int-label-sub">Advertising platform</div>
+                <div class="agent-label">Final Sale Agent</div>
+                <div class="agent-label-sub">Identifies slow-moving inventory and recommends markdowns</div>
               </div>
             </div>
           </td>
-          <td><span class="status-badge connected"><span class="status-dot connected"></span> Connected</span></td>
-          <td><span class="used-by-tag">Paid Ads Manager</span></td>
-          <td><span class="last-sync">2 min ago</span></td>
+          <td><span class="status-badge active"><span class="status-dot active"></span> Active</span></td>
+          <td><span class="metric">12</span></td>
+          <td><span class="metric">18h</span></td>
+          <td><span class="last-run">2 hrs ago</span></td>
           <td>
-            <div class="int-actions">
-              <button class="btn-sm configure" onclick="alert('Opening Google Ads configuration...')">Configure</button>
-              <button class="btn-sm disconnect" onclick="confirmDisconnect('Google Ads')">Disconnect</button>
+            <div class="agent-actions">
+              <button class="btn-sm edit" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">Edit</button>
+              <button class="btn-sm pause" onclick="event.stopPropagation();toggleAgent(this)">Pause</button>
             </div>
           </td>
         </tr>
-        <tr>
+        <tr onclick="window.location.href='A-06-agent-config-integrations.html'" data-agent="paid-ads" data-status="active">
           <td>
-            <div class="int-name">
-              <div class="int-icon">📱</div>
+            <div class="agent-name">
+              <div class="agent-icon">📣</div>
               <div>
-                <div class="int-label">Meta Ads</div>
-                <div class="int-label-sub">Facebook & Instagram ads</div>
+                <div class="agent-label">Paid Ads Manager</div>
+                <div class="agent-label-sub">Monitors ad spend and reallocates budget</div>
               </div>
             </div>
           </td>
-          <td><span class="status-badge connected"><span class="status-dot connected"></span> Connected</span></td>
-          <td><span class="used-by-tag">Paid Ads Manager</span></td>
-          <td><span class="last-sync">5 min ago</span></td>
+          <td><span class="status-badge active"><span class="status-dot active"></span> Active</span></td>
+          <td><span class="metric">8</span></td>
+          <td><span class="metric">12h</span></td>
+          <td><span class="last-run">1 hr ago</span></td>
           <td>
-            <div class="int-actions">
-              <button class="btn-sm configure" onclick="alert('Opening Meta Ads configuration...')">Configure</button>
-              <button class="btn-sm disconnect" onclick="confirmDisconnect('Meta Ads')">Disconnect</button>
+            <div class="agent-actions">
+              <button class="btn-sm edit" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">Edit</button>
+              <button class="btn-sm pause" onclick="event.stopPropagation();toggleAgent(this)">Pause</button>
             </div>
           </td>
         </tr>
-        <tr>
+        <tr onclick="window.location.href='A-06-agent-config-integrations.html'" data-agent="email-drafter" data-status="active">
           <td>
-            <div class="int-name">
-              <div class="int-icon">🛍️</div>
+            <div class="agent-name">
+              <div class="agent-icon">✉️</div>
               <div>
-                <div class="int-label">Shopify</div>
-                <div class="int-label-sub">E-commerce & inventory</div>
+                <div class="agent-label">Email Drafter</div>
+                <div class="agent-label-sub">Drafts customer and vendor emails using your tone</div>
               </div>
             </div>
           </td>
-          <td><span class="status-badge connected"><span class="status-dot connected"></span> Connected</span></td>
+          <td><span class="status-badge active"><span class="status-dot active"></span> Active</span></td>
+          <td><span class="metric">6</span></td>
+          <td><span class="metric">8h</span></td>
+          <td><span class="last-run">3 hrs ago</span></td>
           <td>
-            <span class="used-by-tag">Final Sale Agent</span>
-            <span class="used-by-tag">Inventory Sync</span>
-          </td>
-          <td><span class="last-sync">12 min ago</span></td>
-          <td>
-            <div class="int-actions">
-              <button class="btn-sm configure" onclick="alert('Opening Shopify configuration...')">Configure</button>
-              <button class="btn-sm disconnect" onclick="confirmDisconnect('Shopify')">Disconnect</button>
+            <div class="agent-actions">
+              <button class="btn-sm edit" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">Edit</button>
+              <button class="btn-sm pause" onclick="event.stopPropagation();toggleAgent(this)">Pause</button>
             </div>
           </td>
         </tr>
-        <tr>
+        <tr onclick="window.location.href='A-06-agent-config-integrations.html'" data-agent="revenue-reporter" data-status="active">
           <td>
-            <div class="int-name">
-              <div class="int-icon">📁</div>
+            <div class="agent-name">
+              <div class="agent-icon">📊</div>
               <div>
-                <div class="int-label">Google Drive</div>
-                <div class="int-label-sub">Document storage & sync</div>
+                <div class="agent-label">Revenue Reporter</div>
+                <div class="agent-label-sub">Generates weekly revenue reports with anomaly detection</div>
               </div>
             </div>
           </td>
-          <td><span class="status-badge connected"><span class="status-dot connected"></span> Connected</span></td>
-          <td><span class="used-by-tag">Knowledge Q&A</span></td>
-          <td><span class="last-sync">1 hr ago</span></td>
+          <td><span class="status-badge active"><span class="status-dot active"></span> Active</span></td>
+          <td><span class="metric">4</span></td>
+          <td><span class="metric">5h</span></td>
+          <td><span class="last-run">6 hrs ago</span></td>
           <td>
-            <div class="int-actions">
-              <button class="btn-sm configure" onclick="alert('Opening Google Drive configuration...')">Configure</button>
-              <button class="btn-sm disconnect" onclick="confirmDisconnect('Google Drive')">Disconnect</button>
+            <div class="agent-actions">
+              <button class="btn-sm edit" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">Edit</button>
+              <button class="btn-sm pause" onclick="event.stopPropagation();toggleAgent(this)">Pause</button>
             </div>
           </td>
         </tr>
-        <tr>
+        <tr onclick="window.location.href='A-06-agent-config-integrations.html'" data-agent="inventory-sync" data-status="active">
           <td>
-            <div class="int-name">
-              <div class="int-icon">📊</div>
+            <div class="agent-name">
+              <div class="agent-icon">📦</div>
               <div>
-                <div class="int-label">Google Sheets</div>
-                <div class="int-label-sub">Spreadsheet data source</div>
+                <div class="agent-label">Inventory Sync</div>
+                <div class="agent-label-sub">Keeps Shopify and POS inventory in sync</div>
               </div>
             </div>
           </td>
-          <td><span class="status-badge connected"><span class="status-dot connected"></span> Connected</span></td>
-          <td><span class="used-by-tag">Revenue Reporter</span></td>
-          <td><span class="last-sync">3 hrs ago</span></td>
+          <td><span class="status-badge active"><span class="status-dot active"></span> Active</span></td>
+          <td><span class="metric">2</span></td>
+          <td><span class="metric">3h</span></td>
+          <td><span class="last-run">30 min ago</span></td>
           <td>
-            <div class="int-actions">
-              <button class="btn-sm configure" onclick="alert('Opening Google Sheets configuration...')">Configure</button>
-              <button class="btn-sm disconnect" onclick="confirmDisconnect('Google Sheets')">Disconnect</button>
+            <div class="agent-actions">
+              <button class="btn-sm edit" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">Edit</button>
+              <button class="btn-sm pause" onclick="event.stopPropagation();toggleAgent(this)">Pause</button>
             </div>
           </td>
         </tr>
-        <tr>
+        <tr onclick="window.location.href='A-06-agent-config-integrations.html'" data-agent="customer-feedback" data-status="paused" style="opacity:0.7;">
           <td>
-            <div class="int-name">
-              <div class="int-icon">💬</div>
+            <div class="agent-name">
+              <div class="agent-icon">💬</div>
               <div>
-                <div class="int-label">Slack</div>
-                <div class="int-label-sub">Team messaging</div>
+                <div class="agent-label">Customer Feedback</div>
+                <div class="agent-label-sub">Analyzes customer reviews and survey responses</div>
               </div>
             </div>
           </td>
-          <td><span class="status-badge pending"><span class="status-dot pending"></span> Pending</span></td>
-          <td><span class="used-by" style="color:var(--text-dim); font-style:italic;">—</span></td>
-          <td><span class="last-sync">—</span></td>
+          <td><span class="status-badge paused"><span class="status-dot paused"></span> Paused</span></td>
+          <td><span class="metric">2</span></td>
+          <td><span class="metric">1h</span></td>
+          <td><span class="last-run">2 days ago</span></td>
           <td>
-            <div class="int-actions">
-              <button class="btn-sm configure" onclick="alert('Complete Slack OAuth to finish setup.')">Complete Setup</button>
-              <button class="btn-sm disconnect" onclick="confirmDisconnect('Slack')">Cancel</button>
+            <div class="agent-actions">
+              <button class="btn-sm edit" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">Edit</button>
+              <button class="btn-sm resume" onclick="event.stopPropagation();toggleAgent(this)">Resume</button>
             </div>
           </td>
         </tr>
       </tbody>
     </table>
-  </div>
-
-  <!-- Available Integrations -->
-  <div class="section-header">
-    <div class="section-title">Available Integrations</div>
-  </div>
-
-  <div class="avail-grid">
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">🏢</div>
-        <div class="avail-card-name">HubSpot CRM</div>
-      </div>
-      <div class="avail-card-desc">Sync contacts, deals, and pipeline data to power sales and customer retention agents.</div>
-      <button class="btn-connect" onclick="confirmConnect('HubSpot CRM')">Connect</button>
-    </div>
-
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">🎧</div>
-        <div class="avail-card-name">Zendesk</div>
-      </div>
-      <div class="avail-card-desc">Import support tickets and customer interactions for analysis and automated responses.</div>
-      <button class="btn-connect" onclick="confirmConnect('Zendesk')">Connect</button>
-    </div>
-
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">📒</div>
-        <div class="avail-card-name">QuickBooks</div>
-      </div>
-      <div class="avail-card-desc">Connect accounting data for automated financial reporting and expense tracking.</div>
-      <button class="btn-connect" onclick="confirmConnect('QuickBooks')">Connect</button>
-    </div>
-
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">☁️</div>
-        <div class="avail-card-name">Salesforce</div>
-      </div>
-      <div class="avail-card-desc">Bi-directional CRM sync for lead scoring, opportunity tracking, and pipeline analytics.</div>
-      <button class="btn-connect" onclick="confirmConnect('Salesforce')">Connect</button>
-    </div>
-
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">📧</div>
-        <div class="avail-card-name">Mailchimp</div>
-      </div>
-      <div class="avail-card-desc">Sync email campaign data, subscriber lists, and engagement metrics for marketing agents.</div>
-      <button class="btn-connect" onclick="confirmConnect('Mailchimp')">Connect</button>
-    </div>
-
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">💳</div>
-        <div class="avail-card-name">Stripe</div>
-      </div>
-      <div class="avail-card-desc">Pull payment data, subscription metrics, and revenue analytics in real time.</div>
-      <button class="btn-connect" onclick="confirmConnect('Stripe')">Connect</button>
-    </div>
-
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">📋</div>
-        <div class="avail-card-name">Jira</div>
-      </div>
-      <div class="avail-card-desc">Track project issues, sprint velocity, and team workload for operations agents.</div>
-      <button class="btn-connect" onclick="confirmConnect('Jira')">Connect</button>
-    </div>
-
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">📝</div>
-        <div class="avail-card-name">Notion</div>
-      </div>
-      <div class="avail-card-desc">Index Notion pages and databases as a knowledge source for Q&A and research agents.</div>
-      <button class="btn-connect" onclick="confirmConnect('Notion')">Connect</button>
-    </div>
-
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">👥</div>
-        <div class="avail-card-name">Microsoft Teams</div>
-      </div>
-      <div class="avail-card-desc">Receive agent notifications and decision alerts directly in Teams channels.</div>
-      <button class="btn-connect" onclick="confirmConnect('Microsoft Teams')">Connect</button>
-    </div>
-
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">📞</div>
-        <div class="avail-card-name">Twilio</div>
-      </div>
-      <div class="avail-card-desc">Enable SMS and voice notifications for time-sensitive agent decisions and alerts.</div>
-      <button class="btn-connect" onclick="confirmConnect('Twilio')">Connect</button>
-    </div>
-
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">⚡</div>
-        <div class="avail-card-name">Zapier</div>
-      </div>
-      <div class="avail-card-desc">Connect 5,000+ apps through automated workflows and trigger-based integrations.</div>
-      <button class="btn-connect" onclick="confirmConnect('Zapier')">Connect</button>
-    </div>
-
-    <div class="avail-card">
-      <div class="avail-card-top">
-        <div class="avail-card-icon">🏠</div>
-        <div class="avail-card-name">AppFolio</div>
-      </div>
-      <div class="avail-card-desc">Sync property management data, tenant communications, and maintenance requests.</div>
-      <button class="btn-connect" onclick="confirmConnect('AppFolio')">Connect</button>
-    </div>
   </div>
 
   <div class="powered-by">Powered by <strong>PranaOS</strong> · Implemented by <strong>Prana IQ</strong></div>
@@ -711,7 +580,7 @@
       'agents': 'A-21-deployed-agents.html',
       'chat': 'C-06-universal-chat.html',
       'decisions': 'C-07-decision-inbox.html',
-      'knowledge': 'A-06-agent-config-integrations.html',
+      'knowledge': 'A-20-admin-knowledge.html',
       'departments': 'C-09-department-setup.html',
       'team': 'C-10-user-management.html',
       'settings': 'C-11-settings.html'
@@ -736,10 +605,9 @@
     if (el && names[val]) {
       el.textContent = names[val];
     }
-    // Update page subtitle
     var sub = document.querySelector('.page-sub');
     if (sub && names[val]) {
-      sub.textContent = 'Manage third-party connections for ' + names[val] + '\u2019s agents and workflows.';
+      sub.textContent = 'Manage and monitor all agents for ' + names[val];
     }
   }
 
@@ -761,18 +629,48 @@
     }
   }
 
-  // Connect handler
-  function confirmConnect(name) {
-    if (confirm('Connect ' + name + ' to AMC Theatres?\n\nThis will open the OAuth authorization flow for ' + name + '.')) {
-      alert('Redirecting to ' + name + ' authorization...\n\n(This is a prototype — no actual connection will be made.)');
+  // Toggle agent pause/resume
+  function toggleAgent(btn) {
+    var row = btn.closest('tr');
+    var statusBadge = row.querySelector('.status-badge');
+    var statusDot = row.querySelector('.status-dot');
+    var currentStatus = row.getAttribute('data-status');
+
+    if (currentStatus === 'active') {
+      // Pause the agent
+      row.setAttribute('data-status', 'paused');
+      row.style.opacity = '0.7';
+      statusBadge.className = 'status-badge paused';
+      statusBadge.innerHTML = '<span class="status-dot paused"></span> Paused';
+      btn.className = 'btn-sm resume';
+      btn.textContent = 'Resume';
+      updateCounts();
+    } else {
+      // Resume the agent
+      row.setAttribute('data-status', 'active');
+      row.style.opacity = '1';
+      statusBadge.className = 'status-badge active';
+      statusBadge.innerHTML = '<span class="status-dot active"></span> Active';
+      btn.className = 'btn-sm pause';
+      btn.textContent = 'Pause';
+      updateCounts();
     }
   }
 
-  // Disconnect handler
-  function confirmDisconnect(name) {
-    if (confirm('Disconnect ' + name + '?\n\nAgents using this integration will lose access to its data. This action can be reversed by reconnecting.')) {
-      alert(name + ' has been disconnected.\n\n(This is a prototype — no actual changes were made.)');
-    }
+  // Update summary card counts
+  function updateCounts() {
+    var rows = document.querySelectorAll('#agent-tbody tr');
+    var active = 0;
+    var paused = 0;
+    rows.forEach(function(row) {
+      if (row.getAttribute('data-status') === 'active') {
+        active++;
+      } else {
+        paused++;
+      }
+    });
+    document.getElementById('card-active').textContent = active;
+    document.getElementById('card-paused').textContent = paused;
   }
 </script>
 </body>
