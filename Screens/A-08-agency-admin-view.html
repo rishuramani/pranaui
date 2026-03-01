@@ -101,16 +101,7 @@
 
   .ab-spacer { flex: 1; }
 
-  .ab-shortcuts { display: flex; gap: 6px; }
-  .ab-shortcut {
-    padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
-    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
-    cursor: pointer; transition: all 0.15s; color: rgba(255,255,255,0.8);
-    display: flex; align-items: center; gap: 5px; text-decoration: none;
-  }
-  .ab-shortcut:hover { background: rgba(255,255,255,0.15); color: #fff; }
-
-  .ab-toggle {
+.ab-toggle {
     display: flex; align-items: center; gap: 8px;
     padding: 5px 14px; border-radius: 6px;
     font-size: 11px; font-weight: 600; cursor: pointer;
@@ -137,12 +128,15 @@
   .sb-client { padding: 0 20px; margin-bottom: 24px; }
   .sb-client-name { font-size: 13px; font-weight: 700; }
   .sb-client-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: var(--client-primary-light); color: var(--client-primary); margin-top: 2px; }
-  .sb-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; }
-  .sb-item { padding: 9px 14px; border-radius: var(--radius-xs); font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 10px; }
-  .sb-item:hover { background: var(--client-primary-light); color: var(--text); }
-  .sb-item.active { background: var(--client-primary-light); color: var(--client-primary); font-weight: 700; }
-  .sb-badge { font-size: 9px; font-weight: 700; color: #fff; background: var(--client-primary); min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; margin-left: auto; }
-  .sb-divider { height: 1px; background: var(--border-subtle); margin: 12px 20px; }
+  .sb-section { margin-bottom: 24px; }
+  .sb-section-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; padding: 0 24px; margin-bottom: 6px; }
+  .sb-nav { list-style: none; }
+  .sb-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; position: relative; }
+  .sb-nav-item:hover { background: var(--client-primary-light); color: var(--text); }
+  .sb-nav-item.active { color: var(--client-primary); font-weight: 600; background: var(--client-primary-light); }
+  .sb-nav-item.active::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--client-primary); border-radius: 0 2px 2px 0; }
+  .sb-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sb-nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; color: #fff; background: var(--client-primary); min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
   .sb-user { padding: 12px 20px; margin-top: auto; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border-subtle); }
   .sb-user-avatar { width: 30px; height: 30px; border-radius: 7px; background: linear-gradient(135deg, var(--client-primary), #e94560); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
   .sb-user-name { font-size: 12px; font-weight: 600; }
@@ -278,16 +272,6 @@
 
   <div class="ab-spacer"></div>
 
-  <div class="ab-shortcuts" id="admin-shortcuts">
-    <div class="ab-shortcut" onclick="window.location.href='A-19-admin-integrations.html'">🔗 Integrations</div>
-    <div class="ab-shortcut" onclick="window.location.href='A-20-admin-knowledge.html'">📚 Knowledge</div>
-    <div class="ab-shortcut" onclick="window.location.href='A-21-deployed-agents.html'">🤖 Agents</div>
-    <div class="ab-shortcut" onclick="window.location.href='A-12-billing-management.html'">💳 Billing</div>
-    <div class="ab-shortcut" onclick="window.location.href='A-18-audit-log.html'">📋 Activity Log</div>
-  </div>
-
-  <div class="ab-divider"></div>
-
   <div class="ab-toggle admin-mode" id="view-toggle" onclick="toggleView()">
     👁️ View as client
   </div>
@@ -305,16 +289,31 @@
       <div class="sb-client-name" id="sb-client-name">AMC Theatres</div>
       <div class="sb-client-badge">👤 Client Admin</div>
     </div>
-    <div class="sb-nav">
-      <div class="sb-item active" onclick="navTo('dashboard')">📊 Dashboard</div>
-      <div class="sb-item" onclick="navTo('agents')">🤖 Agents</div>
-      <div class="sb-item" onclick="navTo('chat')">💬 Chat</div>
-      <div class="sb-item" onclick="navTo('decisions')">📥 Decisions <span class="sb-badge">7</span></div>
-      <div class="sb-divider"></div>
-      <div class="sb-item" onclick="navTo('knowledge')">📚 Knowledge</div>
-      <div class="sb-item" onclick="navTo('departments')">🏢 Departments</div>
-      <div class="sb-item" onclick="navTo('team')">👥 Team</div>
-      <div class="sb-item" onclick="navTo('settings')">⚙️ Settings</div>
+    <div class="sb-section">
+      <div class="sb-section-label">Main</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item active" onclick="navTo('dashboard')"><span class="sb-nav-icon">📊</span> Dashboard</li>
+        <li class="sb-nav-item" onclick="navTo('agents')"><span class="sb-nav-icon">🤖</span> Agents</li>
+        <li class="sb-nav-item" onclick="navTo('chat')"><span class="sb-nav-icon">💬</span> Chat</li>
+        <li class="sb-nav-item" onclick="navTo('decisions')"><span class="sb-nav-icon">📥</span> Decisions <span class="sb-nav-badge">7</span></li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Manage</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('knowledge')"><span class="sb-nav-icon">📚</span> Knowledge</li>
+        <li class="sb-nav-item" onclick="navTo('departments')"><span class="sb-nav-icon">🏢</span> Departments</li>
+        <li class="sb-nav-item" onclick="navTo('team')"><span class="sb-nav-icon">👥</span> Team</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Admin</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('integrations')"><span class="sb-nav-icon">🔗</span> Integrations</li>
+        <li class="sb-nav-item" onclick="navTo('billing')"><span class="sb-nav-icon">💳</span> Billing</li>
+        <li class="sb-nav-item" onclick="navTo('activity')"><span class="sb-nav-icon">📋</span> Activity Log</li>
+        <li class="sb-nav-item" onclick="navTo('settings')"><span class="sb-nav-icon">⚙️</span> Settings</li>
+      </ul>
     </div>
     <div class="sb-user">
       <div class="sb-user-avatar">RK</div>
@@ -407,7 +406,10 @@
       'knowledge': 'A-20-admin-knowledge.html',
       'departments': 'C-09-department-setup.html',
       'team': 'C-10-user-management.html',
-      'settings': 'C-11-settings.html'
+      'settings': 'C-11-settings.html',
+      'integrations': 'A-19-admin-integrations.html',
+      'billing': 'A-12-billing-management.html',
+      'activity': 'A-18-audit-log.html'
     };
     if (routes[target]) {
       window.location.href = routes[target];

@@ -612,6 +612,50 @@
   .btn-request-connector strong { font-weight: 600; }
   .btn-request-icon { font-size: 16px; }
 
+  /* Search bar */
+  .search-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 12px; }
+  .search-bar input { flex: 1; border: none; background: none; font-family: inherit; font-size: 13px; color: var(--text); outline: none; }
+  .search-bar input::placeholder { color: var(--text-dim); }
+  .search-bar svg { width: 16px; height: 16px; color: var(--text-dim); flex-shrink: 0; }
+
+  /* Pagination */
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 12px; margin-bottom: 20px; }
+  .page-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .page-btn:hover { border-color: var(--accent-border); color: var(--accent); }
+  .page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .page-btn:disabled { opacity: 0.4; cursor: default; }
+  .page-info { font-size: 11px; color: var(--text-dim); margin: 0 8px; }
+
+  /* Type badge on connector cards */
+  .integ-type { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 8px; border-radius: 6px; margin-top: 6px; display: inline-block; }
+  .integ-type.tool { background: rgba(196,132,45,0.1); color: #c4842d; border: 1px solid rgba(196,132,45,0.2); }
+  .integ-type.knowledge { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+
+  /* Type legend */
+  .type-legend { display: flex; gap: 16px; margin-bottom: 14px; font-size: 11px; color: var(--text-muted); }
+  .type-legend-item { display: flex; align-items: center; gap: 6px; }
+  .type-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .type-legend-dot.tool { background: #c4842d; }
+  .type-legend-dot.knowledge { background: var(--accent); }
+
+  /* No results */
+  .no-results { text-align: center; padding: 32px; color: var(--text-dim); font-size: 13px; font-weight: 300; }
+
+  /* Request modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(42,31,16,0.4); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; max-width: 440px; width: 90%; box-shadow: var(--shadow-lg); }
+  .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .modal-desc { font-size: 12px; color: var(--text-muted); font-weight: 300; margin-bottom: 20px; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-field label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  .modal-field input, .modal-field textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.15s; }
+  .modal-field input:focus, .modal-field textarea:focus { border-color: var(--accent); }
+  .modal-field textarea { resize: vertical; min-height: 60px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .modal-cancel { padding: 10px 20px; background: none; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+  .modal-submit { padding: 10px 20px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+
   .upload-icon { font-size: 32px; margin-bottom: 8px; }
   .upload-text { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
   .upload-hint { font-size: 12px; color: var(--text-dim); font-weight: 300; margin-top: 4px; }
@@ -1006,21 +1050,53 @@
 
     <div style="margin-top:12px;margin-bottom:4px;">
       <label class="field-label">Or connect a cloud source</label>
+      <div style="font-size:11px;color:var(--text-dim);font-weight:300;margin-top:2px;">Knowledge accounts give agents context about your business — documents, data, and references they can search.</div>
     </div>
-    <div class="integ-grid" style="grid-template-columns:1fr 1fr;">
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search knowledge sources…" oninput="filterSources(this.value)">
+    </div>
+    <div class="integ-grid" id="source-grid" style="grid-template-columns:1fr 1fr;">
       <div class="integ-card" onclick="connectSource(this, 'Google Drive')">
         <div class="integ-icon">📁</div>
         <div class="integ-name">Google Drive</div>
+        <div class="integ-type knowledge">Knowledge</div>
         <div class="integ-status">Click to connect</div>
       </div>
       <div class="integ-card" onclick="connectSource(this, 'Notion')">
         <div class="integ-icon">📝</div>
         <div class="integ-name">Notion</div>
+        <div class="integ-type knowledge">Knowledge</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="connectSource(this, 'SharePoint')">
+        <div class="integ-icon">📂</div>
+        <div class="integ-name">SharePoint</div>
+        <div class="integ-type knowledge">Knowledge</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="connectSource(this, 'Confluence')">
+        <div class="integ-icon">📖</div>
+        <div class="integ-name">Confluence</div>
+        <div class="integ-type knowledge">Knowledge</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="connectSource(this, 'Dropbox')">
+        <div class="integ-icon">💧</div>
+        <div class="integ-name">Dropbox</div>
+        <div class="integ-type knowledge">Knowledge</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="connectSource(this, 'Airtable')">
+        <div class="integ-icon">📊</div>
+        <div class="integ-name">Airtable</div>
+        <div class="integ-type knowledge">Knowledge</div>
         <div class="integ-status">Click to connect</div>
       </div>
     </div>
+    <div class="no-results" id="source-no-results" style="display:none;">No knowledge sources match your search.</div>
 
-    <button class="btn-request-connector" onclick="requestConnector()">
+    <button class="btn-request-connector" onclick="openRequestModal('knowledge')">
       <span class="btn-request-icon">🔌</span>
       Don't see your source? <strong>Request a connector</strong>
     </button>
@@ -1045,38 +1121,97 @@
       <p class="step-desc">These let your agents read data and take actions on your behalf.</p>
     </div>
 
-    <div class="integ-grid">
+    <div class="type-legend">
+      <div class="type-legend-item"><div class="type-legend-dot tool"></div> Tool accounts — agents take actions (ads, email, inventory)</div>
+      <div class="type-legend-item"><div class="type-legend-dot knowledge"></div> Knowledge accounts — agents read & reference data</div>
+    </div>
+
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search integrations…" oninput="filterIntegrations(this.value)">
+    </div>
+
+    <div class="integ-grid" id="integ-grid">
       <div class="integ-card" onclick="toggleInteg(this)">
         <div class="integ-icon">📊</div>
         <div class="integ-name">Google Ads</div>
+        <div class="integ-type tool">Tool</div>
         <div class="integ-status">Click to connect</div>
       </div>
       <div class="integ-card" onclick="toggleInteg(this)">
         <div class="integ-icon">🛍️</div>
         <div class="integ-name">Shopify</div>
+        <div class="integ-type tool">Tool</div>
         <div class="integ-status">Click to connect</div>
       </div>
       <div class="integ-card" onclick="toggleInteg(this)">
         <div class="integ-icon">💬</div>
         <div class="integ-name">Slack</div>
+        <div class="integ-type tool">Tool</div>
         <div class="integ-status">Click to connect</div>
       </div>
       <div class="integ-card" onclick="toggleInteg(this)">
         <div class="integ-icon">📧</div>
         <div class="integ-name">Gmail</div>
+        <div class="integ-type tool">Tool</div>
         <div class="integ-status">Click to connect</div>
       </div>
       <div class="integ-card" onclick="toggleInteg(this)">
         <div class="integ-icon">📈</div>
         <div class="integ-name">Meta Ads</div>
+        <div class="integ-type tool">Tool</div>
         <div class="integ-status">Click to connect</div>
       </div>
       <div class="integ-card" onclick="toggleInteg(this)">
         <div class="integ-icon">📋</div>
         <div class="integ-name">Google Sheets</div>
+        <div class="integ-type knowledge">Knowledge</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">🏪</div>
+        <div class="integ-name">Square POS</div>
+        <div class="integ-type tool">Tool</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">📦</div>
+        <div class="integ-name">Inventory (API)</div>
+        <div class="integ-type tool">Tool</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">📊</div>
+        <div class="integ-name">Google Analytics</div>
+        <div class="integ-type knowledge">Knowledge</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">💳</div>
+        <div class="integ-name">Stripe</div>
+        <div class="integ-type tool">Tool</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">📞</div>
+        <div class="integ-name">HubSpot</div>
+        <div class="integ-type tool">Tool</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">📬</div>
+        <div class="integ-name">Mailchimp</div>
+        <div class="integ-type tool">Tool</div>
         <div class="integ-status">Click to connect</div>
       </div>
     </div>
+    <div class="no-results" id="integ-no-results" style="display:none;">No integrations match your search.</div>
+    <div class="pagination" id="integ-pagination"></div>
+
+    <button class="btn-request-connector" onclick="openRequestModal('integration')">
+      <span class="btn-request-icon">🔌</span>
+      Don't see your integration? <strong>Request a connector</strong>
+    </button>
 
     <div class="btn-row">
       <button class="btn-secondary" onclick="goStep(4)">← Back</button>
@@ -1098,7 +1233,12 @@
       <p class="step-desc">Pre-filtered based on your industry. Select the ones relevant to your business. You'll be able to browse the full marketplace and add more agents anytime after setup.</p>
     </div>
 
-    <div class="agent-grid">
+    <div class="search-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search agents…" oninput="filterAgents(this.value)">
+    </div>
+
+    <div class="agent-grid" id="agent-grid">
       <div class="agent-card" onclick="toggleAgent(this)">
         <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
         <div class="agent-emoji">🏷️</div>
@@ -1141,7 +1281,44 @@
         <div class="agent-desc">Draft client communications, proposals, and follow-ups from your knowledge base and CRM data.</div>
         <div class="agent-tags"><span class="agent-tag">All Industries</span><span class="agent-tag">Gmail</span></div>
       </div>
+      <div class="agent-card" onclick="toggleAgent(this)">
+        <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="agent-emoji">📦</div>
+        <div class="agent-name">Inventory Sync</div>
+        <div class="agent-desc">Monitor stock levels across locations, flag low inventory, and auto-generate reorder recommendations.</div>
+        <div class="agent-tags"><span class="agent-tag">Retail</span><span class="agent-tag">Inventory</span></div>
+      </div>
+      <div class="agent-card" onclick="toggleAgent(this)">
+        <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="agent-emoji">💬</div>
+        <div class="agent-name">Customer Feedback</div>
+        <div class="agent-desc">Aggregate reviews and feedback across platforms. Surface trends and draft response templates.</div>
+        <div class="agent-tags"><span class="agent-tag">All Industries</span><span class="agent-tag">Support</span></div>
+      </div>
+      <div class="agent-card" onclick="toggleAgent(this)">
+        <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="agent-emoji">📱</div>
+        <div class="agent-name">Social Media Scheduler</div>
+        <div class="agent-desc">Generate content calendars, draft posts, and suggest optimal posting times from engagement data.</div>
+        <div class="agent-tags"><span class="agent-tag">Marketing</span><span class="agent-tag">Social</span></div>
+      </div>
+      <div class="agent-card" onclick="toggleAgent(this)">
+        <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="agent-emoji">📄</div>
+        <div class="agent-name">Contract Reviewer</div>
+        <div class="agent-desc">Analyze contracts and agreements, flag risk clauses, and summarize key terms for quick review.</div>
+        <div class="agent-tags"><span class="agent-tag">Legal</span><span class="agent-tag">All Industries</span></div>
+      </div>
+      <div class="agent-card" onclick="toggleAgent(this)">
+        <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="agent-emoji">🎯</div>
+        <div class="agent-name">Lead Scorer</div>
+        <div class="agent-desc">Score and prioritize inbound leads based on engagement signals, fit criteria, and conversion patterns.</div>
+        <div class="agent-tags"><span class="agent-tag">SaaS</span><span class="agent-tag">HubSpot</span></div>
+      </div>
     </div>
+    <div class="no-results" id="agent-no-results" style="display:none;">No agents match your search.</div>
+    <div class="pagination" id="agent-pagination"></div>
 
     <div class="btn-row">
       <button class="btn-secondary" onclick="goStep(5)">← Back</button>
@@ -1209,6 +1386,30 @@
 
 </div>
 
+<!-- Request Connector Modal -->
+<div class="modal-overlay" id="request-modal">
+  <div class="modal-box">
+    <div class="modal-title">Request a connector</div>
+    <div class="modal-desc" id="request-modal-desc">Tell us what you need and we'll prioritize building it.</div>
+    <div class="modal-field">
+      <label>Connector name</label>
+      <input type="text" id="req-name" placeholder="e.g. Confluence, Xero, Square…">
+    </div>
+    <div class="modal-field">
+      <label>How would you use it?</label>
+      <textarea id="req-usecase" placeholder="Briefly describe how your agents would use this connector…"></textarea>
+    </div>
+    <div class="modal-field">
+      <label>Email (optional)</label>
+      <input type="text" id="req-email" placeholder="We'll notify you when it's ready">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeRequestModal()">Cancel</button>
+      <button class="modal-submit" onclick="submitRequest()">Submit request</button>
+    </div>
+  </div>
+</div>
+
 <script>
   let currentStep = 1;
   const departments = [];
@@ -1240,6 +1441,8 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     if (step === 3) populateDeptDropdown();
+    if (step === 5) renderIntegPage('');
+    if (step === 6) renderAgentPage('');
     if (step === 7) buildPreview();
   }
 
@@ -1347,11 +1550,107 @@
     el.querySelector('.integ-status').textContent = '✓ Connected';
   }
 
-  function requestConnector() {
-    const name = prompt('What knowledge source would you like us to support?\n\ne.g. Confluence, SharePoint, Dropbox, Airtable…');
-    if (name) {
-      alert('✓ Request submitted for "' + name + '"\n\nOur team will review and notify you when it\'s available.');
+  // Request modal
+  function openRequestModal(type) {
+    var desc = type === 'knowledge'
+      ? 'Tell us what knowledge source you need and we\'ll prioritize building it.'
+      : 'Tell us what integration you need and we\'ll prioritize building it.';
+    document.getElementById('request-modal-desc').textContent = desc;
+    document.getElementById('request-modal').classList.add('show');
+  }
+
+  function closeRequestModal() {
+    document.getElementById('request-modal').classList.remove('show');
+    document.getElementById('req-name').value = '';
+    document.getElementById('req-usecase').value = '';
+    document.getElementById('req-email').value = '';
+  }
+
+  function submitRequest() {
+    var name = document.getElementById('req-name').value.trim();
+    if (!name) { document.getElementById('req-name').focus(); return; }
+    closeRequestModal();
+    alert('✓ Request submitted for "' + name + '"\n\nOur team will review and notify you when it\'s available.');
+  }
+
+  // Search & filter — Sources (Step 4)
+  function filterSources(query) {
+    var cards = document.querySelectorAll('#source-grid .integ-card');
+    var q = query.toLowerCase();
+    var visible = 0;
+    cards.forEach(function(c) {
+      var name = c.querySelector('.integ-name').textContent.toLowerCase();
+      var show = name.indexOf(q) !== -1;
+      c.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    document.getElementById('source-no-results').style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  // Search & filter — Integrations (Step 5)
+  var integPage = 1;
+  var INTEG_PER_PAGE = 6;
+
+  function filterIntegrations(query) {
+    integPage = 1;
+    renderIntegPage(query);
+  }
+
+  function renderIntegPage(query) {
+    var cards = Array.from(document.querySelectorAll('#integ-grid .integ-card'));
+    var q = (query || '').toLowerCase();
+    var filtered = cards.filter(function(c) {
+      return c.querySelector('.integ-name').textContent.toLowerCase().indexOf(q) !== -1;
+    });
+    var totalPages = Math.max(1, Math.ceil(filtered.length / INTEG_PER_PAGE));
+    if (integPage > totalPages) integPage = totalPages;
+    var start = (integPage - 1) * INTEG_PER_PAGE;
+    cards.forEach(function(c) { c.style.display = 'none'; });
+    filtered.slice(start, start + INTEG_PER_PAGE).forEach(function(c) { c.style.display = ''; });
+    document.getElementById('integ-no-results').style.display = filtered.length === 0 ? 'block' : 'none';
+    // Pagination
+    var pag = document.getElementById('integ-pagination');
+    if (totalPages <= 1) { pag.innerHTML = ''; return; }
+    var html = '<button class="page-btn" onclick="integPage--;renderIntegPage(\'' + q + '\')" ' + (integPage <= 1 ? 'disabled' : '') + '>‹</button>';
+    for (var i = 1; i <= totalPages; i++) {
+      html += '<button class="page-btn' + (i === integPage ? ' active' : '') + '" onclick="integPage=' + i + ';renderIntegPage(\'' + q + '\')">' + i + '</button>';
     }
+    html += '<button class="page-btn" onclick="integPage++;renderIntegPage(\'' + q + '\')" ' + (integPage >= totalPages ? 'disabled' : '') + '>›</button>';
+    pag.innerHTML = html;
+  }
+
+  // Search & filter — Agents (Step 6)
+  var agentPage = 1;
+  var AGENT_PER_PAGE = 6;
+
+  function filterAgents(query) {
+    agentPage = 1;
+    renderAgentPage(query);
+  }
+
+  function renderAgentPage(query) {
+    var cards = Array.from(document.querySelectorAll('#agent-grid .agent-card'));
+    var q = (query || '').toLowerCase();
+    var filtered = cards.filter(function(c) {
+      var name = c.querySelector('.agent-name').textContent.toLowerCase();
+      var tags = c.querySelector('.agent-tags').textContent.toLowerCase();
+      return name.indexOf(q) !== -1 || tags.indexOf(q) !== -1;
+    });
+    var totalPages = Math.max(1, Math.ceil(filtered.length / AGENT_PER_PAGE));
+    if (agentPage > totalPages) agentPage = totalPages;
+    var start = (agentPage - 1) * AGENT_PER_PAGE;
+    cards.forEach(function(c) { c.style.display = 'none'; });
+    filtered.slice(start, start + AGENT_PER_PAGE).forEach(function(c) { c.style.display = ''; });
+    document.getElementById('agent-no-results').style.display = filtered.length === 0 ? 'block' : 'none';
+    // Pagination
+    var pag = document.getElementById('agent-pagination');
+    if (totalPages <= 1) { pag.innerHTML = ''; return; }
+    var html = '<button class="page-btn" onclick="agentPage--;renderAgentPage(\'' + q + '\')" ' + (agentPage <= 1 ? 'disabled' : '') + '>‹</button>';
+    for (var i = 1; i <= totalPages; i++) {
+      html += '<button class="page-btn' + (i === agentPage ? ' active' : '') + '" onclick="agentPage=' + i + ';renderAgentPage(\'' + q + '\')">' + i + '</button>';
+    }
+    html += '<button class="page-btn" onclick="agentPage++;renderAgentPage(\'' + q + '\')" ' + (agentPage >= totalPages ? 'disabled' : '') + '>›</button>';
+    pag.innerHTML = html;
   }
 
   // Integrations

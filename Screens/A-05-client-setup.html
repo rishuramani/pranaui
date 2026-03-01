@@ -728,6 +728,7 @@
           <div class="billing-row">
             <input type="text" class="add-input" placeholder="Item name" value="Implementation fee" style="flex:1;">
             <input type="text" class="billing-input" value="$500" style="width:100px;">
+            <select class="billing-input" style="width:110px;padding:8px;font-size:12px;" onchange="updateBilling()"><option value="once" selected>One-time</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="annual">Annual</option></select>
             <span class="invite-remove" onclick="this.parentElement.remove();updateBilling()">×</span>
           </div>
         </div>
@@ -905,6 +906,7 @@
     row.className = 'billing-row';
     row.innerHTML = '<input type="text" class="add-input" placeholder="Item name" style="flex:1;">' +
       '<input type="text" class="billing-input" value="$0" style="width:100px;">' +
+      '<select class="billing-input" style="width:110px;padding:8px;font-size:12px;" onchange="updateBilling()"><option value="once">One-time</option><option value="monthly" selected>Monthly</option><option value="quarterly">Quarterly</option><option value="annual">Annual</option></select>' +
       '<span class="invite-remove" onclick="this.parentElement.remove();updateBilling()">×</span>';
     container.appendChild(row);
   }

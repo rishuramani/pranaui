@@ -1153,6 +1153,17 @@
               </li>
             </ul>
           </div>
+          <div class="drawer-section" id="dept-section" style="display:none;">
+            <div class="drawer-section-title">Which department?</div>
+            <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;">Select a department or leave as "All" to deploy across the client.</div>
+            <select class="form-select" id="deploy-dept" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius-xs);font-family:inherit;font-size:13px;background:var(--bg-card);color:var(--text);">
+              <option value="all">All departments</option>
+              <option value="ops">Operations</option>
+              <option value="marketing">Marketing</option>
+              <option value="finance">Finance</option>
+              <option value="sales">Sales</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="drawer-actions">
@@ -1168,7 +1179,7 @@
           <div class="drawer-emoji" id="drawer-emoji-3">🏷️</div>
           <div class="drawer-title-group">
             <div class="drawer-title" id="drawer-title-3">Configure Final Sale Agent</div>
-            <div class="drawer-step-label">Step 2 of 2 · Deploying to <span id="config-client-name">—</span></div>
+            <div class="drawer-step-label">Step 2 of 3 · Deploying to <span id="config-client-name">—</span></div>
           </div>
           <div class="drawer-close" onclick="closeDrawer()">✕</div>
         </div>
@@ -1384,6 +1395,7 @@
     el.classList.add('selected');
     document.getElementById('btn-to-config').disabled = false;
     document.getElementById('config-client-name').textContent = clientName;
+    document.getElementById('dept-section').style.display = clientName === 'Prana IQ' ? 'none' : 'block';
   }
 
   function buildConfigFields() {
@@ -1420,6 +1432,14 @@
           '<div class="toggle-switch' + (f.default ? ' on' : '') + '" onclick="this.classList.toggle(\'on\')"></div>' +
         '</div>';
       }
+      // Add "client action required" toggle per config step
+      html += '<div class="config-toggle-row" style="margin-top:-4px;padding:8px 0;border-top:1px dashed var(--border);">' +
+        '<div>' +
+          '<div class="config-toggle-label" style="font-size:11px;color:var(--accent);">Client action required</div>' +
+          '<div class="config-toggle-desc" style="font-size:10px;">Client must confirm this setting — creates a decision in their inbox</div>' +
+        '</div>' +
+        '<div class="toggle-switch" onclick="this.classList.toggle(\'on\')"></div>' +
+      '</div>';
     });
     document.getElementById('config-fields').innerHTML = html;
   }

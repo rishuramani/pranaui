@@ -76,14 +76,18 @@
   .stat-value { font-size: 22px; font-weight: 800; margin-top: 2px; }
   .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
 
-  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; position: relative; }
-  .agent-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.2s; position: relative; }
+  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; position: relative; }
+  .agent-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.2s; position: relative; }
   .agent-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-  .agent-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .agent-card-icon { font-size: 20px; }
-  .agent-card-name { font-size: 13px; font-weight: 700; }
-  .agent-card-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-bright); margin-left: auto; }
-  .agent-card-desc { font-size: 11px; color: var(--text-muted); font-weight: 300; line-height: 1.5; }
+  .agent-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .agent-card-icon { font-size: 24px; }
+  .agent-card-name { font-size: 14px; font-weight: 700; }
+  .agent-card-status { width: 7px; height: 7px; border-radius: 50%; margin-left: auto; }
+  .agent-card-status.active { background: var(--accent-bright); }
+  .agent-card-status.paused { background: var(--warn); }
+  .agent-card-desc { font-size: 12px; color: var(--text-muted); font-weight: 300; line-height: 1.5; margin-bottom: 12px; }
+  .agent-card-stats { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); padding-top: 10px; border-top: 1px solid var(--border-subtle); }
+  .agent-card-stats strong { color: var(--text); font-weight: 700; }
 
   /* Pulsing highlight on target card */
   .agent-card.highlighted {
@@ -228,28 +232,34 @@
   <div class="section-title">Your Agents</div>
   <div class="agent-grid" id="agent-grid">
     <div class="agent-card" id="card-final-sale">
-      <div class="agent-card-top"><span class="agent-card-icon">🏷️</span><span class="agent-card-name">Final Sale Agent</span><span class="agent-card-dot"></span></div>
+      <div class="agent-card-top"><span class="agent-card-icon">🏷️</span><span class="agent-card-name">Final Sale Agent</span><span class="agent-card-status active"></span></div>
       <div class="agent-card-desc">Identifies slow-moving inventory and recommends strategic markdowns</div>
+      <div class="agent-card-stats"><span><strong>12</strong> decisions</span><span><strong>18h</strong> saved</span></div>
     </div>
     <div class="agent-card">
-      <div class="agent-card-top"><span class="agent-card-icon">📣</span><span class="agent-card-name">Paid Ads Manager</span><span class="agent-card-dot"></span></div>
+      <div class="agent-card-top"><span class="agent-card-icon">📣</span><span class="agent-card-name">Paid Ads Manager</span><span class="agent-card-status active"></span></div>
       <div class="agent-card-desc">Monitors ad spend, pauses underperformers, reallocates budget</div>
+      <div class="agent-card-stats"><span><strong>8</strong> decisions</span><span><strong>12h</strong> saved</span></div>
     </div>
     <div class="agent-card">
-      <div class="agent-card-top"><span class="agent-card-icon">✉️</span><span class="agent-card-name">Email Drafter</span><span class="agent-card-dot"></span></div>
+      <div class="agent-card-top"><span class="agent-card-icon">✉️</span><span class="agent-card-name">Email Drafter</span><span class="agent-card-status active"></span></div>
       <div class="agent-card-desc">Drafts customer and vendor emails using your tone and templates</div>
+      <div class="agent-card-stats"><span><strong>6</strong> decisions</span><span><strong>8h</strong> saved</span></div>
     </div>
     <div class="agent-card">
-      <div class="agent-card-top"><span class="agent-card-icon">📊</span><span class="agent-card-name">Revenue Reporter</span><span class="agent-card-dot"></span></div>
+      <div class="agent-card-top"><span class="agent-card-icon">📊</span><span class="agent-card-name">Revenue Reporter</span><span class="agent-card-status active"></span></div>
       <div class="agent-card-desc">Generates weekly revenue reports with anomaly detection</div>
+      <div class="agent-card-stats"><span><strong>4</strong> decisions</span><span><strong>5h</strong> saved</span></div>
     </div>
     <div class="agent-card">
-      <div class="agent-card-top"><span class="agent-card-icon">📦</span><span class="agent-card-name">Inventory Sync</span><span class="agent-card-dot"></span></div>
+      <div class="agent-card-top"><span class="agent-card-icon">📦</span><span class="agent-card-name">Inventory Sync</span><span class="agent-card-status active"></span></div>
       <div class="agent-card-desc">Keeps Shopify and POS inventory in sync across locations</div>
+      <div class="agent-card-stats"><span><strong>2</strong> decisions</span><span><strong>3h</strong> saved</span></div>
     </div>
     <div class="agent-card" style="opacity:0.6;">
-      <div class="agent-card-top"><span class="agent-card-icon">💬</span><span class="agent-card-name">Customer Feedback</span><span class="agent-card-dot" style="background:var(--warn);"></span></div>
+      <div class="agent-card-top"><span class="agent-card-icon">💬</span><span class="agent-card-name">Customer Feedback</span><span class="agent-card-status paused"></span></div>
       <div class="agent-card-desc">Analyzes reviews and survey responses</div>
+      <div class="agent-card-stats"><span><strong>2</strong> decisions</span><span><strong>1h</strong> saved</span></div>
     </div>
   </div>
 </div>

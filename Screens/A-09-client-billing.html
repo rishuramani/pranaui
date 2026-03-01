@@ -339,18 +339,18 @@
         </div>
       </div>
 
-      <!-- Partition Fee -->
+      <!-- Per Client Department Fee -->
       <div class="form-card">
-        <div class="form-card-title">Infrastructure</div>
-        <div class="form-card-desc">Platform partition fees for isolated client environment.</div>
+        <div class="form-card-title">Department Fees</div>
+        <div class="form-card-desc">Fixed monthly fee per client department on the platform.</div>
         <div class="form-row">
           <div class="form-field" style="max-width: 200px;">
-            <label class="form-label">Partition fee</label>
+            <label class="form-label">Per department fee</label>
             <div class="form-input-wrap">
               <span class="prefix">$</span>
               <input type="text" class="form-input has-prefix" value="50" style="background: var(--bg-elevated); color: var(--text-dim);" readonly>
             </div>
-            <div class="form-hint">Fixed per-client platform fee</div>
+            <div class="form-hint">Fixed per client department</div>
           </div>
           <div class="form-field">
             <label class="form-label">Pass through to client?</label>
@@ -419,7 +419,7 @@
           </div>
           <div class="preview-row" id="prev-partition-row">
             <div>
-              <div class="preview-row-label">Partition fee</div>
+              <div class="preview-row-label">Per department fee</div>
             </div>
             <div class="preview-row-value">$50</div>
           </div>
@@ -444,7 +444,7 @@
             <span class="preview-margin-label">Your margin</span>
             <span class="preview-margin-value" id="prev-margin">$6,494</span>
           </div>
-          <div class="preview-margin-desc" id="prev-margin-desc">Revenue after $312 platform cost + $50 partition = $362 cost basis</div>
+          <div class="preview-margin-desc" id="prev-margin-desc">Revenue after $312 platform cost + $50/dept = $362 cost basis</div>
         </div>
       </div>
     </div>
@@ -509,7 +509,7 @@ function updatePreview() {
   document.getElementById('prev-partition-row').style.display = partitionPass ? 'flex' : 'none';
   document.getElementById('prev-total').textContent = '$' + Math.round(total).toLocaleString();
   document.getElementById('prev-margin').textContent = '$' + Math.round(margin).toLocaleString();
-  document.getElementById('prev-margin-desc').textContent = 'Revenue after $' + platformCost + ' platform cost + $50 partition = $' + costBasis + ' cost basis';
+  document.getElementById('prev-margin-desc').textContent = 'Revenue after $' + platformCost + ' platform cost + $50/dept = $' + costBasis + ' cost basis';
 }
 
 function addRow() {
