@@ -101,7 +101,16 @@
 
   .ab-spacer { flex: 1; }
 
-.ab-toggle {
+  .ab-shortcuts { display: flex; gap: 6px; }
+  .ab-shortcut {
+    padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer; transition: all 0.15s; color: rgba(255,255,255,0.8);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .ab-shortcut:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+  .ab-toggle {
     display: flex; align-items: center; gap: 8px;
     padding: 5px 14px; border-radius: 6px;
     font-size: 11px; font-weight: 600; cursor: pointer;
@@ -271,6 +280,16 @@
   </select>
 
   <div class="ab-spacer"></div>
+
+  <div class="ab-shortcuts" id="admin-shortcuts">
+    <div class="ab-shortcut" onclick="navTo('integrations')">🔗 Integrations</div>
+    <div class="ab-shortcut" onclick="navTo('knowledge')">📚 Knowledge</div>
+    <div class="ab-shortcut" onclick="navTo('agents')">🤖 Agents</div>
+    <div class="ab-shortcut" onclick="navTo('billing')">💳 Billing</div>
+    <div class="ab-shortcut" onclick="navTo('activity')">📋 Activity Log</div>
+  </div>
+
+  <div class="ab-divider"></div>
 
   <div class="ab-toggle admin-mode" id="view-toggle" onclick="toggleView()">
     👁️ View as client

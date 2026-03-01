@@ -1432,14 +1432,11 @@
           '<div class="toggle-switch' + (f.default ? ' on' : '') + '" onclick="this.classList.toggle(\'on\')"></div>' +
         '</div>';
       }
-      // Add "client action required" toggle per config step
-      html += '<div class="config-toggle-row" style="margin-top:-4px;padding:8px 0;border-top:1px dashed var(--border);">' +
-        '<div>' +
-          '<div class="config-toggle-label" style="font-size:11px;color:var(--accent);">Client action required</div>' +
-          '<div class="config-toggle-desc" style="font-size:10px;">Client must confirm this setting — creates a decision in their inbox</div>' +
-        '</div>' +
-        '<div class="toggle-switch" onclick="this.classList.toggle(\'on\')"></div>' +
-      '</div>';
+      // Sub-checkbox: client action required
+      html += '<label style="display:flex;align-items:flex-start;gap:8px;margin-top:6px;padding:6px 0 2px;cursor:pointer;user-select:none;">' +
+        '<input type="checkbox" style="margin-top:2px;accent-color:var(--accent);width:14px;height:14px;flex-shrink:0;">' +
+        '<span style="font-size:11px;color:var(--text-dim);line-height:1.4;">Client action required — creates a decision in their inbox</span>' +
+      '</label>';
     });
     document.getElementById('config-fields').innerHTML = html;
   }
