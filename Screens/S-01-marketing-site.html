@@ -7,10 +7,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-dark: #2a1f10; --bg-card: #fffdf9;
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-dark: #1a1510; --bg-card: #fffdf9;
     --border: #e2d5c4; --border-subtle: #ede4d6;
     --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880; --text-on-dark: #f5ede0;
-    --accent: #18856a; --accent-bright: #2dd4a0; --accent-glow: rgba(45,212,160,0.15);
+    --accent: #18856a; --accent-hover: #147a60; --accent-bright: #2dd4a0; --accent-glow: rgba(45,212,160,0.15);
     --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
     --gold: #c4842d; --gold-light: rgba(196,132,45,0.1);
     --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08); --shadow-lg: 0 12px 40px rgba(42,31,16,0.12);
@@ -20,108 +20,167 @@
   body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
   /* ===== NAV ===== */
-  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 16px 40px; display: flex; align-items: center; background: rgba(250,246,240,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(226,213,196,0.5); transition: all 0.3s; }
+  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 16px 40px; display: flex; align-items: center; background: rgba(250,246,240,0.7); backdrop-filter: blur(20px) saturate(1.4); border-bottom: 1px solid rgba(226,213,196,0.4); transition: all 0.3s; }
   .nav-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
   .nav-logo svg { width: 32px; height: 32px; }
   .nav-logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
   .nav-logo-text span { color: var(--accent); }
   .nav-links { display: flex; gap: 32px; margin-left: 60px; }
-  .nav-link { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: color 0.15s; }
+  .nav-link { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: color 0.2s; position: relative; }
   .nav-link:hover { color: var(--text); }
+  .nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1.5px; background: var(--accent); transition: width 0.2s; }
+  .nav-link:hover::after { width: 100%; }
   .nav-spacer { flex: 1; }
-  .nav-cta { padding: 9px 22px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
-  .nav-cta:hover { filter: brightness(0.92); transform: translateY(-1px); }
-  .nav-login { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-right: 16px; cursor: pointer; text-decoration: none; }
+  .nav-cta { padding: 9px 22px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .nav-cta:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(24,133,106,0.3); }
+  .nav-login { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-right: 16px; cursor: pointer; text-decoration: none; transition: color 0.2s; }
   .nav-login:hover { color: var(--accent); }
 
   /* ===== HERO ===== */
-  .hero { padding: 160px 40px 100px; text-align: center; position: relative; overflow: hidden; }
-  .hero::before { content: ''; position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%); pointer-events: none; }
-  .hero::after { content: ''; position: absolute; bottom: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, var(--gold-light) 0%, transparent 70%); pointer-events: none; }
+  .hero { padding: 170px 40px 100px; text-align: center; position: relative; overflow: hidden; min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
-  .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 28px; animation: fadeUp 0.6s ease; }
-  .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-bright); animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  /* Animated background canvas */
+  .hero-bg-canvas { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 
-  .hero-title { font-size: clamp(36px, 5.5vw, 64px); font-weight: 800; letter-spacing: -2px; line-height: 1.1; max-width: 780px; margin: 0 auto 20px; animation: fadeUp 0.6s ease 0.1s both; }
-  .hero-title .highlight { background: linear-gradient(135deg, var(--accent), var(--accent-bright)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  /* Gradient mesh behind hero */
+  .hero-gradient-orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
+  .hero-gradient-orb.orb-1 { width: 600px; height: 600px; top: -150px; right: -100px; background: radial-gradient(circle, rgba(45,212,160,0.12) 0%, transparent 70%); animation: orbFloat1 12s ease-in-out infinite; }
+  .hero-gradient-orb.orb-2 { width: 500px; height: 500px; bottom: -100px; left: -80px; background: radial-gradient(circle, rgba(196,132,45,0.1) 0%, transparent 70%); animation: orbFloat2 15s ease-in-out infinite; }
+  .hero-gradient-orb.orb-3 { width: 350px; height: 350px; top: 30%; left: 50%; transform: translateX(-50%); background: radial-gradient(circle, rgba(24,133,106,0.08) 0%, transparent 70%); animation: orbFloat3 10s ease-in-out infinite; }
 
-  .hero-sub { font-size: clamp(16px, 2vw, 19px); font-weight: 300; color: var(--text-muted); max-width: 560px; margin: 0 auto 36px; line-height: 1.7; animation: fadeUp 0.6s ease 0.2s both; }
+  @keyframes orbFloat1 { 0%,100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(-40px, 30px) scale(1.1); } 66% { transform: translate(20px, -20px) scale(0.95); } }
+  @keyframes orbFloat2 { 0%,100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(50px, -40px) scale(1.15); } }
+  @keyframes orbFloat3 { 0%,100% { transform: translateX(-50%) translate(0, 0) scale(1); } 50% { transform: translateX(-50%) translate(0, 30px) scale(1.2); } }
+
+  .hero-content { position: relative; z-index: 2; }
+
+  .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 7px 18px; background: rgba(255,253,249,0.6); backdrop-filter: blur(8px); border: 1px solid var(--accent-border); border-radius: 24px; font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 32px; animation: fadeUp 0.6s ease; }
+  .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-bright); animation: pulse 2s infinite; box-shadow: 0 0 8px rgba(45,212,160,0.5); }
+  @keyframes pulse { 0%,100% { opacity:1; transform: scale(1); } 50% { opacity:0.4; transform: scale(0.8); } }
+
+  .hero-title { font-size: clamp(40px, 5.5vw, 68px); font-weight: 800; letter-spacing: -2.5px; line-height: 1.08; max-width: 800px; margin: 0 auto 24px; animation: fadeUp 0.6s ease 0.1s both; }
+  .hero-title .highlight { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-bright) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  .hero-sub { font-size: clamp(16px, 2vw, 19px); font-weight: 300; color: var(--text-muted); max-width: 560px; margin: 0 auto 40px; line-height: 1.7; animation: fadeUp 0.6s ease 0.2s both; }
 
   .hero-ctas { display: flex; align-items: center; justify-content: center; gap: 14px; animation: fadeUp 0.6s ease 0.3s both; flex-wrap: wrap; }
-  .cta-primary { padding: 16px 36px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(24,133,106,0.3); transition: all 0.2s; }
-  .cta-primary:hover { filter: brightness(0.92); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(24,133,106,0.35); }
-  .cta-secondary { padding: 16px 36px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
-  .cta-secondary:hover { background: var(--bg-warm); color: var(--text); }
+  .cta-primary { padding: 16px 40px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 24px rgba(24,133,106,0.3); transition: all 0.25s; position: relative; overflow: hidden; }
+  .cta-primary::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%); transform: translateX(-100%); transition: transform 0.5s; }
+  .cta-primary:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 8px 32px rgba(24,133,106,0.35); }
+  .cta-primary:hover::after { transform: translateX(100%); }
+  .cta-secondary { padding: 16px 36px; background: rgba(255,253,249,0.6); backdrop-filter: blur(8px); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.25s; }
+  .cta-secondary:hover { background: var(--bg-card); color: var(--text); border-color: var(--accent-border); transform: translateY(-2px); }
 
-  .hero-proof { margin-top: 48px; display: flex; align-items: center; justify-content: center; gap: 24px; animation: fadeUp 0.6s ease 0.4s both; }
+  .hero-proof { margin-top: 56px; display: flex; align-items: center; justify-content: center; gap: 24px; animation: fadeUp 0.6s ease 0.4s both; }
   .hero-proof-text { font-size: 12px; color: var(--text-dim); font-weight: 400; }
   .hero-proof-logos { display: flex; align-items: center; gap: 16px; }
-  .hero-proof-logo { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff; opacity: 0.7; }
+  .hero-proof-logo { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff; opacity: 0.7; transition: opacity 0.2s, transform 0.2s; }
+  .hero-proof-logo:hover { opacity: 1; transform: scale(1.1); }
 
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ===== HOW IT WORKS ===== */
-  .section { padding: 80px 40px; max-width: 1080px; margin: 0 auto; }
+  /* ===== FLOW SECTION (How It Works — Animated) ===== */
+  .flow-section { padding: 100px 40px 120px; position: relative; overflow: hidden; }
+  .flow-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+  .flow-inner { max-width: 1100px; margin: 0 auto; }
+
   .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 12px; text-align: center; }
-  .section-title { font-size: clamp(28px, 3.5vw, 40px); font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 12px; }
-  .section-sub { font-size: 15px; color: var(--text-muted); font-weight: 300; text-align: center; max-width: 520px; margin: 0 auto 48px; }
+  .section-title { font-size: clamp(28px, 3.5vw, 42px); font-weight: 800; letter-spacing: -1.5px; text-align: center; margin-bottom: 12px; }
+  .section-sub { font-size: 15px; color: var(--text-muted); font-weight: 300; text-align: center; max-width: 520px; margin: 0 auto 56px; }
 
-  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; position: relative; }
-  .steps::before { content: ''; position: absolute; top: 50px; left: 16%; right: 16%; height: 2px; background: linear-gradient(90deg, var(--accent-bright), var(--accent), var(--accent-bright)); opacity: 0.2; }
-  .step { text-align: center; position: relative; }
-  .step-num { width: 56px; height: 56px; border-radius: 16px; background: var(--accent-bg); border: 2px solid var(--accent-border); display: inline-flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: var(--accent); margin-bottom: 16px; position: relative; z-index: 1; }
-  .step-title { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
-  .step-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; line-height: 1.6; max-width: 260px; margin: 0 auto; }
-  .step-icon { font-size: 28px; margin-bottom: 6px; }
+  /* The animated flow diagram */
+  .flow-diagram { position: relative; width: 100%; height: 420px; margin: 0 auto; }
+
+  .flow-canvas { position: absolute; inset: 0; z-index: 0; }
+
+  .flow-stage { position: absolute; z-index: 2; display: flex; flex-direction: column; align-items: center; text-align: center; }
+
+  .flow-stage-icon { width: 72px; height: 72px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.08); position: relative; }
+  .flow-stage-icon::after { content: ''; position: absolute; inset: -4px; border-radius: 24px; border: 2px solid transparent; animation: iconPulseRing 3s ease-in-out infinite; }
+  @keyframes iconPulseRing { 0%,100% { border-color: transparent; transform: scale(1); } 50% { border-color: rgba(45,212,160,0.2); transform: scale(1.05); } }
+
+  .flow-stage-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; white-space: nowrap; }
+  .flow-stage-sub { font-size: 11px; color: var(--text-dim); font-weight: 400; max-width: 120px; line-height: 1.4; }
+
+  /* Stage positions */
+  .flow-stage.stage-knowledge { top: 50%; left: 4%; transform: translateY(-50%); }
+  .flow-stage.stage-agents { top: 50%; left: 32%; transform: translateY(-50%); }
+  .flow-stage.stage-human { top: 50%; left: 60%; transform: translateY(-50%); }
+  .flow-stage.stage-roi { top: 50%; right: 2%; transform: translateY(-50%); }
+
+  .flow-stage-icon.knowledge-icon { background: linear-gradient(135deg, #7c3aed, #a78bfa); color: #fff; }
+  .flow-stage-icon.agents-icon { background: linear-gradient(135deg, #2563eb, #60a5fa); color: #fff; }
+  .flow-stage-icon.human-icon { background: linear-gradient(135deg, var(--accent), var(--accent-bright)); color: #fff; }
+  .flow-stage-icon.roi-icon { background: linear-gradient(135deg, #d97706, #fbbf24); color: #fff; }
+
+  /* ROI Metrics inside the ROI stage */
+  .roi-metrics { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .roi-metric { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 8px 14px; min-width: 140px; text-align: left; box-shadow: var(--shadow-sm); }
+  .roi-metric-value { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; line-height: 1.2; }
+  .roi-metric-label { font-size: 10px; color: var(--text-dim); font-weight: 400; }
+
+  /* Knowledge source sub-items */
+  .knowledge-sources { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .ks-item { display: flex; align-items: center; gap: 6px; padding: 5px 10px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 6px; font-size: 10px; color: var(--text-muted); font-weight: 500; white-space: nowrap; box-shadow: var(--shadow-sm); }
+  .ks-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
   /* ===== AGENT MARKETPLACE PREVIEW ===== */
-  .marketplace-section { background: var(--bg-warm); padding: 80px 40px; }
+  .marketplace-section { background: var(--bg-warm); padding: 100px 40px; position: relative; }
+  .marketplace-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
   .marketplace-inner { max-width: 1080px; margin: 0 auto; }
-  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .agent-preview-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow-sm); transition: all 0.2s; cursor: pointer; }
-  .agent-preview-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
-  .apc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-  .apc-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-  .apc-name { font-size: 14px; font-weight: 700; }
-  .apc-category { font-size: 10px; color: var(--text-dim); font-weight: 500; }
-  .apc-desc { font-size: 12px; color: var(--text-muted); font-weight: 300; line-height: 1.6; margin-bottom: 14px; }
-  .apc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .agent-preview-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); transition: all 0.3s cubic-bezier(0.4,0,0.2,1); cursor: pointer; position: relative; overflow: hidden; }
+  .agent-preview-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-bright)); opacity: 0; transition: opacity 0.3s; }
+  .agent-preview-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-4px); }
+  .agent-preview-card:hover::before { opacity: 1; }
+  .apc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .apc-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .apc-name { font-size: 15px; font-weight: 700; }
+  .apc-category { font-size: 10px; color: var(--text-dim); font-weight: 500; margin-top: 2px; }
+  .apc-desc { font-size: 12.5px; color: var(--text-muted); font-weight: 300; line-height: 1.65; margin-bottom: 16px; }
+  .apc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--border-subtle); }
   .apc-stat { font-size: 10px; color: var(--text-dim); }
   .apc-stat strong { color: var(--text); font-weight: 700; }
-  .apc-deploy { font-size: 11px; font-weight: 600; color: var(--accent); cursor: pointer; }
+  .apc-deploy { font-size: 11px; font-weight: 600; color: var(--accent); cursor: pointer; transition: gap 0.2s; display: inline-flex; align-items: center; gap: 4px; }
+  .agent-preview-card:hover .apc-deploy { gap: 8px; }
 
-  .marketplace-cta { text-align: center; margin-top: 32px; }
-  .marketplace-cta-btn { padding: 12px 28px; background: none; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
-  .marketplace-cta-btn:hover { background: var(--bg-card); color: var(--text); border-color: var(--accent-border); }
+  .marketplace-cta { text-align: center; margin-top: 40px; }
+  .marketplace-cta-btn { padding: 14px 32px; background: none; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+  .marketplace-cta-btn:hover { background: var(--bg-card); color: var(--accent); border-color: var(--accent-border); transform: translateY(-2px); box-shadow: var(--shadow-md); }
 
   /* ===== SOCIAL PROOF ===== */
-  .proof-section { padding: 80px 40px; max-width: 1080px; margin: 0 auto; }
+  .proof-section { padding: 100px 40px; max-width: 1080px; margin: 0 auto; }
   .logos-strip { display: flex; align-items: center; justify-content: center; gap: 40px; margin-bottom: 48px; flex-wrap: wrap; }
-  .logo-item { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--text-dim); opacity: 0.5; }
+  .logo-item { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--text-dim); opacity: 0.5; transition: opacity 0.2s; }
+  .logo-item:hover { opacity: 0.8; }
   .logo-item-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; }
 
-  .testimonials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-  .testimonial { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); }
-  .testimonial-stars { color: #f0b429; font-size: 14px; margin-bottom: 12px; letter-spacing: 2px; }
-  .testimonial-text { font-size: 13px; color: var(--text-muted); font-weight: 400; line-height: 1.7; font-style: italic; margin-bottom: 16px; }
+  .testimonials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .testimonial { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-sm); transition: all 0.3s; }
+  .testimonial:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .testimonial-stars { color: #f0b429; font-size: 14px; margin-bottom: 14px; letter-spacing: 2px; }
+  .testimonial-text { font-size: 13.5px; color: var(--text-muted); font-weight: 400; line-height: 1.75; font-style: italic; margin-bottom: 18px; }
   .testimonial-author { display: flex; align-items: center; gap: 10px; }
-  .testimonial-avatar { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
-  .testimonial-name { font-size: 12px; font-weight: 700; }
+  .testimonial-avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+  .testimonial-name { font-size: 13px; font-weight: 700; }
   .testimonial-role { font-size: 11px; color: var(--text-dim); }
 
   /* ===== METRICS BAND ===== */
-  .metrics-band { background: var(--bg-dark); padding: 60px 40px; }
-  .metrics-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; text-align: center; }
-  .metric-value { font-size: 36px; font-weight: 800; color: var(--accent-bright); font-family: 'IBM Plex Mono', monospace; letter-spacing: -1px; }
-  .metric-label { font-size: 12px; color: rgba(245,237,224,0.5); font-weight: 400; margin-top: 4px; }
+  .metrics-band { background: var(--bg-dark); padding: 80px 40px; position: relative; overflow: hidden; }
+  .metrics-band::before { content: ''; position: absolute; top: -200px; right: -100px; width: 400px; height: 400px; background: radial-gradient(circle, rgba(45,212,160,0.08) 0%, transparent 70%); }
+  .metrics-band::after { content: ''; position: absolute; bottom: -150px; left: -50px; width: 300px; height: 300px; background: radial-gradient(circle, rgba(196,132,45,0.06) 0%, transparent 70%); }
+  .metrics-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; text-align: center; position: relative; z-index: 1; }
+  .metric { padding: 20px 0; }
+  .metric-value { font-size: 40px; font-weight: 800; color: var(--accent-bright); font-family: 'IBM Plex Mono', monospace; letter-spacing: -1px; }
+  .metric-label { font-size: 12px; color: rgba(245,237,224,0.45); font-weight: 400; margin-top: 6px; }
 
   /* ===== FINAL CTA ===== */
-  .final-cta { padding: 100px 40px; text-align: center; position: relative; }
-  .final-cta::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 500px; height: 300px; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%); pointer-events: none; }
-  .final-cta-title { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -1.5px; margin-bottom: 12px; position: relative; }
-  .final-cta-sub { font-size: 15px; color: var(--text-muted); font-weight: 300; margin-bottom: 32px; max-width: 440px; margin-left: auto; margin-right: auto; position: relative; }
-  .final-cta-btns { display: flex; align-items: center; justify-content: center; gap: 14px; position: relative; flex-wrap: wrap; }
+  .final-cta { padding: 120px 40px; text-align: center; position: relative; overflow: hidden; }
+  .final-cta::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+  .final-cta::after { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 600px; height: 400px; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%); pointer-events: none; }
+  .final-cta-title { font-size: clamp(28px, 4vw, 46px); font-weight: 800; letter-spacing: -1.5px; margin-bottom: 14px; position: relative; z-index: 1; }
+  .final-cta-sub { font-size: 16px; color: var(--text-muted); font-weight: 300; margin-bottom: 36px; max-width: 460px; margin-left: auto; margin-right: auto; position: relative; z-index: 1; line-height: 1.7; }
+  .final-cta-btns { display: flex; align-items: center; justify-content: center; gap: 14px; position: relative; z-index: 1; flex-wrap: wrap; }
 
   /* ===== FOOTER ===== */
   .footer { border-top: 1px solid var(--border); padding: 40px; }
@@ -129,21 +188,27 @@
   .footer-logo { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
   .footer-logo span { color: var(--accent); }
   .footer-links { display: flex; gap: 24px; }
-  .footer-link { font-size: 12px; color: var(--text-dim); text-decoration: none; cursor: pointer; }
+  .footer-link { font-size: 12px; color: var(--text-dim); text-decoration: none; cursor: pointer; transition: color 0.2s; }
   .footer-link:hover { color: var(--accent); }
   .footer-copy { font-size: 11px; color: var(--text-dim); }
 
   .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
   .screen-id strong { color: var(--accent); }
 
+  /* ===== SCROLL REVEAL ===== */
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
   @media (max-width: 768px) {
     .nav-links { display: none; }
-    .steps { grid-template-columns: 1fr; gap: 32px; }
-    .steps::before { display: none; }
     .agent-grid { grid-template-columns: 1fr; }
     .testimonials { grid-template-columns: 1fr; }
     .metrics-inner { grid-template-columns: repeat(2, 1fr); }
-    .hero { padding: 130px 24px 80px; }
+    .hero { padding: 140px 24px 80px; min-height: auto; }
+    .flow-section { padding: 60px 24px; }
+    .flow-diagram { height: auto; min-height: 800px; }
+    .flow-stage { position: relative !important; top: auto !important; left: auto !important; right: auto !important; transform: none !important; margin-bottom: 40px; }
+    .flow-canvas { display: none; }
     .section, .proof-section { padding: 60px 24px; }
     .footer-inner { flex-direction: column; gap: 16px; text-align: center; }
     .footer-links { flex-wrap: wrap; justify-content: center; }
@@ -174,51 +239,96 @@
 
 <!-- Hero -->
 <div class="hero">
-  <div class="hero-badge"><span class="hero-badge-dot"></span> Now in public beta</div>
-  <h1 class="hero-title">Superpower your clients<br><span class="highlight">with AI.</span></h1>
-  <p class="hero-sub">The AI platform for agencies, consultants, and builders who want to give their clients superpowers — in minutes, not months.</p>
-  <div class="hero-ctas">
-    <button class="cta-primary" onclick="window.location.href='S-03-pricing.html'">Start building free →</button>
-    <button class="cta-secondary" onclick="window.open('S-02-interactive-demo.html','_self')">Try a live demo</button>
-  </div>
-  <div class="hero-proof">
-    <span class="hero-proof-text">Already powering</span>
-    <div class="hero-proof-logos">
-      <div class="hero-proof-logo" style="background:linear-gradient(135deg,#c41e3a,#e94560);">AMC</div>
-      <div class="hero-proof-logo" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">SIP</div>
-      <div class="hero-proof-logo" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">DB</div>
-      <div class="hero-proof-logo" style="background:linear-gradient(135deg,#059669,#34d399);">SBX</div>
+  <!-- Animated gradient orbs -->
+  <div class="hero-gradient-orb orb-1"></div>
+  <div class="hero-gradient-orb orb-2"></div>
+  <div class="hero-gradient-orb orb-3"></div>
+
+  <!-- Particle canvas for hero -->
+  <canvas class="hero-bg-canvas" id="heroCanvas"></canvas>
+
+  <div class="hero-content">
+    <div class="hero-badge"><span class="hero-badge-dot"></span> Now in public beta</div>
+    <h1 class="hero-title">Superpower your clients<br><span class="highlight">with AI.</span></h1>
+    <p class="hero-sub">The AI platform for agencies, consultants, and builders who want to give their clients superpowers — in minutes, not months.</p>
+    <div class="hero-ctas">
+      <button class="cta-primary" onclick="window.location.href='S-03-pricing.html'">Start building free →</button>
+      <button class="cta-secondary" onclick="window.open('S-02-interactive-demo.html','_self')">Try a live demo</button>
+    </div>
+    <div class="hero-proof">
+      <span class="hero-proof-text">Already powering</span>
+      <div class="hero-proof-logos">
+        <div class="hero-proof-logo" style="background:linear-gradient(135deg,#c41e3a,#e94560);">AMC</div>
+        <div class="hero-proof-logo" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">SIP</div>
+        <div class="hero-proof-logo" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">DB</div>
+        <div class="hero-proof-logo" style="background:linear-gradient(135deg,#059669,#34d399);">SBX</div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- How it works -->
-<div class="section">
-  <div class="section-label">How it works</div>
-  <div class="section-title">You're three steps from AI-powered clients</div>
-  <div class="section-sub">Deploy AI agents your clients will love. PranaOS handles the infrastructure so you can focus on your clients.</div>
-  <div class="steps">
-    <div class="step">
-      <div class="step-num"><span class="step-icon">🤖</span></div>
-      <div class="step-title">Browse & pick your agents</div>
-      <div class="step-desc">Choose from a marketplace of ready-to-go agents — inventory, ads, email, reporting. Configure each one to your client's tools.</div>
-    </div>
-    <div class="step">
-      <div class="step-num"><span class="step-icon">🚀</span></div>
-      <div class="step-title">Deploy to your client</div>
-      <div class="step-desc">Each client gets their own branded workspace. You decide what they see, what they access, and how it feels. Their AI, your way.</div>
-    </div>
-    <div class="step">
-      <div class="step-num"><span class="step-icon">💰</span></div>
-      <div class="step-title">Set your price & grow</div>
-      <div class="step-desc">You set the pricing. You own the margin. Built-in billing, usage tracking, and decision management — so you look brilliant.</div>
+<!-- How Everything Works Together — Animated Flow -->
+<div class="flow-section">
+  <div class="flow-inner">
+    <div class="section-label">How it works</div>
+    <div class="section-title">See the engine in action</div>
+    <div class="section-sub">Knowledge flows in. Agents analyze. Humans decide. Results compound. Watch it happen in real time.</div>
+
+    <div class="flow-diagram" id="flowDiagram">
+      <canvas class="flow-canvas" id="flowCanvas"></canvas>
+
+      <!-- Stage 1: Knowledge Sources -->
+      <div class="flow-stage stage-knowledge">
+        <div class="flow-stage-icon knowledge-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <div class="flow-stage-title">Knowledge</div>
+        <div class="flow-stage-sub">Data sources feed your agents</div>
+        <div class="knowledge-sources">
+          <div class="ks-item"><span class="ks-dot" style="background:#7c3aed;"></span> Shopify</div>
+          <div class="ks-item"><span class="ks-dot" style="background:#2563eb;"></span> POS System</div>
+          <div class="ks-item"><span class="ks-dot" style="background:#059669;"></span> Google Ads</div>
+        </div>
+      </div>
+
+      <!-- Stage 2: Agents -->
+      <div class="flow-stage stage-agents">
+        <div class="flow-stage-icon agents-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </div>
+        <div class="flow-stage-title">AI Agents</div>
+        <div class="flow-stage-sub">Analyze, predict & recommend</div>
+      </div>
+
+      <!-- Stage 3: Human in the Loop -->
+      <div class="flow-stage stage-human">
+        <div class="flow-stage-icon human-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div class="flow-stage-title">Human Review</div>
+        <div class="flow-stage-sub">Approve, reject, or modify</div>
+      </div>
+
+      <!-- Stage 4: ROI / Results -->
+      <div class="flow-stage stage-roi">
+        <div class="flow-stage-icon roi-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+        </div>
+        <div class="flow-stage-title">Results</div>
+        <div class="flow-stage-sub">Real business impact</div>
+        <div class="roi-metrics">
+          <div class="roi-metric"><div class="roi-metric-value" id="roiRevenue">$0</div><div class="roi-metric-label">Revenue recovered</div></div>
+          <div class="roi-metric"><div class="roi-metric-value" id="roiTasks">0</div><div class="roi-metric-label">Tasks completed</div></div>
+          <div class="roi-metric"><div class="roi-metric-value" id="roiTime">0 hrs</div><div class="roi-metric-label">Time saved</div></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- Agent Marketplace Preview -->
 <div class="marketplace-section">
-  <div class="marketplace-inner">
+  <div class="marketplace-inner reveal">
     <div class="section-label">Agent Marketplace</div>
     <div class="section-title">Agents that make your clients look like geniuses</div>
     <div class="section-sub">Each agent connects to real tools, works with real data, and surfaces decisions your clients can act on today.</div>
@@ -226,50 +336,50 @@
       <div class="agent-preview-card" onclick="window.open('S-02-interactive-demo.html','_self')">
         <div class="apc-top">
           <div class="apc-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);">🏷️</div>
-          <div><div class="apc-name">Final Sale Agent</div><div class="apc-category">Inventory &middot; Shopify</div></div>
+          <div><div class="apc-name">Final Sale Agent</div><div class="apc-category">Inventory · Shopify</div></div>
         </div>
         <div class="apc-desc">Scans inventory daily, identifies slow movers, and recommends strategic markdowns with estimated recovery amounts.</div>
-        <div class="apc-footer"><span class="apc-stat">Deployed <strong>142</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>142</strong> times</span><span class="apc-deploy">Try demo →</span></div>
       </div>
       <div class="agent-preview-card">
         <div class="apc-top">
           <div class="apc-icon" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">📣</div>
-          <div><div class="apc-name">Paid Ads Manager</div><div class="apc-category">Advertising &middot; Meta Ads</div></div>
+          <div><div class="apc-name">Paid Ads Manager</div><div class="apc-category">Advertising · Meta Ads</div></div>
         </div>
         <div class="apc-desc">Monitors ROAS in real-time, pauses underperforming campaigns, and reallocates budget to top performers automatically.</div>
-        <div class="apc-footer"><span class="apc-stat">Deployed <strong>98</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>98</strong> times</span><span class="apc-deploy">Try demo →</span></div>
       </div>
       <div class="agent-preview-card">
         <div class="apc-top">
           <div class="apc-icon" style="background:linear-gradient(135deg,#059669,#34d399);">✉️</div>
-          <div><div class="apc-name">Email Drafter</div><div class="apc-category">Communication &middot; Gmail</div></div>
+          <div><div class="apc-name">Email Drafter</div><div class="apc-category">Communication · Gmail</div></div>
         </div>
         <div class="apc-desc">Drafts customer-facing and vendor emails using your client's tone, templates, and knowledge base. One-click send.</div>
-        <div class="apc-footer"><span class="apc-stat">Deployed <strong>210</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>210</strong> times</span><span class="apc-deploy">Try demo →</span></div>
       </div>
       <div class="agent-preview-card">
         <div class="apc-top">
           <div class="apc-icon" style="background:linear-gradient(135deg,#d97706,#fbbf24);">📊</div>
-          <div><div class="apc-name">Revenue Reporter</div><div class="apc-category">Analytics &middot; POS + Shopify</div></div>
+          <div><div class="apc-name">Revenue Reporter</div><div class="apc-category">Analytics · POS + Shopify</div></div>
         </div>
         <div class="apc-desc">Generates weekly revenue reports with location-level breakdowns, anomaly detection, and trend analysis.</div>
-        <div class="apc-footer"><span class="apc-stat">Deployed <strong>76</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>76</strong> times</span><span class="apc-deploy">Try demo →</span></div>
       </div>
       <div class="agent-preview-card">
         <div class="apc-top">
           <div class="apc-icon" style="background:linear-gradient(135deg,#dc2626,#f87171);">📦</div>
-          <div><div class="apc-name">Inventory Sync</div><div class="apc-category">Operations &middot; Multi-platform</div></div>
+          <div><div class="apc-name">Inventory Sync</div><div class="apc-category">Operations · Multi-platform</div></div>
         </div>
         <div class="apc-desc">Keeps inventory counts synchronized across Shopify, POS, and warehouse systems. Flags discrepancies before oversells.</div>
-        <div class="apc-footer"><span class="apc-stat">Deployed <strong>118</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>118</strong> times</span><span class="apc-deploy">Try demo →</span></div>
       </div>
       <div class="agent-preview-card">
         <div class="apc-top">
           <div class="apc-icon" style="background:linear-gradient(135deg,#6b7280,#9ca3af);">💬</div>
-          <div><div class="apc-name">Customer Feedback</div><div class="apc-category">Support &middot; Reviews + Surveys</div></div>
+          <div><div class="apc-name">Customer Feedback</div><div class="apc-category">Support · Reviews + Surveys</div></div>
         </div>
         <div class="apc-desc">Aggregates reviews from Google, Yelp, and surveys. Extracts themes, sentiment shifts, and urgent issues.</div>
-        <div class="apc-footer"><span class="apc-stat">Deployed <strong>64</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>64</strong> times</span><span class="apc-deploy">Try demo →</span></div>
       </div>
     </div>
     <div class="marketplace-cta">
@@ -280,16 +390,16 @@
 
 <!-- Metrics band -->
 <div class="metrics-band">
-  <div class="metrics-inner">
-    <div><div class="metric-value">47</div><div class="metric-label">Agencies building with PranaOS</div></div>
-    <div><div class="metric-value">340+</div><div class="metric-label">Client workspaces live</div></div>
-    <div><div class="metric-value">$2.1M</div><div class="metric-label">Revenue managed for clients</div></div>
-    <div><div class="metric-value">12k</div><div class="metric-label">AI decisions made this month</div></div>
+  <div class="metrics-inner reveal">
+    <div class="metric"><div class="metric-value" data-count="47">0</div><div class="metric-label">Agencies building with PranaOS</div></div>
+    <div class="metric"><div class="metric-value" data-count="340">0</div><div class="metric-label">Client workspaces live</div></div>
+    <div class="metric"><div class="metric-value" data-count="2.1" data-prefix="$" data-suffix="M">$0M</div><div class="metric-label">Revenue managed for clients</div></div>
+    <div class="metric"><div class="metric-value" data-count="12" data-suffix="k">0</div><div class="metric-label">AI decisions made this month</div></div>
   </div>
 </div>
 
 <!-- Social proof -->
-<div class="proof-section">
+<div class="proof-section reveal">
   <div class="section-label">From our partners</div>
   <div class="section-title">We make you look brilliant to your clients</div>
   <div class="section-sub" style="margin-bottom:32px;">Agencies, consultants, and MSPs use PranaOS to deliver AI — without hiring AI engineers.</div>
@@ -332,9 +442,9 @@
 
 <!-- Final CTA -->
 <div class="final-cta">
-  <div class="final-cta-title">Ready to superpower your clients?</div>
-  <div class="final-cta-sub">Start free. Deploy your first agent today. Your clients will think you hired an AI team.</div>
-  <div class="final-cta-btns">
+  <div class="final-cta-title reveal">Ready to superpower your clients?</div>
+  <div class="final-cta-sub reveal">Start free. Deploy your first agent today. Your clients will think you hired an AI team.</div>
+  <div class="final-cta-btns reveal">
     <button class="cta-primary" onclick="window.location.href='S-03-pricing.html'">Get started free →</button>
     <button class="cta-secondary" onclick="alert('Calendly booking page')">Talk to sales</button>
   </div>
@@ -355,5 +465,307 @@
   </div>
 </div>
 
+<script>
+// ===== HERO PARTICLE CANVAS =====
+(function() {
+  const canvas = document.getElementById('heroCanvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let w, h;
+
+  function resize() {
+    const hero = canvas.parentElement;
+    w = canvas.width = hero.offsetWidth;
+    h = canvas.height = hero.offsetHeight;
+  }
+
+  function createParticles() {
+    particles = [];
+    const count = Math.floor((w * h) / 18000);
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: Math.random() * 1.5 + 0.5,
+        opacity: Math.random() * 0.15 + 0.05,
+        color: Math.random() > 0.5 ? '24,133,106' : '196,132,45'
+      });
+    }
+  }
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, w, h);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = w;
+      if (p.x > w) p.x = 0;
+      if (p.y < 0) p.y = h;
+      if (p.y > h) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${p.color},${p.opacity})`;
+      ctx.fill();
+    });
+
+    // Draw faint connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(24,133,106,${0.04 * (1 - dist / 120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(drawParticles);
+  }
+
+  resize();
+  createParticles();
+  drawParticles();
+  window.addEventListener('resize', () => { resize(); createParticles(); });
+})();
+
+
+// ===== ANIMATED FLOW DIAGRAM =====
+(function() {
+  const canvas = document.getElementById('flowCanvas');
+  const ctx = canvas.getContext('2d');
+  const diagram = document.getElementById('flowDiagram');
+  let w, h;
+  let dots = [];
+  let roiRevenue = 0, roiTasks = 0, roiTime = 0;
+
+  // Stage X positions (percentage of canvas width)
+  const stages = [
+    { x: 0.10, label: 'knowledge' },
+    { x: 0.37, label: 'agents' },
+    { x: 0.65, label: 'human' },
+    { x: 0.88, label: 'roi' }
+  ];
+
+  function resize() {
+    w = canvas.width = diagram.offsetWidth;
+    h = canvas.height = diagram.offsetHeight;
+  }
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  // Dot: travels from stage to stage
+  function spawnDot() {
+    const colors = [
+      { r: 124, g: 58, b: 237 },   // purple (knowledge)
+      { r: 37, g: 99, b: 235 },    // blue (agents)
+      { r: 24, g: 133, b: 106 },   // green (human)
+      { r: 217, g: 119, b: 6 },    // gold (roi)
+    ];
+    dots.push({
+      stage: 0,                     // currently between stage 0 and 1
+      progress: 0,                  // 0..1 within current segment
+      speed: 0.003 + Math.random() * 0.004,
+      size: 3 + Math.random() * 3,
+      colors: colors,
+      yOffset: (Math.random() - 0.5) * 30,
+      trail: [],
+      alive: true
+    });
+  }
+
+  function updateDots() {
+    dots.forEach(d => {
+      if (!d.alive) return;
+      d.progress += d.speed;
+      if (d.progress >= 1) {
+        d.progress = 0;
+        d.stage++;
+        if (d.stage >= stages.length - 1) {
+          d.alive = false;
+          // Increment ROI counters
+          roiRevenue += Math.floor(Math.random() * 800) + 200;
+          roiTasks += 1;
+          roiTime += Math.random() * 0.5 + 0.1;
+        }
+      }
+      // Track trail
+      const fromX = stages[d.stage].x * w;
+      const toX = stages[d.stage + 1] ? stages[d.stage + 1].x * w : fromX;
+      const cy = h / 2 + d.yOffset;
+      const cx = lerp(fromX, toX, d.progress);
+      // Add sine wave wobble
+      const wobble = Math.sin(d.progress * Math.PI * 2) * 8;
+      d.trail.push({ x: cx, y: cy + wobble });
+      if (d.trail.length > 12) d.trail.shift();
+    });
+    // Remove dead dots
+    dots = dots.filter(d => d.alive || d.trail.length > 0);
+  }
+
+  function drawPaths() {
+    ctx.clearRect(0, 0, w, h);
+    const cy = h / 2;
+
+    // Draw connector lines between stages
+    for (let i = 0; i < stages.length - 1; i++) {
+      const fromX = stages[i].x * w;
+      const toX = stages[i + 1].x * w;
+
+      // Dashed line
+      ctx.beginPath();
+      ctx.setLineDash([4, 6]);
+      ctx.moveTo(fromX + 36, cy);
+      ctx.lineTo(toX - 36, cy);
+      ctx.strokeStyle = 'rgba(24,133,106,0.12)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Arrow head
+      const ax = toX - 40;
+      ctx.beginPath();
+      ctx.moveTo(ax, cy - 5);
+      ctx.lineTo(ax + 8, cy);
+      ctx.lineTo(ax, cy + 5);
+      ctx.strokeStyle = 'rgba(24,133,106,0.2)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // Draw dots with trails
+    dots.forEach(d => {
+      if (d.trail.length < 2) return;
+      // Trail
+      for (let i = 1; i < d.trail.length; i++) {
+        const alpha = (i / d.trail.length) * 0.5;
+        const c = d.colors[d.stage] || d.colors[d.colors.length - 1];
+        ctx.beginPath();
+        ctx.arc(d.trail[i].x, d.trail[i].y, d.size * (i / d.trail.length), 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},${alpha})`;
+        ctx.fill();
+      }
+      // Head dot
+      const last = d.trail[d.trail.length - 1];
+      if (last && d.alive) {
+        const c = d.colors[d.stage];
+        // Glow
+        ctx.beginPath();
+        ctx.arc(last.x, last.y, d.size * 3, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},0.1)`;
+        ctx.fill();
+        // Core
+        ctx.beginPath();
+        ctx.arc(last.x, last.y, d.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${c.r},${c.g},${c.b},0.8)`;
+        ctx.fill();
+      }
+    });
+  }
+
+  function updateROI() {
+    document.getElementById('roiRevenue').textContent = '$' + roiRevenue.toLocaleString();
+    document.getElementById('roiTasks').textContent = roiTasks.toString();
+    document.getElementById('roiTime').textContent = roiTime.toFixed(1) + ' hrs';
+  }
+
+  let frame = 0;
+  function animate() {
+    frame++;
+    // Spawn new dots periodically
+    if (frame % 45 === 0) spawnDot();
+
+    updateDots();
+    drawPaths();
+    updateROI();
+    requestAnimationFrame(animate);
+  }
+
+  // Check if on mobile
+  function isMobile() { return window.innerWidth <= 768; }
+
+  if (!isMobile()) {
+    resize();
+    // Spawn initial dots
+    for (let i = 0; i < 5; i++) {
+      spawnDot();
+      // Stagger them
+      for (let j = 0; j < Math.floor(Math.random() * 80); j++) {
+        dots[dots.length - 1].progress += dots[dots.length - 1].speed;
+        if (dots[dots.length - 1].progress >= 1) {
+          dots[dots.length - 1].progress = 0;
+          dots[dots.length - 1].stage++;
+        }
+      }
+    }
+    animate();
+    window.addEventListener('resize', () => {
+      if (!isMobile()) resize();
+    });
+  }
+})();
+
+
+// ===== SCROLL REVEAL =====
+(function() {
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+
+  reveals.forEach(el => observer.observe(el));
+})();
+
+
+// ===== METRIC COUNTER ANIMATION =====
+(function() {
+  const metrics = document.querySelectorAll('.metrics-inner .metric-value');
+  let animated = false;
+
+  const observer = new IntersectionObserver((entries) => {
+    if (animated) return;
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animated = true;
+        metrics.forEach(m => {
+          const target = parseFloat(m.dataset.count);
+          const prefix = m.dataset.prefix || '';
+          const suffix = m.dataset.suffix || '';
+          const isFloat = target % 1 !== 0;
+          const duration = 2000;
+          const start = performance.now();
+
+          function tick(now) {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = target * eased;
+            if (isFloat) {
+              m.textContent = prefix + current.toFixed(1) + suffix;
+            } else {
+              m.textContent = prefix + Math.floor(current) + (target >= 340 ? '+' : '') + suffix;
+            }
+            if (progress < 1) requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+
+  const band = document.querySelector('.metrics-band');
+  if (band) observer.observe(band);
+})();
+</script>
 </body>
 </html>
