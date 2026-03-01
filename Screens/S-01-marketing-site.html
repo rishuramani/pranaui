@@ -21,7 +21,7 @@
 
   /* ===== NAV ===== */
   .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 16px 40px; display: flex; align-items: center; background: rgba(250,246,240,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(226,213,196,0.5); transition: all 0.3s; }
-  .nav-logo { display: flex; align-items: center; gap: 10px; }
+  .nav-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
   .nav-logo svg { width: 32px; height: 32px; }
   .nav-logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
   .nav-logo-text span { color: var(--accent); }
@@ -156,7 +156,7 @@
 
 <!-- Nav -->
 <div class="nav">
-  <div class="nav-logo">
+  <div class="nav-logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">
     <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg>
     <div class="nav-logo-text">Prana<span>OS</span></div>
   </div>
@@ -165,7 +165,6 @@
     <a class="nav-link" onclick="window.open('S-01b-partners.html','_self')">Partners</a>
     <a class="nav-link" onclick="window.open('S-03-pricing.html','_self')">Pricing</a>
     <a class="nav-link" onclick="window.open('S-02-interactive-demo.html','_self')">Try Demo</a>
-    <a class="nav-link">Docs</a>
   </div>
   <div class="nav-spacer"></div>
   <a class="nav-login" onclick="window.location.href='S-05-login.html'">Log in</a>
@@ -347,7 +346,6 @@
     <div class="footer-links">
       <a class="footer-link" onclick="document.querySelector('.marketplace-section').scrollIntoView({behavior:'smooth'})">Agents</a>
       <a class="footer-link" onclick="window.location.href='S-03-pricing.html'">Pricing</a>
-      <a class="footer-link">Docs</a>
       <a class="footer-link">Blog</a>
       <a class="footer-link">Privacy</a>
       <a class="footer-link">Terms</a>
