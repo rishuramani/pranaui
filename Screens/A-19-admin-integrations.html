@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Admin Integrations</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --client-primary: #c41e3a;
+    --client-primary-light: rgba(196,30,58,0.08);
+    --client-primary-border: rgba(196,30,58,0.18);
+
+    --bg: #faf6f0;
+    --bg-card: #fffdf9;
+    --bg-elevated: #f0e8dc;
+    --border: #e2d5c4;
+    --border-subtle: #ede4d6;
+    --text: #2a1f10;
+    --text-secondary: #4a3d2a;
+    --text-muted: #7a6348;
+    --text-dim: #a89880;
+    --accent: #18856a;
+    --accent-hover: #147a60;
+    --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07);
+    --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d;
+    --warn-bg: rgba(196,132,45,0.08);
+    --warn-border: rgba(196,132,45,0.18);
+    --error: #c25a5a;
+    --error-bg: rgba(194,90,90,0.08);
+    --error-border: rgba(194,90,90,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04);
+    --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --shadow-lg: 0 12px 40px rgba(42,31,16,0.12);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --radius-xs: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== ADMIN BAR ===== */
+  .admin-bar {
+    background: #1a1a2e; color: #fff;
+    padding: 0 24px; height: 48px;
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+    font-size: 13px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s;
+  }
+  .admin-bar.hidden { transform: translateY(-100%); height: 0; padding: 0; overflow: hidden; }
+
+  .ab-logo { display: flex; align-items: center; gap: 8px; }
+  .ab-logo svg { width: 20px; height: 20px; }
+  .ab-logo-text { font-size: 13px; font-weight: 600; opacity: 0.7; }
+  .ab-logo-text span { color: var(--accent); }
+
+  .ab-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.12); }
+
+  .ab-viewing { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; opacity: 0.8; }
+  .ab-viewing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-bright); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .ab-client-select {
+    padding: 5px 28px 5px 10px; border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px; background: rgba(255,255,255,0.06);
+    font-family: inherit; font-size: 12px; font-weight: 600; color: #fff;
+    cursor: pointer; outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+  }
+  .ab-client-select:hover { background: rgba(255,255,255,0.12); }
+  .ab-client-select option { color: #1a1a2e; }
+
+  .ab-spacer { flex: 1; }
+
+  .ab-shortcuts { display: flex; gap: 6px; }
+  .ab-shortcut {
+    padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer; transition: all 0.15s; color: rgba(255,255,255,0.8);
+    display: flex; align-items: center; gap: 5px;
+    text-decoration: none;
+  }
+  .ab-shortcut:hover { background: rgba(255,255,255,0.15); color: #fff; }
+  .ab-shortcut.active {
+    background: var(--accent); border-color: var(--accent);
+    color: #fff;
+  }
+
+  .ab-toggle {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 14px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ab-toggle.admin-mode { background: var(--accent); color: #fff; }
+  .ab-toggle.client-mode { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); }
+
+  .ab-back {
+    padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    background: none; border: 1px solid rgba(255,255,255,0.15);
+    cursor: pointer; color: rgba(255,255,255,0.6); transition: all 0.15s;
+    text-decoration: none; display: flex; align-items: center; gap: 4px;
+  }
+  .ab-back:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+  /* ===== SHELL GRID ===== */
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 48px); }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    background: var(--bg-card); border-right: 1px solid var(--border);
+    padding: 20px 0; display: flex; flex-direction: column;
+    position: sticky; top: 48px; height: calc(100vh - 48px); overflow-y: auto;
+  }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 20px; margin-bottom: 6px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 16px; font-weight: 800; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-client { padding: 0 20px; margin-bottom: 24px; }
+  .sb-client-name { font-size: 13px; font-weight: 700; }
+  .sb-client-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: var(--client-primary-light); color: var(--client-primary); margin-top: 2px; }
+  .sb-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; }
+  .sb-item {
+    padding: 9px 14px; border-radius: var(--radius-xs); font-size: 13px; font-weight: 500;
+    color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 10px;
+    transition: all 0.15s;
+  }
+  .sb-item:hover { background: var(--client-primary-light); color: var(--text); }
+  .sb-item.active { background: var(--client-primary-light); color: var(--client-primary); font-weight: 700; }
+  .sb-badge { font-size: 9px; font-weight: 700; color: #fff; background: var(--client-primary); min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; margin-left: auto; }
+  .sb-divider { height: 1px; background: var(--border-subtle); margin: 12px 20px; }
+  .sb-user { padding: 12px 20px; margin-top: auto; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border-subtle); }
+  .sb-user-avatar { width: 30px; height: 30px; border-radius: 7px; background: linear-gradient(135deg, var(--client-primary), #e94560); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+  .sb-user-name { font-size: 12px; font-weight: 600; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); }
+
+  /* ===== MAIN CONTENT ===== */
+  .main { padding: 28px 36px 100px; overflow-y: auto; min-width: 0; }
+
+  /* Breadcrumb */
+  .breadcrumb { font-size: 12px; color: var(--text-dim); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .breadcrumb a { color: var(--text-muted); text-decoration: none; font-weight: 500; }
+  .breadcrumb a:hover { color: var(--accent); text-decoration: underline; }
+  .breadcrumb .sep { color: var(--text-dim); }
+  .breadcrumb .current { color: var(--text); font-weight: 600; }
+
+  /* Page header */
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .page-sub { font-size: 14px; color: var(--text-muted); font-weight: 300; margin-top: 2px; }
+
+  /* ===== SUMMARY CARDS ===== */
+  .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
+  .summary-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 22px;
+    box-shadow: var(--shadow-sm); position: relative;
+  }
+  .summary-label { font-size: 11px; color: var(--text-dim); font-weight: 500; text-transform: uppercase; letter-spacing: 0.4px; }
+  .summary-value { font-size: 28px; font-weight: 800; margin-top: 4px; letter-spacing: -0.5px; }
+  .summary-value.green { color: var(--accent); }
+  .summary-value.amber { color: var(--warn); }
+  .summary-value.neutral { color: var(--text-secondary); }
+  .summary-indicator {
+    position: absolute; top: 16px; right: 18px;
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+  .summary-indicator.green { background: var(--accent-bright); }
+  .summary-indicator.amber { background: var(--warn); }
+
+  /* ===== SECTION HEADERS ===== */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; }
+
+  /* ===== ACTIVE INTEGRATIONS TABLE ===== */
+  .table-wrap {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-sm);
+    overflow: hidden; margin-bottom: 36px;
+  }
+  .int-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .int-table thead { background: var(--bg-elevated); }
+  .int-table th {
+    padding: 12px 18px; text-align: left;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-dim);
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  .int-table td {
+    padding: 16px 18px; border-bottom: 1px solid var(--border-subtle);
+    vertical-align: middle;
+  }
+  .int-table tbody tr { transition: background 0.1s; }
+  .int-table tbody tr:hover { background: rgba(24,133,106,0.02); }
+  .int-table tbody tr:last-child td { border-bottom: none; }
+
+  .int-name { display: flex; align-items: center; gap: 12px; }
+  .int-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+  }
+  .int-label { font-weight: 600; font-size: 13px; }
+  .int-label-sub { font-size: 11px; color: var(--text-dim); font-weight: 400; }
+
+  /* Status badges */
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 700; padding: 4px 10px;
+    border-radius: 6px; white-space: nowrap;
+  }
+  .status-badge.connected { background: var(--accent-bg); color: var(--accent); }
+  .status-badge.pending { background: var(--warn-bg); color: var(--warn); }
+  .status-badge.failed { background: var(--error-bg); color: var(--error); }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .status-dot.connected { background: var(--accent-bright); }
+  .status-dot.pending { background: var(--warn); animation: pulse 2s infinite; }
+  .status-dot.failed { background: var(--error); }
+
+  .used-by { font-size: 12px; color: var(--text-muted); }
+  .used-by-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+    font-size: 10px; font-weight: 600; color: var(--text-secondary);
+    margin: 1px 2px;
+  }
+
+  .last-sync { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+  .int-actions { display: flex; gap: 6px; }
+  .btn-sm {
+    padding: 6px 14px; border-radius: 6px; font-family: inherit;
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; border: none; white-space: nowrap;
+  }
+  .btn-sm.configure {
+    background: var(--bg-elevated); color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-sm.configure:hover { border-color: var(--accent-border); color: var(--text); background: var(--accent-bg); }
+  .btn-sm.disconnect {
+    background: transparent; color: var(--text-dim);
+    border: 1px solid var(--border-subtle);
+  }
+  .btn-sm.disconnect:hover { border-color: var(--error-border); color: var(--error); background: var(--error-bg); }
+
+  /* ===== AVAILABLE INTEGRATIONS GRID ===== */
+  .avail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 36px; }
+  .avail-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 22px;
+    box-shadow: var(--shadow-sm); transition: all 0.2s;
+    display: flex; flex-direction: column;
+  }
+  .avail-card:hover { box-shadow: var(--shadow-md); border-color: var(--accent-border); transform: translateY(-2px); }
+  .avail-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .avail-card-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+    background: var(--bg-elevated); border: 1px solid var(--border);
+  }
+  .avail-card-name { font-size: 14px; font-weight: 700; }
+  .avail-card-desc { font-size: 12px; color: var(--text-muted); font-weight: 300; line-height: 1.6; margin-bottom: 16px; flex: 1; }
+  .btn-connect {
+    padding: 8px 18px; border-radius: var(--radius-xs);
+    font-family: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; border: none;
+    background: var(--accent); color: #fff; width: 100%;
+    box-shadow: 0 1px 4px rgba(24,133,106,0.2);
+  }
+  .btn-connect:hover { background: var(--accent-hover); transform: scale(1.01); }
+
+  /* Powered by */
+  .powered-by {
+    text-align: center; padding: 40px 0 20px;
+    font-size: 10px; color: var(--text-dim); font-weight: 300;
+  }
+  .powered-by strong { color: var(--accent); font-weight: 600; }
+
+  /* Screen ID */
+  .screen-id {
+    position: fixed; bottom: 20px; right: 20px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+    color: var(--text-dim); background: var(--bg-card);
+    border: 1px solid var(--border); padding: 6px 12px;
+    border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm);
+  }
+  .screen-id strong { color: var(--accent); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1100px) {
+    .avail-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .summary-row { grid-template-columns: 1fr 1fr; }
+    .avail-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .main { padding: 24px 20px 100px; }
+    .summary-row { grid-template-columns: 1fr; }
+    .avail-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<a href="../index.html" style="position:fixed;bottom:24px;left:24px;z-index:99999;display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:#18856a;border:2px solid #14705a;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:#ffffff;text-decoration:none;box-shadow:0 4px 12px rgba(24,133,106,0.35);cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='#14705a';this.style.transform='scale(1.05)'" onmouseout="this.style.background='#18856a';this.style.transform='scale(1)'">← Prototype Hub</a>
+
+<div class="screen-id"><strong>A-19</strong> Admin Integrations</div>
+
+<!-- ===== ADMIN BAR ===== -->
+<div class="admin-bar" id="admin-bar">
+  <div class="ab-logo">
+    <svg viewBox="0 0 512 512" fill="none"><circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/><path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="256" r="21" fill="#18856a"/></svg>
+    <div class="ab-logo-text">Prana<span>OS</span></div>
+  </div>
+
+  <div class="ab-divider"></div>
+
+  <div class="ab-viewing">
+    <span class="ab-viewing-dot"></span>
+    Admin view
+  </div>
+
+  <select class="ab-client-select" id="client-select" onchange="switchClient(this.value)">
+    <option value="amc" selected>AMC Theatres</option>
+    <option value="sip">Sip Coffee & Beer</option>
+    <option value="dutch">Dutch Bros Region 14</option>
+    <option value="board">Board & Brew</option>
+    <option value="starbucks">Starbucks Metro</option>
+  </select>
+
+  <div class="ab-spacer"></div>
+
+  <div class="ab-shortcuts" id="admin-shortcuts">
+    <div class="ab-shortcut active">🔗 Integrations</div>
+    <div class="ab-shortcut" onclick="window.location.href='A-06-agent-config-integrations.html'">📚 Knowledge</div>
+    <div class="ab-shortcut" onclick="window.location.href='A-06-agent-config-integrations.html'">🤖 Agents</div>
+    <div class="ab-shortcut" onclick="window.location.href='A-12-billing-management.html'">💳 Billing</div>
+    <div class="ab-shortcut" onclick="window.location.href='A-18-audit-log.html'">📋 Activity Log</div>
+  </div>
+
+  <div class="ab-divider"></div>
+
+  <div class="ab-toggle admin-mode" id="view-toggle" onclick="toggleView()">
+    👁️ View as client
+  </div>
+
+  <a href="A-03-command-center.html" class="ab-back">
+    ← Agency Dashboard
+  </a>
+</div>
+
+<!-- ===== SHELL: SIDEBAR + MAIN ===== -->
+<div class="shell">
+
+<!-- ===== SIDEBAR (C-04 pattern) ===== -->
+<div class="sidebar">
+  <div class="sb-logo">
+    <svg viewBox="0 0 512 512" fill="none"><circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/><path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="256" r="21" fill="#18856a"/></svg>
+    <div class="sb-logo-text">Prana<span>OS</span></div>
+  </div>
+  <div class="sb-client">
+    <div class="sb-client-name" id="sidebar-client-name">AMC Theatres</div>
+    <div class="sb-client-badge">👤 Client Admin</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-item" onclick="navTo('dashboard')">📊 Dashboard</div>
+    <div class="sb-item" onclick="navTo('agents')">🤖 Agents</div>
+    <div class="sb-item" onclick="navTo('chat')">💬 Chat</div>
+    <div class="sb-item" onclick="navTo('decisions')">📥 Decisions <span class="sb-badge">4</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-item" onclick="navTo('knowledge')">📚 Knowledge</div>
+    <div class="sb-item" onclick="navTo('departments')">🏢 Departments</div>
+    <div class="sb-item" onclick="navTo('team')">👥 Team</div>
+    <div class="sb-item" onclick="navTo('settings')">⚙️ Settings</div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-user-avatar">JM</div>
+    <div>
+      <div class="sb-user-name">Jessica Miller</div>
+      <div class="sb-user-role">Admin</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="A-08-agency-admin-view.html">Dashboard</a>
+    <span class="sep">›</span>
+    <span class="current">Integrations</span>
+  </div>
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-title">Integrations</div>
+    <div class="page-sub">Manage third-party connections for AMC Theatres' agents and workflows.</div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-row">
+    <div class="summary-card">
+      <div class="summary-indicator green"></div>
+      <div class="summary-label">Connected</div>
+      <div class="summary-value green">5</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-indicator amber"></div>
+      <div class="summary-label">Pending</div>
+      <div class="summary-value amber">1</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Failed</div>
+      <div class="summary-value green">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Available</div>
+      <div class="summary-value neutral">12</div>
+    </div>
+  </div>
+
+  <!-- Active Integrations -->
+  <div class="section-header">
+    <div class="section-title">Active Integrations</div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="int-table">
+      <thead>
+        <tr>
+          <th>Integration</th>
+          <th>Status</th>
+          <th>Used By</th>
+          <th>Last Sync</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="int-name">
+              <div class="int-icon">📣</div>
+              <div>
+                <div class="int-label">Google Ads</div>
+                <div class="int-label-sub">Advertising platform</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="status-badge connected"><span class="status-dot connected"></span> Connected</span></td>
+          <td><span class="used-by-tag">Paid Ads Manager</span></td>
+          <td><span class="last-sync">2 min ago</span></td>
+          <td>
+            <div class="int-actions">
+              <button class="btn-sm configure" onclick="alert('Opening Google Ads configuration...')">Configure</button>
+              <button class="btn-sm disconnect" onclick="confirmDisconnect('Google Ads')">Disconnect</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="int-name">
+              <div class="int-icon">📱</div>
+              <div>
+                <div class="int-label">Meta Ads</div>
+                <div class="int-label-sub">Facebook & Instagram ads</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="status-badge connected"><span class="status-dot connected"></span> Connected</span></td>
+          <td><span class="used-by-tag">Paid Ads Manager</span></td>
+          <td><span class="last-sync">5 min ago</span></td>
+          <td>
+            <div class="int-actions">
+              <button class="btn-sm configure" onclick="alert('Opening Meta Ads configuration...')">Configure</button>
+              <button class="btn-sm disconnect" onclick="confirmDisconnect('Meta Ads')">Disconnect</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="int-name">
+              <div class="int-icon">🛍️</div>
+              <div>
+                <div class="int-label">Shopify</div>
+                <div class="int-label-sub">E-commerce & inventory</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="status-badge connected"><span class="status-dot connected"></span> Connected</span></td>
+          <td>
+            <span class="used-by-tag">Final Sale Agent</span>
+            <span class="used-by-tag">Inventory Sync</span>
+          </td>
+          <td><span class="last-sync">12 min ago</span></td>
+          <td>
+            <div class="int-actions">
+              <button class="btn-sm configure" onclick="alert('Opening Shopify configuration...')">Configure</button>
+              <button class="btn-sm disconnect" onclick="confirmDisconnect('Shopify')">Disconnect</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="int-name">
+              <div class="int-icon">📁</div>
+              <div>
+                <div class="int-label">Google Drive</div>
+                <div class="int-label-sub">Document storage & sync</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="status-badge connected"><span class="status-dot connected"></span> Connected</span></td>
+          <td><span class="used-by-tag">Knowledge Q&A</span></td>
+          <td><span class="last-sync">1 hr ago</span></td>
+          <td>
+            <div class="int-actions">
+              <button class="btn-sm configure" onclick="alert('Opening Google Drive configuration...')">Configure</button>
+              <button class="btn-sm disconnect" onclick="confirmDisconnect('Google Drive')">Disconnect</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="int-name">
+              <div class="int-icon">📊</div>
+              <div>
+                <div class="int-label">Google Sheets</div>
+                <div class="int-label-sub">Spreadsheet data source</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="status-badge connected"><span class="status-dot connected"></span> Connected</span></td>
+          <td><span class="used-by-tag">Revenue Reporter</span></td>
+          <td><span class="last-sync">3 hrs ago</span></td>
+          <td>
+            <div class="int-actions">
+              <button class="btn-sm configure" onclick="alert('Opening Google Sheets configuration...')">Configure</button>
+              <button class="btn-sm disconnect" onclick="confirmDisconnect('Google Sheets')">Disconnect</button>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div class="int-name">
+              <div class="int-icon">💬</div>
+              <div>
+                <div class="int-label">Slack</div>
+                <div class="int-label-sub">Team messaging</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="status-badge pending"><span class="status-dot pending"></span> Pending</span></td>
+          <td><span class="used-by" style="color:var(--text-dim); font-style:italic;">—</span></td>
+          <td><span class="last-sync">—</span></td>
+          <td>
+            <div class="int-actions">
+              <button class="btn-sm configure" onclick="alert('Complete Slack OAuth to finish setup.')">Complete Setup</button>
+              <button class="btn-sm disconnect" onclick="confirmDisconnect('Slack')">Cancel</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Available Integrations -->
+  <div class="section-header">
+    <div class="section-title">Available Integrations</div>
+  </div>
+
+  <div class="avail-grid">
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">🏢</div>
+        <div class="avail-card-name">HubSpot CRM</div>
+      </div>
+      <div class="avail-card-desc">Sync contacts, deals, and pipeline data to power sales and customer retention agents.</div>
+      <button class="btn-connect" onclick="confirmConnect('HubSpot CRM')">Connect</button>
+    </div>
+
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">🎧</div>
+        <div class="avail-card-name">Zendesk</div>
+      </div>
+      <div class="avail-card-desc">Import support tickets and customer interactions for analysis and automated responses.</div>
+      <button class="btn-connect" onclick="confirmConnect('Zendesk')">Connect</button>
+    </div>
+
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">📒</div>
+        <div class="avail-card-name">QuickBooks</div>
+      </div>
+      <div class="avail-card-desc">Connect accounting data for automated financial reporting and expense tracking.</div>
+      <button class="btn-connect" onclick="confirmConnect('QuickBooks')">Connect</button>
+    </div>
+
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">☁️</div>
+        <div class="avail-card-name">Salesforce</div>
+      </div>
+      <div class="avail-card-desc">Bi-directional CRM sync for lead scoring, opportunity tracking, and pipeline analytics.</div>
+      <button class="btn-connect" onclick="confirmConnect('Salesforce')">Connect</button>
+    </div>
+
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">📧</div>
+        <div class="avail-card-name">Mailchimp</div>
+      </div>
+      <div class="avail-card-desc">Sync email campaign data, subscriber lists, and engagement metrics for marketing agents.</div>
+      <button class="btn-connect" onclick="confirmConnect('Mailchimp')">Connect</button>
+    </div>
+
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">💳</div>
+        <div class="avail-card-name">Stripe</div>
+      </div>
+      <div class="avail-card-desc">Pull payment data, subscription metrics, and revenue analytics in real time.</div>
+      <button class="btn-connect" onclick="confirmConnect('Stripe')">Connect</button>
+    </div>
+
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">📋</div>
+        <div class="avail-card-name">Jira</div>
+      </div>
+      <div class="avail-card-desc">Track project issues, sprint velocity, and team workload for operations agents.</div>
+      <button class="btn-connect" onclick="confirmConnect('Jira')">Connect</button>
+    </div>
+
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">📝</div>
+        <div class="avail-card-name">Notion</div>
+      </div>
+      <div class="avail-card-desc">Index Notion pages and databases as a knowledge source for Q&A and research agents.</div>
+      <button class="btn-connect" onclick="confirmConnect('Notion')">Connect</button>
+    </div>
+
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">👥</div>
+        <div class="avail-card-name">Microsoft Teams</div>
+      </div>
+      <div class="avail-card-desc">Receive agent notifications and decision alerts directly in Teams channels.</div>
+      <button class="btn-connect" onclick="confirmConnect('Microsoft Teams')">Connect</button>
+    </div>
+
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">📞</div>
+        <div class="avail-card-name">Twilio</div>
+      </div>
+      <div class="avail-card-desc">Enable SMS and voice notifications for time-sensitive agent decisions and alerts.</div>
+      <button class="btn-connect" onclick="confirmConnect('Twilio')">Connect</button>
+    </div>
+
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">⚡</div>
+        <div class="avail-card-name">Zapier</div>
+      </div>
+      <div class="avail-card-desc">Connect 5,000+ apps through automated workflows and trigger-based integrations.</div>
+      <button class="btn-connect" onclick="confirmConnect('Zapier')">Connect</button>
+    </div>
+
+    <div class="avail-card">
+      <div class="avail-card-top">
+        <div class="avail-card-icon">🏠</div>
+        <div class="avail-card-name">AppFolio</div>
+      </div>
+      <div class="avail-card-desc">Sync property management data, tenant communications, and maintenance requests.</div>
+      <button class="btn-connect" onclick="confirmConnect('AppFolio')">Connect</button>
+    </div>
+  </div>
+
+  <div class="powered-by">Powered by <strong>PranaOS</strong> · Implemented by <strong>Prana IQ</strong></div>
+
+</main>
+</div><!-- end .shell -->
+
+<script>
+  // Navigation
+  function navTo(target) {
+    var routes = {
+      'dashboard': 'A-08-agency-admin-view.html',
+      'agents': 'C-05-agent-gui.html',
+      'chat': 'C-06-universal-chat.html',
+      'decisions': 'C-07-decision-inbox.html',
+      'knowledge': 'A-06-agent-config-integrations.html',
+      'departments': 'C-09-department-setup.html',
+      'team': 'C-10-user-management.html',
+      'settings': 'C-11-settings.html'
+    };
+    if (routes[target]) {
+      window.location.href = routes[target];
+    } else {
+      alert('Navigation: ' + target + ' (screen not yet built)');
+    }
+  }
+
+  // Client switcher
+  function switchClient(val) {
+    var names = {
+      amc: 'AMC Theatres',
+      sip: 'Sip Coffee & Beer',
+      dutch: 'Dutch Bros Region 14',
+      board: 'Board & Brew',
+      starbucks: 'Starbucks Metro'
+    };
+    var el = document.getElementById('sidebar-client-name');
+    if (el && names[val]) {
+      el.textContent = names[val];
+    }
+    // Update page subtitle
+    var sub = document.querySelector('.page-sub');
+    if (sub && names[val]) {
+      sub.textContent = 'Manage third-party connections for ' + names[val] + '\u2019s agents and workflows.';
+    }
+  }
+
+  // Admin/Client view toggle
+  var isAdminView = true;
+  function toggleView() {
+    isAdminView = !isAdminView;
+    var toggle = document.getElementById('view-toggle');
+    var shortcuts = document.getElementById('admin-shortcuts');
+
+    if (isAdminView) {
+      toggle.className = 'ab-toggle admin-mode';
+      toggle.innerHTML = '👁️ View as client';
+      shortcuts.style.display = 'flex';
+    } else {
+      toggle.className = 'ab-toggle client-mode';
+      toggle.innerHTML = '🔧 Back to admin view';
+      shortcuts.style.display = 'none';
+    }
+  }
+
+  // Connect handler
+  function confirmConnect(name) {
+    if (confirm('Connect ' + name + ' to AMC Theatres?\n\nThis will open the OAuth authorization flow for ' + name + '.')) {
+      alert('Redirecting to ' + name + ' authorization...\n\n(This is a prototype — no actual connection will be made.)');
+    }
+  }
+
+  // Disconnect handler
+  function confirmDisconnect(name) {
+    if (confirm('Disconnect ' + name + '?\n\nAgents using this integration will lose access to its data. This action can be reversed by reconnecting.')) {
+      alert(name + ' has been disconnected.\n\n(This is a prototype — no actual changes were made.)');
+    }
+  }
+</script>
+</body>
+</html>

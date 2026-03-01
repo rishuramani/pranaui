@@ -590,6 +590,68 @@
   }
   .toggle-switch.on::after { transform: translateX(20px); }
 
+  /* Card action buttons */
+  .card-actions {
+    display: flex; gap: 6px; margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .card-btn {
+    padding: 5px 12px; border-radius: 6px; font-family: inherit;
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-muted);
+  }
+  .card-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .card-btn.deploy {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .card-btn.deploy:hover { background: var(--accent-hover); }
+
+  /* Modals */
+  .mp-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(42,31,16,0.4); z-index: 300;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .mp-modal-overlay.open { display: flex; }
+  .mp-modal {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; width: 480px; max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(42,31,16,0.2);
+    animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .mp-modal-header { padding: 24px 28px 0; display: flex; align-items: center; justify-content: space-between; }
+  .mp-modal-title { font-size: 18px; font-weight: 700; }
+  .mp-modal-close { font-size: 20px; color: var(--text-dim); cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+  .mp-modal-close:hover { background: var(--bg-elevated); color: var(--text); }
+  .mp-modal-body { padding: 20px 28px; }
+  .mp-modal-footer { padding: 16px 28px 24px; display: flex; gap: 10px; justify-content: flex-end; }
+  .mp-field { margin-bottom: 16px; }
+  .mp-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+  .mp-input, .mp-textarea, .mp-select {
+    width: 100%; padding: 11px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-xs); background: var(--bg);
+    font-family: inherit; font-size: 13px; color: var(--text); outline: none;
+  }
+  .mp-input:focus, .mp-textarea:focus, .mp-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .mp-textarea { resize: vertical; min-height: 80px; }
+  .mp-btn-primary {
+    padding: 10px 20px; border-radius: var(--radius-xs);
+    background: var(--accent); color: #fff; border: none;
+    font-family: inherit; font-size: 13px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .mp-btn-primary:hover { background: var(--accent-hover); }
+  .mp-btn-secondary {
+    padding: 10px 20px; border-radius: var(--radius-xs);
+    background: none; color: var(--text-muted); border: 1px solid var(--border);
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .mp-btn-secondary:hover { border-color: var(--text-dim); color: var(--text); }
+
   /* Screen ID */
   .screen-id {
     position: fixed; bottom: 20px; right: 20px;
@@ -698,9 +760,15 @@
   <!-- MAIN -->
   <main class="main-content">
 
-    <div class="page-header">
-      <h1 class="page-title">Agent Marketplace</h1>
-      <p class="page-desc">Browse, preview, and deploy AI agents to any client. Filter by industry and use case, or search by name.</p>
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;">
+      <div>
+        <h1 class="page-title">Agent Marketplace</h1>
+        <p class="page-desc">Browse, preview, and deploy AI agents to any client. Filter by industry and use case, or search by name.</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-shrink:0;margin-top:4px;">
+        <button onclick="openBuildModal()" style="padding:10px 18px;border-radius:var(--radius-xs);background:var(--accent);color:#fff;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(24,133,106,0.2);transition:all 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='var(--accent-hover)'" onmouseout="this.style.background='var(--accent)'">⚡ Build an Agent</button>
+        <button onclick="openRequestModal()" style="padding:10px 18px;border-radius:var(--radius-xs);background:var(--bg-card);color:var(--text-muted);border:1px solid var(--border);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.borderColor='var(--text-dim)';this.style.color='var(--text)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)'">📋 Request an Agent</button>
+      </div>
     </div>
 
     <!-- Search + Filters -->
@@ -761,6 +829,10 @@
             <span class="agent-deploy-count">148 deployed</span>
           </div>
           <div class="agent-integ-icons"><span class="agent-integ-icon">🛍️</span></div>
+          <div class="card-actions">
+            <button class="card-btn" onclick="event.stopPropagation();openCloneModal('final-sale')">Clone</button>
+            <button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('final-sale')">Deploy</button>
+          </div>
         </div>
         <div class="agent-card featured-card" onclick="openDrawer('paid-ads')">
           <div class="agent-emoji">📣</div>
@@ -772,6 +844,10 @@
             <span class="agent-deploy-count">203 deployed</span>
           </div>
           <div class="agent-integ-icons"><span class="agent-integ-icon">📊</span><span class="agent-integ-icon">📱</span></div>
+          <div class="card-actions">
+            <button class="card-btn" onclick="event.stopPropagation();openCloneModal('paid-ads')">Clone</button>
+            <button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('paid-ads')">Deploy</button>
+          </div>
         </div>
         <div class="agent-card featured-card" onclick="openDrawer('knowledge-qa')">
           <div class="agent-emoji">🧠</div>
@@ -781,6 +857,10 @@
             <span class="agent-tag">All Industries</span>
             <span class="agent-source pranaos">PranaOS</span>
             <span class="agent-deploy-count">412 deployed</span>
+          </div>
+          <div class="card-actions">
+            <button class="card-btn" onclick="event.stopPropagation();openCloneModal('knowledge-qa')">Clone</button>
+            <button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('knowledge-qa')">Deploy</button>
           </div>
         </div>
       </div>
@@ -797,6 +877,7 @@
           <span class="agent-source pranaos">PranaOS</span>
         </div>
         <div class="agent-integ-icons"><span class="agent-integ-icon">🛍️</span></div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('affiliate')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('affiliate')">Deploy</button></div>
       </div>
 
       <div class="agent-card" data-industry="all,finance" data-usecase="finance" onclick="openDrawer('revenue')">
@@ -807,6 +888,7 @@
           <span class="agent-tag">Finance</span>
           <span class="agent-source pranaos">PranaOS</span>
         </div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('revenue')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('revenue')">Deploy</button></div>
       </div>
 
       <div class="agent-card" data-industry="all" data-usecase="knowledge,support" onclick="openDrawer('email-drafter')">
@@ -818,6 +900,7 @@
           <span class="agent-source pranaos">PranaOS</span>
         </div>
         <div class="agent-integ-icons"><span class="agent-integ-icon">📧</span></div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('email-drafter')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('email-drafter')">Deploy</button></div>
       </div>
 
       <div class="agent-card" data-industry="realestate" data-usecase="operations" onclick="openDrawer('maintenance')">
@@ -829,6 +912,7 @@
           <span class="agent-source pranaos">PranaOS</span>
         </div>
         <div class="agent-integ-icons"><span class="agent-integ-icon">🏠</span></div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('maintenance')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('maintenance')">Deploy</button></div>
       </div>
 
       <div class="agent-card" data-industry="all" data-usecase="hr" onclick="openDrawer('onboarding')">
@@ -839,6 +923,7 @@
           <span class="agent-tag">HR</span>
           <span class="agent-source community">Community</span>
         </div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('onboarding')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('onboarding')">Deploy</button></div>
       </div>
 
       <div class="agent-card" data-industry="hospitality" data-usecase="operations" onclick="openDrawer('inventory')">
@@ -849,6 +934,7 @@
           <span class="agent-tag">Hospitality</span><span class="agent-tag">Retail</span>
           <span class="agent-source pranaos">PranaOS</span>
         </div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('inventory')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('inventory')">Deploy</button></div>
       </div>
 
       <div class="agent-card" data-industry="saas" data-usecase="support" onclick="openDrawer('ticket')">
@@ -859,6 +945,7 @@
           <span class="agent-tag">SaaS</span><span class="agent-tag">Support</span>
           <span class="agent-source community">Community</span>
         </div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('ticket')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('ticket')">Deploy</button></div>
       </div>
 
       <div class="agent-card" data-industry="all" data-usecase="marketing" onclick="openDrawer('social')">
@@ -869,6 +956,7 @@
           <span class="agent-tag">Marketing</span>
           <span class="agent-source community">Community</span>
         </div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('social')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('social')">Deploy</button></div>
       </div>
 
       <div class="agent-card" data-industry="healthcare" data-usecase="operations" onclick="openDrawer('compliance')">
@@ -879,6 +967,7 @@
           <span class="agent-tag">Healthcare</span><span class="agent-tag">Legal</span>
           <span class="agent-source pranaos">PranaOS</span>
         </div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('compliance')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('compliance')">Deploy</button></div>
       </div>
 
       <div class="agent-card" data-industry="all" data-usecase="sales" onclick="openDrawer('proposal')">
@@ -889,6 +978,7 @@
           <span class="agent-tag">Sales</span>
           <span class="agent-source community">Community</span>
         </div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('proposal')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('proposal')">Deploy</button></div>
       </div>
 
       <div class="agent-card" data-industry="finance" data-usecase="finance" onclick="openDrawer('expense')">
@@ -899,6 +989,7 @@
           <span class="agent-tag">Finance</span>
           <span class="agent-source pranaos">PranaOS</span>
         </div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('expense')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('expense')">Deploy</button></div>
       </div>
 
       <div class="agent-card" data-industry="retail,saas" data-usecase="support" onclick="openDrawer('churn')">
@@ -909,6 +1000,7 @@
           <span class="agent-tag">SaaS</span><span class="agent-tag">Retail</span>
           <span class="agent-source community">Community</span>
         </div>
+        <div class="card-actions"><button class="card-btn" onclick="event.stopPropagation();openCloneModal('churn')">Clone</button><button class="card-btn deploy" onclick="event.stopPropagation();openDrawer('churn')">Deploy</button></div>
       </div>
     </div>
   </main>
@@ -1049,6 +1141,78 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ===== BUILD AN AGENT MODAL ===== -->
+<div class="mp-modal-overlay" id="modal-build">
+  <div class="mp-modal">
+    <div class="mp-modal-header">
+      <div class="mp-modal-title">Build an Agent</div>
+      <span class="mp-modal-close" onclick="closeMpModal('build')">&times;</span>
+    </div>
+    <div class="mp-modal-body">
+      <div class="mp-field">
+        <label class="mp-label">Agent name</label>
+        <input type="text" class="mp-input" id="build-name" placeholder="e.g. Inventory Reorder Bot">
+      </div>
+      <div class="mp-field">
+        <label class="mp-label">Description</label>
+        <textarea class="mp-textarea" id="build-desc" placeholder="What should this agent do? Describe its purpose, triggers, and expected outputs…"></textarea>
+      </div>
+    </div>
+    <div class="mp-modal-footer">
+      <button class="mp-btn-secondary" onclick="closeMpModal('build')">Cancel</button>
+      <button class="mp-btn-primary" onclick="window.location.href='A-13-agent-builder.html'">Continue to Builder →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CLONE AGENT MODAL ===== -->
+<div class="mp-modal-overlay" id="modal-clone">
+  <div class="mp-modal">
+    <div class="mp-modal-header">
+      <div class="mp-modal-title">Clone Agent</div>
+      <span class="mp-modal-close" onclick="closeMpModal('clone')">&times;</span>
+    </div>
+    <div class="mp-modal-body">
+      <div class="mp-field">
+        <label class="mp-label">Agent name</label>
+        <input type="text" class="mp-input" id="clone-name" placeholder="Agent name">
+      </div>
+      <div class="mp-field">
+        <label class="mp-label">Description</label>
+        <textarea class="mp-textarea" id="clone-desc" placeholder="Describe any customizations you want to make…"></textarea>
+      </div>
+    </div>
+    <div class="mp-modal-footer">
+      <button class="mp-btn-secondary" onclick="closeMpModal('clone')">Cancel</button>
+      <button class="mp-btn-primary" onclick="window.location.href='A-14-agent-clone.html'">Clone & Customize →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REQUEST AN AGENT MODAL ===== -->
+<div class="mp-modal-overlay" id="modal-request">
+  <div class="mp-modal">
+    <div class="mp-modal-header">
+      <div class="mp-modal-title">Request an Agent</div>
+      <span class="mp-modal-close" onclick="closeMpModal('request')">&times;</span>
+    </div>
+    <div class="mp-modal-body">
+      <div class="mp-field">
+        <label class="mp-label">What should this agent do?</label>
+        <textarea class="mp-textarea" id="request-desc" placeholder="Describe the ideal agent — what problem does it solve, what tools does it need, what outputs should it produce…"></textarea>
+      </div>
+      <div class="mp-field">
+        <label class="mp-label">Industry / use case</label>
+        <input type="text" class="mp-input" id="request-industry" placeholder="e.g. Hospitality, Real Estate, Healthcare…">
+      </div>
+    </div>
+    <div class="mp-modal-footer">
+      <button class="mp-btn-secondary" onclick="closeMpModal('request')">Cancel</button>
+      <button class="mp-btn-primary" id="request-submit-btn" onclick="submitRequest()">Submit Request</button>
+    </div>
   </div>
 </div>
 
@@ -1235,12 +1399,51 @@
   }
 
   function cloneAgent() {
-    window.location.href = 'A-06-agent-config-integrations.html';
+    openCloneModal(currentAgent);
   }
 
   function previewAgent() {
     window.location.href = 'A-06-agent-config-integrations.html';
   }
+
+  function openBuildModal() {
+    document.getElementById('build-name').value = '';
+    document.getElementById('build-desc').value = '';
+    document.getElementById('modal-build').classList.add('open');
+  }
+
+  function openCloneModal(agentId) {
+    var a = agents[agentId] || { name: 'Agent', desc: '' };
+    document.getElementById('clone-name').value = a.name + ' (Copy)';
+    document.getElementById('clone-desc').value = a.desc;
+    document.getElementById('modal-clone').classList.add('open');
+  }
+
+  function openRequestModal() {
+    document.getElementById('request-desc').value = '';
+    document.getElementById('request-industry').value = '';
+    var btn = document.getElementById('request-submit-btn');
+    btn.textContent = 'Submit Request';
+    document.getElementById('modal-request').classList.add('open');
+  }
+
+  function closeMpModal(type) {
+    document.getElementById('modal-' + type).classList.remove('open');
+  }
+
+  function submitRequest() {
+    var btn = document.getElementById('request-submit-btn');
+    btn.textContent = '✓ Request Submitted';
+    btn.style.background = 'var(--accent)';
+    setTimeout(function() { closeMpModal('request'); btn.textContent = 'Submit Request'; }, 1200);
+  }
+
+  // Close modals on overlay click
+  document.querySelectorAll('.mp-modal-overlay').forEach(function(overlay) {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
 
   // Custom dropdown state
   let filterIndustry = '';
