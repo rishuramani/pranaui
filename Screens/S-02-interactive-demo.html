@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Try the Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08); --warn-border: rgba(196,132,45,0.18);
+    --red: #c25a5a; --red-bg: rgba(194,90,90,0.08);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg-warm); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; height: 100vh; display: flex; flex-direction: column; }
+  .demo-banner { background: var(--accent); color: #fff; text-align: center; padding: 10px 20px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 12px; flex-shrink: 0; }
+  .demo-banner-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-bright); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .demo-banner a { color: #fff; font-weight: 700; text-decoration: underline; cursor: pointer; }
+  .app-chrome { flex: 1; display: flex; flex-direction: column; max-width: 940px; width: 100%; margin: 16px auto; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 8px 40px rgba(42,31,16,0.12); overflow: hidden; min-height: 0; }
+  .app-header { padding: 14px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .ah-logo { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .ah-info { flex: 1; }
+  .ah-name { font-size: 15px; font-weight: 800; }
+  .ah-sub { font-size: 11px; color: var(--text-dim); }
+  .view-toggle { display: flex; background: var(--bg); border-radius: 8px; padding: 3px; border: 1px solid var(--border); }
+  .vt-btn { padding: 7px 16px; border-radius: 6px; font-family: inherit; font-size: 12px; font-weight: 600; border: none; background: none; color: var(--text-dim); cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+  .vt-btn.active { background: var(--bg-card); color: var(--accent); box-shadow: var(--shadow-sm); }
+  .vt-btn:hover:not(.active) { color: var(--text-muted); }
+  .ah-badge { font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: var(--accent-bg); color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-left: 12px; }
+
+  /* GUI VIEW */
+  .gui-view { flex: 1; overflow-y: auto; padding: 20px 24px; display: none; }
+  .gui-view.active { display: block; }
+  .gui-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+  .gui-kpi { background: var(--bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 14px 16px; }
+  .gui-kpi-label { font-size: 10px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .gui-kpi-value { font-size: 24px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
+  .gui-kpi-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .gui-section-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .gui-section-title .badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: var(--warn-bg); color: var(--warn); }
+  .gui-decisions { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .gui-decision { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; box-shadow: var(--shadow-sm); transition: all 0.2s; }
+  .gui-decision:hover { box-shadow: var(--shadow-md); }
+  .gd-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .gd-icon { font-size: 16px; }
+  .gd-name { font-size: 14px; font-weight: 700; flex: 1; }
+  .gd-urgency { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
+  .gd-urgency.high { background: var(--red-bg); color: var(--red); }
+  .gd-urgency.med { background: var(--warn-bg); color: var(--warn); }
+  .gd-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+  .gd-metric { padding: 8px; background: var(--bg); border-radius: 6px; text-align: center; }
+  .gd-metric-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; }
+  .gd-metric-value { font-size: 13px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
+  .gd-bar { height: 6px; background: var(--bg); border-radius: 3px; margin-bottom: 12px; overflow: hidden; }
+  .gd-bar-fill { height: 100%; border-radius: 3px; }
+  .gd-actions { display: flex; gap: 6px; }
+  .gd-btn { padding: 8px 18px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; }
+  .gd-btn.approve { background: var(--accent); color: #fff; }
+  .gd-btn.approve:hover { filter: brightness(0.9); }
+  .gd-btn.reject { background: none; border: 1px solid var(--border); color: var(--text-muted); }
+  .gd-resolved { font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; background: var(--accent-bg); color: var(--accent); }
+  .gui-categories { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .gui-cat-card { background: var(--bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 16px; }
+  .gcc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .gcc-name { font-size: 12px; font-weight: 700; }
+  .gcc-count { font-size: 11px; color: var(--text-dim); }
+  .gcc-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .gcc-bar-label { font-size: 10px; color: var(--text-dim); width: 80px; flex-shrink: 0; }
+  .gcc-bar-track { flex: 1; height: 8px; background: var(--bg-card); border-radius: 4px; overflow: hidden; }
+  .gcc-bar-fill { height: 100%; border-radius: 4px; }
+  .gcc-bar-val { font-size: 10px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; width: 32px; text-align: right; }
+  .gui-table { width: 100%; border-collapse: collapse; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+  .gui-table th { text-align: left; padding: 10px 14px; font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid var(--border); background: var(--bg); }
+  .gui-table td { padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); font-size: 12px; }
+  .gui-table tr:last-child td { border-bottom: none; }
+  .gui-table .mono { font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+  .gui-table .warn { color: var(--warn); }
+  .gui-table .accent { color: var(--accent); }
+
+  /* CHAT VIEW */
+  .chat-view { flex: 1; display: none; flex-direction: column; min-height: 0; }
+  .chat-view.active { display: flex; }
+  .chat-area { flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+  .msg { max-width: 85%; animation: msgIn 0.3s ease; }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.agent { align-self: flex-start; }
+  .msg.user { align-self: flex-end; }
+  .msg-bubble { padding: 14px 18px; border-radius: 16px; font-size: 13px; line-height: 1.65; }
+  .msg.agent .msg-bubble { background: var(--bg); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
+  .msg.user .msg-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .msg-label { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; font-weight: 600; }
+  .msg.user .msg-label { text-align: right; }
+  .chat-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12px; }
+  .chat-table th { text-align: left; padding: 8px 10px; font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  .chat-table td { padding: 8px 10px; border-bottom: 1px solid var(--border-subtle); }
+  .typing { display: flex; gap: 4px; align-items: center; padding: 14px 18px; background: var(--bg); border: 1px solid var(--border-subtle); border-radius: 16px; border-bottom-left-radius: 4px; align-self: flex-start; }
+  .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); animation: typingBounce 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes typingBounce { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
+  .suggestions { display: flex; gap: 8px; flex-wrap: wrap; padding: 4px 0; }
+  .suggestion { padding: 8px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; font-family: inherit; font-size: 12px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .suggestion:hover { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+  .input-bar { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; background: var(--bg-card); }
+  .input-field { flex: 1; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); outline: none; }
+  .input-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .input-send { width: 40px; height: 40px; border-radius: 10px; background: var(--accent); color: #fff; border: none; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .input-send:hover { filter: brightness(0.9); }
+  .input-send:disabled { opacity: 0.4; cursor: default; }
+  .input-limit { font-size: 10px; color: var(--text-dim); }
+
+  .cta-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,31,16,0.6); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+  .cta-overlay.show { display: flex; }
+  .cta-card { background: #fff; border-radius: 24px; padding: 48px 40px; text-align: center; max-width: 460px; width: calc(100vw - 40px); box-shadow: 0 20px 60px rgba(42,31,16,0.3); animation: modalIn 0.4s ease; }
+  @keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .cta-card-icon { font-size: 48px; margin-bottom: 16px; }
+  .cta-card-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .cta-card-desc { font-size: 14px; color: var(--text-muted); font-weight: 300; line-height: 1.7; margin-bottom: 28px; }
+  .cta-card-btn { padding: 16px 36px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(24,133,106,0.3); display: block; width: 100%; margin-bottom: 12px; }
+  .cta-card-btn:hover { filter: brightness(0.92); }
+  .cta-card-secondary { font-size: 13px; color: var(--text-dim); cursor: pointer; text-decoration: underline; }
+  .screen-id { position: fixed; bottom: 16px; right: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+  @media (max-width: 640px) {
+    .app-chrome { margin: 0; border-radius: 0; border: none; }
+    .gui-kpis { grid-template-columns: repeat(2, 1fr); }
+    .gd-metrics { grid-template-columns: repeat(2, 1fr); }
+    .gui-categories { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="screen-id"><strong>S-02</strong> Interactive Demo</div>
+<div class="demo-banner"><span class="demo-banner-dot"></span>You're using a live demo with sample data &middot; <a onclick="window.location.href='S-04-signup-checkout.html'">Sign up free</a> to deploy agents for your own clients</div>
+<div class="app-chrome">
+  <div class="app-header">
+    <div class="ah-logo">🏷️</div>
+    <div class="ah-info"><div class="ah-name">Final Sale Agent</div><div class="ah-sub">Sample Shopify Store &middot; Demo Mode</div></div>
+    <span class="ah-badge">Live Demo</span>
+    <div style="flex:1;"></div>
+    <div class="view-toggle">
+      <button class="vt-btn active" id="vt-gui" onclick="switchView('gui')">📊 Dashboard</button>
+      <button class="vt-btn" id="vt-chat" onclick="switchView('chat')">💬 Chat</button>
+    </div>
+  </div>
+
+  <!-- GUI VIEW -->
+  <div class="gui-view active" id="gui-view">
+    <div class="gui-kpis">
+      <div class="gui-kpi"><div class="gui-kpi-label">Items Scanned</div><div class="gui-kpi-value">1,247</div><div class="gui-kpi-sub">Last scan: 2 min ago</div></div>
+      <div class="gui-kpi"><div class="gui-kpi-label">Flagged</div><div class="gui-kpi-value" style="color:var(--warn);">12</div><div class="gui-kpi-sub">3 high priority</div></div>
+      <div class="gui-kpi"><div class="gui-kpi-label">Est. Recovery</div><div class="gui-kpi-value" style="color:var(--accent);">$4,280</div><div class="gui-kpi-sub">If all approved</div></div>
+      <div class="gui-kpi"><div class="gui-kpi-label">Approved MTD</div><div class="gui-kpi-value">$2,150</div><div class="gui-kpi-sub">8 markdowns executed</div></div>
+    </div>
+    <div class="gui-section-title">Pending Decisions <span class="badge">3 urgent</span></div>
+    <div class="gui-decisions">
+      <div class="gui-decision" id="gd-1">
+        <div class="gd-top"><span class="gd-icon">⚡</span><span class="gd-name">Jumbo Popcorn Bucket</span><span class="gd-urgency high">High</span></div>
+        <div class="gd-metrics"><div class="gd-metric"><div class="gd-metric-label">Days in Stock</div><div class="gd-metric-value" style="color:var(--warn);">127</div></div><div class="gd-metric"><div class="gd-metric-label">Units</div><div class="gd-metric-value">340</div></div><div class="gd-metric"><div class="gd-metric-label">Suggested</div><div class="gd-metric-value">25% off</div></div><div class="gd-metric"><div class="gd-metric-label">Recovery</div><div class="gd-metric-value" style="color:var(--accent);">$890</div></div></div>
+        <div class="gd-bar"><div class="gd-bar-fill" style="width:85%;background:linear-gradient(90deg,var(--warn),#e94560);"></div></div>
+        <div class="gd-actions" id="gd1-actions"><button class="gd-btn approve" onclick="guiApprove(1)">✓ Approve Markdown</button><button class="gd-btn reject" onclick="guiReject(1)">Dismiss</button></div>
+      </div>
+      <div class="gui-decision" id="gd-2">
+        <div class="gd-top"><span class="gd-icon">⚡</span><span class="gd-name">Vintage Movie Poster Set</span><span class="gd-urgency high">High</span></div>
+        <div class="gd-metrics"><div class="gd-metric"><div class="gd-metric-label">Days in Stock</div><div class="gd-metric-value" style="color:var(--warn);">184</div></div><div class="gd-metric"><div class="gd-metric-label">Units</div><div class="gd-metric-value">72</div></div><div class="gd-metric"><div class="gd-metric-label">Suggested</div><div class="gd-metric-value">35% off</div></div><div class="gd-metric"><div class="gd-metric-label">Recovery</div><div class="gd-metric-value" style="color:var(--accent);">$540</div></div></div>
+        <div class="gd-bar"><div class="gd-bar-fill" style="width:95%;background:linear-gradient(90deg,var(--red),#e94560);"></div></div>
+        <div class="gd-actions" id="gd2-actions"><button class="gd-btn approve" onclick="guiApprove(2)">✓ Approve Markdown</button><button class="gd-btn reject" onclick="guiReject(2)">Dismiss</button></div>
+      </div>
+      <div class="gui-decision" id="gd-3">
+        <div class="gd-top"><span class="gd-icon">📦</span><span class="gd-name">Classic Cinema Scarf</span><span class="gd-urgency med">Medium</span></div>
+        <div class="gd-metrics"><div class="gd-metric"><div class="gd-metric-label">Days in Stock</div><div class="gd-metric-value" style="color:var(--warn);">118</div></div><div class="gd-metric"><div class="gd-metric-label">Units</div><div class="gd-metric-value">48</div></div><div class="gd-metric"><div class="gd-metric-label">Suggested</div><div class="gd-metric-value">20% off</div></div><div class="gd-metric"><div class="gd-metric-label">Recovery</div><div class="gd-metric-value" style="color:var(--accent);">$420</div></div></div>
+        <div class="gd-bar"><div class="gd-bar-fill" style="width:65%;background:linear-gradient(90deg,var(--gold),var(--warn));"></div></div>
+        <div class="gd-actions" id="gd3-actions"><button class="gd-btn approve" onclick="guiApprove(3)">✓ Approve Markdown</button><button class="gd-btn reject" onclick="guiReject(3)">Dismiss</button></div>
+      </div>
+    </div>
+    <div class="gui-section-title">Inventory Health by Category</div>
+    <div class="gui-categories">
+      <div class="gui-cat-card"><div class="gcc-header"><span class="gcc-name">🍿 Concessions</span><span class="gcc-count">412 items</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Healthy</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:72%;background:var(--accent-bright);"></div></div><span class="gcc-bar-val">72%</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Aging</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:20%;background:var(--warn);"></div></div><span class="gcc-bar-val">20%</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Stale</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:8%;background:var(--red);"></div></div><span class="gcc-bar-val">8%</span></div></div>
+      <div class="gui-cat-card"><div class="gcc-header"><span class="gcc-name">🎬 Merchandise</span><span class="gcc-count">385 items</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Healthy</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:58%;background:var(--accent-bright);"></div></div><span class="gcc-bar-val">58%</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Aging</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:28%;background:var(--warn);"></div></div><span class="gcc-bar-val">28%</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Stale</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:14%;background:var(--red);"></div></div><span class="gcc-bar-val">14%</span></div></div>
+      <div class="gui-cat-card"><div class="gcc-header"><span class="gcc-name">🎟️ Gift Cards & Tickets</span><span class="gcc-count">280 items</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Healthy</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:91%;background:var(--accent-bright);"></div></div><span class="gcc-bar-val">91%</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Aging</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:7%;background:var(--warn);"></div></div><span class="gcc-bar-val">7%</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Stale</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:2%;background:var(--red);"></div></div><span class="gcc-bar-val">2%</span></div></div>
+      <div class="gui-cat-card"><div class="gcc-header"><span class="gcc-name">🧢 Apparel</span><span class="gcc-count">170 items</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Healthy</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:45%;background:var(--accent-bright);"></div></div><span class="gcc-bar-val">45%</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Aging</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:35%;background:var(--warn);"></div></div><span class="gcc-bar-val">35%</span></div><div class="gcc-bar-row"><span class="gcc-bar-label">Stale</span><div class="gcc-bar-track"><div class="gcc-bar-fill" style="width:20%;background:var(--red);"></div></div><span class="gcc-bar-val">20%</span></div></div>
+    </div>
+    <div class="gui-section-title">Recent Scan Results</div>
+    <table class="gui-table">
+      <thead><tr><th>Item</th><th>Category</th><th>Days</th><th>Velocity</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Jumbo Popcorn Bucket</td><td>Concessions</td><td class="mono warn">127</td><td class="mono">2.3/wk</td><td><span style="color:var(--red);font-weight:700;">⬤</span> Stale</td></tr>
+        <tr><td>Vintage Movie Poster Set</td><td>Merchandise</td><td class="mono warn">184</td><td class="mono">0.8/wk</td><td><span style="color:var(--red);font-weight:700;">⬤</span> Stale</td></tr>
+        <tr><td>Classic Cinema Scarf</td><td>Apparel</td><td class="mono warn">118</td><td class="mono">1.5/wk</td><td><span style="color:var(--warn);font-weight:700;">⬤</span> Aging</td></tr>
+        <tr><td>Retro Ticket Stub Coasters</td><td>Merchandise</td><td class="mono warn">112</td><td class="mono">1.9/wk</td><td><span style="color:var(--warn);font-weight:700;">⬤</span> Aging</td></tr>
+        <tr><td>Director's Chair Mini</td><td>Merchandise</td><td class="mono warn">104</td><td class="mono">0.6/wk</td><td><span style="color:var(--warn);font-weight:700;">⬤</span> Aging</td></tr>
+        <tr><td>Large Soda Refill Cup</td><td>Concessions</td><td class="mono">45</td><td class="mono accent">8.2/wk</td><td><span style="color:var(--accent);font-weight:700;">⬤</span> Healthy</td></tr>
+        <tr><td>Standard Popcorn Bag</td><td>Concessions</td><td class="mono">12</td><td class="mono accent">22.1/wk</td><td><span style="color:var(--accent);font-weight:700;">⬤</span> Healthy</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- CHAT VIEW -->
+  <div class="chat-view" id="chat-view">
+    <div class="chat-area" id="chat-area">
+      <div class="msg agent"><div class="msg-label">🏷️ Final Sale Agent</div><div class="msg-bubble">Hey! I just scanned <strong>1,247 items</strong> in your sample catalog and found <strong>12</strong> that need attention. Check the Dashboard tab for the full visual breakdown, or ask me anything here.</div></div>
+      <div class="suggestions" id="suggestions">
+        <button class="suggestion" onclick="sendSuggestion('What are my top 3 slowest-moving items?')">Top 3 slowest items</button>
+        <button class="suggestion" onclick="sendSuggestion('How much revenue could I recover this month?')">Revenue recovery estimate</button>
+        <button class="suggestion" onclick="sendSuggestion('Show me items over 90 days in stock')">Items over 90 days</button>
+      </div>
+    </div>
+    <div class="input-bar">
+      <input type="text" class="input-field" id="input-field" placeholder="Ask anything about this store's inventory…" onkeydown="if(event.key==='Enter')sendMessage()">
+      <button class="input-send" id="send-btn" onclick="sendMessage()">→</button>
+      <span class="input-limit" id="input-limit">5 messages left</span>
+    </div>
+  </div>
+</div>
+
+<div class="cta-overlay" id="cta-overlay">
+  <div class="cta-card">
+    <div class="cta-card-icon">🚀</div>
+    <div class="cta-card-title">Want this for your clients?</div>
+    <div class="cta-card-desc">You just experienced one agent with sample data. Imagine deploying a full suite — inventory, ads, email, reporting — across every client you manage.</div>
+    <button class="cta-card-btn" onclick="window.location.href='S-04-signup-checkout.html'">Start building free →</button>
+    <div class="cta-card-secondary" onclick="dismissCta()">Keep exploring the demo</div>
+  </div>
+</div>
+
+<script>
+function switchView(v) {
+  document.getElementById('gui-view').classList.toggle('active', v==='gui');
+  document.getElementById('chat-view').classList.toggle('active', v==='chat');
+  document.getElementById('vt-gui').classList.toggle('active', v==='gui');
+  document.getElementById('vt-chat').classList.toggle('active', v==='chat');
+}
+var guiInt=0, chatInt=0, ctaShown=false;
+function guiApprove(id) { document.getElementById('gd'+id+'-actions').innerHTML='<div class="gd-resolved">✓ Approved — Markdown scheduled</div>'; guiInt++; checkCta(); }
+function guiReject(id) { document.getElementById('gd'+id+'-actions').innerHTML='<div class="gd-resolved" style="background:var(--bg-warm);color:var(--text-dim);">✗ Dismissed</div>'; guiInt++; checkCta(); }
+function checkCta() { if((guiInt+chatInt)>=3&&!ctaShown){ctaShown=true;setTimeout(function(){document.getElementById('cta-overlay').classList.add('show');},800);} }
+var messagesLeft=5;
+var responses={'What are my top 3 slowest-moving items?':{text:'Here are the 3 items sitting the longest:',table:[['Vintage Movie Poster Set','184 days','$24.99','35% off','$540'],['Jumbo Popcorn Bucket','127 days','$12.99','25% off','$890'],['Classic Cinema Scarf','118 days','$34.99','20% off','$420']]},'How much revenue could I recover this month?':{text:'Across all 12 flagged items, <strong>total estimated recovery is $4,280</strong>.<br><br><strong>High urgency (3 items):</strong> $1,850<br><strong>Medium urgency (4 items):</strong> $1,580<br><strong>Low urgency (5 items):</strong> $850<br><br>Review and approve each one in the Dashboard tab — or I can walk through them here.'},'Show me items over 90 days in stock':{text:'Found <strong>8 items</strong> over 90 days. Top 5:',table:[['Vintage Movie Poster Set','184 days','$24.99','35% off','$540'],['Jumbo Popcorn Bucket','127 days','$12.99','25% off','$890'],['Classic Cinema Scarf','118 days','$34.99','20% off','$420'],['Retro Ticket Stub Coasters','112 days','$18.99','20% off','$285'],["Director's Chair Mini",'104 days','$89.99','15% off','$675']]}};
+var fallbacks=["Great question! In this demo I'm focused on inventory analysis. Try asking about slow-moving items or check the Dashboard tab for the full picture.","That's exactly the kind of thing I handle for real clients. Try one of the inventory questions — or flip to Dashboard to see the visual breakdown.","In the full version I'd pull that from your client's connected tools. Ask about flagged items or revenue recovery — that's where the magic is."];
+var fIdx=0;
+function addMsg(role,html){var a=document.getElementById('chat-area'),d=document.createElement('div');d.className='msg '+role;d.innerHTML='<div class="msg-label">'+(role==='agent'?'🏷️ Final Sale Agent':'You')+'</div><div class="msg-bubble">'+html+'</div>';a.appendChild(d);a.scrollTop=a.scrollHeight;}
+function addTyping(){var a=document.getElementById('chat-area'),d=document.createElement('div');d.className='typing';d.id='typing';d.innerHTML='<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';a.appendChild(d);a.scrollTop=a.scrollHeight;}
+function rmTyping(){var e=document.getElementById('typing');if(e)e.remove();}
+function sendMessage(){var inp=document.getElementById('input-field'),t=inp.value.trim();if(!t||messagesLeft<=0)return;addMsg('user',t);inp.value='';messagesLeft--;document.getElementById('input-limit').textContent=messagesLeft+' message'+(messagesLeft!==1?'s':'')+' left';var s=document.getElementById('suggestions');if(s)s.style.display='none';chatInt++;addTyping();setTimeout(function(){rmTyping();var r=responses[t];if(r){var h=r.text;if(r.table){h+='<table class="chat-table"><thead><tr><th>Item</th><th>Age</th><th>Price</th><th>Markdown</th><th>Recovery</th></tr></thead><tbody>';r.table.forEach(function(row){h+='<tr><td>'+row[0]+'</td><td class="mono warn">'+row[1]+'</td><td class="mono">'+row[2]+'</td><td class="mono">'+row[3]+'</td><td class="mono" style="color:var(--accent);">'+row[4]+'</td></tr>';});h+='</tbody></table>';}addMsg('agent',h);}else{addMsg('agent',fallbacks[fIdx%fallbacks.length]);fIdx++;}checkCta();if(messagesLeft<=0){document.getElementById('input-field').disabled=true;document.getElementById('input-field').placeholder='Demo limit reached — sign up for unlimited access';document.getElementById('send-btn').disabled=true;if(!ctaShown){ctaShown=true;setTimeout(function(){document.getElementById('cta-overlay').classList.add('show');},500);}}},1200);}
+function sendSuggestion(t){document.getElementById('input-field').value=t;sendMessage();}
+function dismissCta(){document.getElementById('cta-overlay').classList.remove('show');}
+</script>
+</body>
+</html>

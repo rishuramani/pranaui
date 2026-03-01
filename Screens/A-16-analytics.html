@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Analytics</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08);
+    --red: #c25a5a; --red-bg: rgba(194,90,90,0.08);
+    --error: #c25a5a;
+    --purple: #7c3aed; --blue: #2563eb;
+    --bg-elevated: var(--bg-warm);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; margin-bottom: 8px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-org { padding: 0 24px; margin-bottom: 28px; }
+  .sb-org-name { font-size: 12px; color: var(--text-muted); font-weight: 500; padding: 6px 12px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background 0.2s; }
+  .sb-org-name:hover { background: var(--border-subtle); }
+  .sb-org-dot { width: 7px; height: 7px; background: var(--accent-bright); border-radius: 50%; }
+  .sb-section { margin-bottom: 24px; }
+  .sb-section-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; padding: 0 24px; margin-bottom: 6px; }
+  .sb-nav { list-style: none; }
+  .sb-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; position: relative; }
+  .sb-nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+  .sb-nav-item.active { color: var(--accent); font-weight: 600; background: var(--accent-bg); }
+  .sb-nav-item.active::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--accent); border-radius: 0 2px 2px 0; }
+  .sb-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sb-nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; color: #fff; background: var(--error); min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .sb-nav-badge.warn { background: var(--warn); }
+  .sb-footer { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .sb-user { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 0; }
+  .sb-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+  .sb-user-info { flex: 1; min-width: 0; }
+  .sb-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); font-weight: 300; }
+
+  .main { padding: 28px 32px; overflow-y: auto; min-width: 0; }
+  .breadcrumb { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .header-controls { display: flex; gap: 8px; align-items: center; }
+  .btn { padding: 8px 16px; border-radius: var(--radius-xs); font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+  .btn-outline { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); }
+  .btn-outline:hover { background: var(--bg-warm); }
+
+  /* Custom dropdown */
+  .dropdown { position: relative; }
+  .dropdown-trigger { padding: 8px 32px 8px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text); background: var(--bg-card); cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none; }
+  .dropdown-trigger::after { content: '▾'; position: absolute; right: 12px; font-size: 10px; color: var(--text-dim); pointer-events: none; }
+  .dropdown-trigger:hover { background: var(--bg-warm); }
+  .dropdown-menu { display: none; position: absolute; top: calc(100% + 4px); right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); z-index: 100; min-width: 180px; overflow: hidden; }
+  .dropdown.open .dropdown-menu { display: block; }
+  .dropdown-item { padding: 9px 14px; font-size: 12px; font-weight: 500; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+  .dropdown-item:hover { background: var(--bg-warm); color: var(--text); }
+  .dropdown-item.active { color: var(--accent); font-weight: 700; background: var(--accent-bg); }
+  .dropdown-item .check { font-size: 10px; visibility: hidden; }
+  .dropdown-item.active .check { visibility: visible; }
+  .dropdown-divider { height: 1px; background: var(--border-subtle); margin: 4px 0; }
+
+  /* Custom date popover */
+  .date-popover { display: none; position: absolute; top: calc(100% + 4px); right: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-md); z-index: 101; padding: 16px; width: 280px; }
+  .date-popover.show { display: block; }
+  .dp-title { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; }
+  .dp-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .dp-field { flex: 1; }
+  .dp-label { font-size: 9px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; margin-bottom: 4px; }
+  .dp-input { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text); background: var(--bg); outline: none; }
+  .dp-input:focus { border-color: var(--accent); }
+  .dp-actions { display: flex; gap: 6px; justify-content: flex-end; }
+  .dp-btn { padding: 6px 14px; border-radius: 6px; font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; border: none; }
+  .dp-btn-primary { background: var(--accent); color: #fff; }
+  .dp-btn-cancel { background: var(--bg); border: 1px solid var(--border); color: var(--text-muted); }
+
+  /* View tabs */
+  .view-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg-warm); border-radius: var(--radius-xs); padding: 3px; width: fit-content; }
+  .view-tab { padding: 7px 18px; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-dim); cursor: pointer; border: none; background: none; font-family: inherit; }
+  .view-tab.active { background: var(--bg-card); color: var(--accent); box-shadow: var(--shadow-sm); font-weight: 700; }
+
+  /* Summary cards */
+  .summary-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+  .summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px; box-shadow: var(--shadow-sm); min-width: 0; overflow: hidden; }
+  .sc-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-dim); margin-bottom: 4px; }
+  .sc-value { font-size: 20px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
+  .sc-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .sc-sub .up { color: var(--accent); font-weight: 700; }
+  .sc-sub .down { color: var(--red); font-weight: 700; }
+  .sc-spark { display: flex; align-items: flex-end; gap: 2px; height: 24px; margin-top: 6px; }
+  .sc-spark-bar { width: 4px; border-radius: 2px; background: var(--accent); opacity: 0.5; }
+
+  /* Charts */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; min-width: 0; }
+  .chart-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); min-width: 0; overflow: hidden; }
+  .chart-card.full { grid-column: 1 / -1; }
+  .cc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cc-title { font-size: 13px; font-weight: 700; }
+  .cc-toggle { display: flex; gap: 2px; background: var(--bg-warm); border-radius: 4px; padding: 2px; }
+  .cc-toggle-btn { padding: 3px 8px; border-radius: 3px; font-size: 9px; font-weight: 600; border: none; background: none; color: var(--text-dim); cursor: pointer; font-family: inherit; }
+  .cc-toggle-btn.active { background: var(--bg-card); color: var(--text); box-shadow: var(--shadow-sm); }
+
+  .usage-chart { width: 100%; height: 160px; position: relative; }
+  .usage-chart svg { width: 100%; height: 100%; }
+  .chart-grid-line { stroke: var(--border-subtle); stroke-width: 1; }
+  .chart-area { fill: var(--accent-bg); }
+  .chart-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+  .chart-x-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-dim); margin-top: 6px; font-family: 'IBM Plex Mono', monospace; }
+  .chart-y-label { position: absolute; left: 0; font-size: 8px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+
+  .hbar-list { display: flex; flex-direction: column; gap: 10px; }
+  .hbar-row { display: flex; align-items: center; gap: 10px; }
+  .hbar-label { width: 110px; min-width: 80px; font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; }
+  .hbar-track { flex: 1; height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; min-width: 40px; }
+  .hbar-fill { height: 100%; border-radius: 4px; }
+  .hbar-val { font-size: 11px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; min-width: 50px; text-align: right; flex-shrink: 0; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  .perf-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .perf-table th { text-align: left; padding: 10px 12px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-dim); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .perf-table td { padding: 12px; border-bottom: 1px solid var(--border-subtle); font-size: 12px; overflow: hidden; text-overflow: ellipsis; }
+  .perf-table tr:last-child td { border-bottom: none; }
+  .perf-table tr:hover { background: rgba(250,246,240,0.5); }
+  .perf-table .mono { font-family: 'IBM Plex Mono', monospace; font-weight: 600; white-space: nowrap; }
+  /* Client table column widths */
+  .perf-table .col-name { width: 30%; }
+  .perf-table .col-num { width: 11%; }
+  .perf-table .col-trend { width: 9%; }
+  .perf-table .col-spark { width: 10%; }
+  .perf-table .col-agents { width: 8%; }
+  .agent-cell { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .agent-icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  .agent-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .trend-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
+  .trend-badge.up { background: var(--accent-bg); color: var(--accent); }
+  .trend-badge.down { background: var(--red-bg); color: var(--red); }
+  .trend-badge.flat { background: var(--bg-warm); color: var(--text-dim); }
+  .mini-spark { display: flex; align-items: flex-end; gap: 1px; height: 18px; }
+  .mini-spark-bar { width: 3px; border-radius: 1px; }
+
+  /* Client cell in per-client view */
+  .client-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .client-cell > div:last-child { min-width: 0; }
+  .client-logo { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff; flex-shrink: 0; }
+
+  /* View panels */
+  .view-panel { display: none; min-width: 0; }
+  .view-panel.active { display: block; }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="screen-id"><strong>A-16</strong> Analytics Dashboard</div>
+<div class="shell">
+
+  <nav class="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 512 512" fill="none" width="28" height="28">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="sb-logo-text">Prana<span>OS</span></span>
+    </div>
+    <div class="sb-org">
+      <div class="sb-org-name"><span class="sb-org-dot"></span> Prana IQ</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Main</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('dashboard')"><span class="sb-nav-icon">📊</span> Command Center</li>
+        <li class="sb-nav-item" onclick="navTo('clients')"><span class="sb-nav-icon">🏢</span> Clients <span class="sb-nav-badge warn">5</span></li>
+        <li class="sb-nav-item" onclick="navTo('decisions')"><span class="sb-nav-icon">📥</span> Decision Inbox <span class="sb-nav-badge">12</span></li>
+        <li class="sb-nav-item" onclick="navTo('marketplace')"><span class="sb-nav-icon">🤖</span> Agent Marketplace</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Manage</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('builder')"><span class="sb-nav-icon">⚡</span> Builder</li>
+        <li class="sb-nav-item active" onclick="navTo('analytics')"><span class="sb-nav-icon">📈</span> Analytics</li>
+        <li class="sb-nav-item" onclick="navTo('billing')"><span class="sb-nav-icon">💳</span> Billing</li>
+        <li class="sb-nav-item" onclick="navTo('team')"><span class="sb-nav-icon">👥</span> Team</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">System</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('settings')"><span class="sb-nav-icon">⚙️</span> Settings</li>
+      </ul>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">RK</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Rishabh K.</div>
+          <div class="sb-user-role">Owner · Growth plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+<div class="main">
+  <div class="breadcrumb"><a>Dashboard</a> → Analytics</div>
+  <div class="page-header">
+    <div class="page-title">Analytics</div>
+    <div class="header-controls">
+      <div class="dropdown" id="time-dropdown">
+        <div class="dropdown-trigger" onclick="toggleDropdown()" id="time-label">Last 30 days</div>
+        <div class="dropdown-menu">
+          <div class="dropdown-item" onclick="pickTime(this,'Last 7 days')"><span class="check">✓</span> Last 7 days</div>
+          <div class="dropdown-item active" onclick="pickTime(this,'Last 30 days')"><span class="check">✓</span> Last 30 days</div>
+          <div class="dropdown-item" onclick="pickTime(this,'Last 90 days')"><span class="check">✓</span> Last 90 days</div>
+          <div class="dropdown-divider"></div>
+          <div class="dropdown-item" onclick="openCustomDate()"><span class="check">✓</span> Custom range…</div>
+        </div>
+        <div class="date-popover" id="date-popover">
+          <div class="dp-title">Custom Date Range</div>
+          <div class="dp-row">
+            <div class="dp-field"><div class="dp-label">From</div><input type="date" class="dp-input" value="2026-02-01"></div>
+            <div class="dp-field"><div class="dp-label">To</div><input type="date" class="dp-input" value="2026-03-01"></div>
+          </div>
+          <div class="dp-actions">
+            <button class="dp-btn dp-btn-cancel" onclick="closeCustomDate()">Cancel</button>
+            <button class="dp-btn dp-btn-primary" onclick="applyCustomDate()">Apply</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-outline">📥 Export</button>
+    </div>
+  </div>
+
+  <div class="view-tabs">
+    <button class="view-tab active" onclick="setView('portfolio',this)">📊 Portfolio</button>
+    <button class="view-tab" onclick="setView('client',this)">👥 Per Client</button>
+    <button class="view-tab" onclick="setView('agent',this)">🤖 Per Agent</button>
+  </div>
+
+  <!-- PORTFOLIO VIEW -->
+  <div class="view-panel active" id="view-portfolio">
+    <div class="summary-row">
+      <div class="summary-card"><div class="sc-label">Total Messages</div><div class="sc-value">48,291</div><div class="sc-sub"><span class="up">↑ 23%</span> vs prev</div><div class="sc-spark"><div class="sc-spark-bar" style="height:40%;"></div><div class="sc-spark-bar" style="height:55%;"></div><div class="sc-spark-bar" style="height:45%;"></div><div class="sc-spark-bar" style="height:65%;"></div><div class="sc-spark-bar" style="height:60%;"></div><div class="sc-spark-bar" style="height:78%;"></div><div class="sc-spark-bar" style="height:90%;"></div></div></div>
+      <div class="summary-card"><div class="sc-label">Agent Actions</div><div class="sc-value">6,842</div><div class="sc-sub"><span class="up">↑ 31%</span> vs prev</div><div class="sc-spark"><div class="sc-spark-bar" style="height:30%;"></div><div class="sc-spark-bar" style="height:45%;"></div><div class="sc-spark-bar" style="height:50%;"></div><div class="sc-spark-bar" style="height:55%;"></div><div class="sc-spark-bar" style="height:70%;"></div><div class="sc-spark-bar" style="height:85%;"></div><div class="sc-spark-bar" style="height:95%;"></div></div></div>
+      <div class="summary-card"><div class="sc-label">Decisions Made</div><div class="sc-value">1,247</div><div class="sc-sub"><span class="up">↑ 18%</span> vs prev</div><div class="sc-spark"><div class="sc-spark-bar" style="height:50%;"></div><div class="sc-spark-bar" style="height:60%;"></div><div class="sc-spark-bar" style="height:55%;"></div><div class="sc-spark-bar" style="height:70%;"></div><div class="sc-spark-bar" style="height:80%;"></div><div class="sc-spark-bar" style="height:75%;"></div><div class="sc-spark-bar" style="height:88%;"></div></div></div>
+      <div class="summary-card"><div class="sc-label">Revenue Attributed</div><div class="sc-value" style="color:var(--accent);">$42.8k</div><div class="sc-sub"><span class="up">↑ 28%</span> agent-driven</div><div class="sc-spark"><div class="sc-spark-bar" style="height:35%;background:var(--accent);opacity:0.7;"></div><div class="sc-spark-bar" style="height:50%;background:var(--accent);opacity:0.7;"></div><div class="sc-spark-bar" style="height:48%;background:var(--accent);opacity:0.7;"></div><div class="sc-spark-bar" style="height:68%;background:var(--accent);opacity:0.7;"></div><div class="sc-spark-bar" style="height:72%;background:var(--accent);opacity:0.7;"></div><div class="sc-spark-bar" style="height:80%;background:var(--accent);opacity:0.7;"></div><div class="sc-spark-bar" style="height:92%;background:var(--accent);opacity:0.7;"></div></div></div>
+      <div class="summary-card"><div class="sc-label">Error Rate</div><div class="sc-value" style="color:var(--accent);">0.8%</div><div class="sc-sub"><span class="up">↓ 0.3%</span> improved</div><div class="sc-spark"><div class="sc-spark-bar" style="height:80%;background:var(--warn);opacity:0.5;"></div><div class="sc-spark-bar" style="height:70%;background:var(--warn);opacity:0.5;"></div><div class="sc-spark-bar" style="height:60%;background:var(--warn);opacity:0.5;"></div><div class="sc-spark-bar" style="height:55%;background:var(--accent);opacity:0.5;"></div><div class="sc-spark-bar" style="height:40%;background:var(--accent);opacity:0.5;"></div><div class="sc-spark-bar" style="height:35%;background:var(--accent);opacity:0.5;"></div><div class="sc-spark-bar" style="height:30%;background:var(--accent);opacity:0.5;"></div></div></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card full">
+        <div class="cc-header"><div class="cc-title">Usage Over Time</div><div class="cc-toggle"><button class="cc-toggle-btn active">Messages</button><button class="cc-toggle-btn">Actions</button><button class="cc-toggle-btn">Decisions</button></div></div>
+        <div class="usage-chart">
+          <div class="chart-y-label" style="top:0;">2.5k</div><div class="chart-y-label" style="top:37%;">1.5k</div><div class="chart-y-label" style="top:74%;">500</div>
+          <svg viewBox="0 0 600 160" preserveAspectRatio="none">
+            <line x1="0" y1="0" x2="600" y2="0" class="chart-grid-line"/><line x1="0" y1="53" x2="600" y2="53" class="chart-grid-line"/><line x1="0" y1="106" x2="600" y2="106" class="chart-grid-line"/><line x1="0" y1="159" x2="600" y2="159" class="chart-grid-line"/>
+            <path d="M0,130 L20,125 L40,118 L60,120 L80,110 L100,105 L120,95 L140,100 L160,88 L180,82 L200,78 L220,80 L240,72 L260,68 L280,60 L300,55 L320,58 L340,50 L360,45 L380,42 L400,38 L420,40 L440,35 L460,30 L480,28 L500,25 L520,22 L540,18 L560,15 L580,12 L600,8 L600,160 L0,160Z" class="chart-area"/>
+            <path d="M0,130 L20,125 L40,118 L60,120 L80,110 L100,105 L120,95 L140,100 L160,88 L180,82 L200,78 L220,80 L240,72 L260,68 L280,60 L300,55 L320,58 L340,50 L360,45 L380,42 L400,38 L420,40 L440,35 L460,30 L480,28 L500,25 L520,22 L540,18 L560,15 L580,12 L600,8" class="chart-line"/>
+          </svg>
+        </div>
+        <div class="chart-x-labels"><span>Feb 1</span><span>Feb 5</span><span>Feb 10</span><span>Feb 15</span><span>Feb 20</span><span>Feb 25</span><span>Mar 1</span></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-header"><div class="cc-title">Usage by Client</div></div>
+        <div class="hbar-list">
+          <div class="hbar-row"><div class="hbar-label">Starbucks Metro</div><div class="hbar-track"><div class="hbar-fill" style="width:92%;background:var(--accent);"></div></div><div class="hbar-val">14,280</div></div>
+          <div class="hbar-row"><div class="hbar-label">AMC Theatres</div><div class="hbar-track"><div class="hbar-fill" style="width:78%;background:var(--accent);opacity:0.8;"></div></div><div class="hbar-val">12,104</div></div>
+          <div class="hbar-row"><div class="hbar-label">Dutch Bros</div><div class="hbar-track"><div class="hbar-fill" style="width:52%;background:var(--accent);opacity:0.6;"></div></div><div class="hbar-val">8,060</div></div>
+          <div class="hbar-row"><div class="hbar-label">Urban Plates</div><div class="hbar-track"><div class="hbar-fill" style="width:38%;background:var(--accent);opacity:0.5;"></div></div><div class="hbar-val">5,890</div></div>
+          <div class="hbar-row"><div class="hbar-label">Sip Coffee & Beer</div><div class="hbar-track"><div class="hbar-fill" style="width:30%;background:var(--accent);opacity:0.4;"></div></div><div class="hbar-val">4,612</div></div>
+          <div class="hbar-row"><div class="hbar-label">Board & Brew</div><div class="hbar-track"><div class="hbar-fill" style="width:22%;background:var(--accent);opacity:0.3;"></div></div><div class="hbar-val">3,345</div></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-header"><div class="cc-title">Decision Outcomes</div></div>
+        <div class="hbar-list">
+          <div class="hbar-row"><div class="hbar-label">Approved</div><div class="hbar-track"><div class="hbar-fill" style="width:68%;background:var(--accent);"></div></div><div class="hbar-val">849</div></div>
+          <div class="hbar-row"><div class="hbar-label">Dismissed</div><div class="hbar-track"><div class="hbar-fill" style="width:18%;background:var(--text-dim);"></div></div><div class="hbar-val">224</div></div>
+          <div class="hbar-row"><div class="hbar-label">Auto-executed</div><div class="hbar-track"><div class="hbar-fill" style="width:10%;background:var(--blue);"></div></div><div class="hbar-val">128</div></div>
+          <div class="hbar-row"><div class="hbar-label">Expired</div><div class="hbar-track"><div class="hbar-fill" style="width:4%;background:var(--warn);"></div></div><div class="hbar-val">46</div></div>
+        </div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border-subtle);display:flex;justify-content:space-between;font-size:10px;"><span style="color:var(--text-dim);">Approval rate</span><span style="font-weight:800;color:var(--accent);">68%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PER CLIENT VIEW -->
+  <div class="view-panel" id="view-client">
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="cc-header"><div class="cc-title">Client Performance</div></div>
+      <table class="perf-table">
+        <thead><tr><th class="col-name">Client</th><th class="col-num">Messages</th><th class="col-num">Actions</th><th class="col-num">Decisions</th><th class="col-num">Revenue</th><th class="col-agents">Agents</th><th class="col-trend">Trend</th></tr></thead>
+        <tbody>
+          <tr><td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#059669,#34d399);">SBX</div><div><div class="agent-name">Starbucks Metro</div><div style="font-size:10px;color:var(--text-dim);">4 depts &middot; 12 users</div></div></div></td><td class="mono">14,280</td><td class="mono">2,100</td><td class="mono">412</td><td class="mono" style="color:var(--accent);">$15.2k</td><td class="mono">3</td><td><span class="trend-badge up">↑ 28%</span></td></tr>
+          <tr><td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#c41e3a,#e94560);">AMC</div><div><div class="agent-name">AMC Theatres</div><div style="font-size:10px;color:var(--text-dim);">3 depts &middot; 8 users</div></div></div></td><td class="mono">12,104</td><td class="mono">1,845</td><td class="mono">328</td><td class="mono" style="color:var(--accent);">$12.8k</td><td class="mono">2</td><td><span class="trend-badge up">↑ 18%</span></td></tr>
+          <tr><td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">DB</div><div><div class="agent-name">Dutch Bros</div><div style="font-size:10px;color:var(--text-dim);">2 depts &middot; 5 users</div></div></div></td><td class="mono">8,060</td><td class="mono">1,120</td><td class="mono">198</td><td class="mono" style="color:var(--accent);">$6.4k</td><td class="mono">2</td><td><span class="trend-badge up">↑ 35%</span></td></tr>
+          <tr><td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#d97706,#fbbf24);">UP</div><div><div class="agent-name">Urban Plates</div><div style="font-size:10px;color:var(--text-dim);">2 depts &middot; 4 users</div></div></div></td><td class="mono">5,890</td><td class="mono">780</td><td class="mono">156</td><td class="mono" style="color:var(--accent);">$4.8k</td><td class="mono">2</td><td><span class="trend-badge flat">→ 3%</span></td></tr>
+          <tr><td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">SIP</div><div><div class="agent-name">Sip Coffee & Beer</div><div style="font-size:10px;color:var(--text-dim);">2 depts &middot; 3 users</div></div></div></td><td class="mono">4,612</td><td class="mono">620</td><td class="mono">108</td><td class="mono" style="color:var(--accent);">$2.4k</td><td class="mono">1</td><td><span class="trend-badge up">↑ 52%</span></td></tr>
+          <tr><td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#dc2626,#f87171);">BB</div><div><div class="agent-name">Board & Brew</div><div style="font-size:10px;color:var(--text-dim);">1 dept &middot; 2 users</div></div></div></td><td class="mono">3,345</td><td class="mono">377</td><td class="mono">45</td><td class="mono" style="color:var(--accent);">$1.2k</td><td class="mono">1</td><td><span class="trend-badge down">↓ 12%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="cc-header"><div class="cc-title">Messages by Client (30d)</div></div>
+        <div class="hbar-list">
+          <div class="hbar-row"><div class="hbar-label">Starbucks Metro</div><div class="hbar-track"><div class="hbar-fill" style="width:92%;background:var(--accent);"></div></div><div class="hbar-val">14,280</div></div>
+          <div class="hbar-row"><div class="hbar-label">AMC Theatres</div><div class="hbar-track"><div class="hbar-fill" style="width:78%;background:var(--accent);opacity:0.8;"></div></div><div class="hbar-val">12,104</div></div>
+          <div class="hbar-row"><div class="hbar-label">Dutch Bros</div><div class="hbar-track"><div class="hbar-fill" style="width:52%;background:var(--accent);opacity:0.6;"></div></div><div class="hbar-val">8,060</div></div>
+          <div class="hbar-row"><div class="hbar-label">Urban Plates</div><div class="hbar-track"><div class="hbar-fill" style="width:38%;background:var(--accent);opacity:0.5;"></div></div><div class="hbar-val">5,890</div></div>
+          <div class="hbar-row"><div class="hbar-label">Sip Coffee</div><div class="hbar-track"><div class="hbar-fill" style="width:30%;background:var(--accent);opacity:0.4;"></div></div><div class="hbar-val">4,612</div></div>
+          <div class="hbar-row"><div class="hbar-label">Board & Brew</div><div class="hbar-track"><div class="hbar-fill" style="width:22%;background:var(--accent);opacity:0.3;"></div></div><div class="hbar-val">3,345</div></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-header"><div class="cc-title">Revenue by Client (30d)</div></div>
+        <div class="hbar-list">
+          <div class="hbar-row"><div class="hbar-label">Starbucks Metro</div><div class="hbar-track"><div class="hbar-fill" style="width:90%;background:var(--accent);"></div></div><div class="hbar-val">$15.2k</div></div>
+          <div class="hbar-row"><div class="hbar-label">AMC Theatres</div><div class="hbar-track"><div class="hbar-fill" style="width:76%;background:var(--accent);opacity:0.8;"></div></div><div class="hbar-val">$12.8k</div></div>
+          <div class="hbar-row"><div class="hbar-label">Dutch Bros</div><div class="hbar-track"><div class="hbar-fill" style="width:38%;background:var(--accent);opacity:0.6;"></div></div><div class="hbar-val">$6.4k</div></div>
+          <div class="hbar-row"><div class="hbar-label">Urban Plates</div><div class="hbar-track"><div class="hbar-fill" style="width:28%;background:var(--accent);opacity:0.5;"></div></div><div class="hbar-val">$4.8k</div></div>
+          <div class="hbar-row"><div class="hbar-label">Sip Coffee</div><div class="hbar-track"><div class="hbar-fill" style="width:14%;background:var(--accent);opacity:0.4;"></div></div><div class="hbar-val">$2.4k</div></div>
+          <div class="hbar-row"><div class="hbar-label">Board & Brew</div><div class="hbar-track"><div class="hbar-fill" style="width:7%;background:var(--accent);opacity:0.3;"></div></div><div class="hbar-val">$1.2k</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PER AGENT VIEW -->
+  <div class="view-panel" id="view-agent">
+    <div class="chart-card" style="margin-bottom:20px;">
+      <div class="cc-header"><div class="cc-title">Agent Performance</div></div>
+      <table class="perf-table">
+        <thead><tr><th class="col-name">Agent</th><th class="col-num">Messages</th><th class="col-num">Actions</th><th class="col-num">Decisions</th><th class="col-num">Error Rate</th><th class="col-trend">Trend</th><th class="col-spark">30d</th></tr></thead>
+        <tbody>
+          <tr><td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);">🏷️</div><div class="agent-name">Final Sale Agent</div></div></td><td class="mono">18,412</td><td class="mono">2,840</td><td class="mono">512</td><td class="mono" style="color:var(--accent);">0.4%</td><td><span class="trend-badge up">↑ 24%</span></td><td><div class="mini-spark"><div class="mini-spark-bar" style="height:40%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:55%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:50%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:70%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:82%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:90%;background:var(--accent);"></div></div></td></tr>
+          <tr><td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#059669,#34d399);">🥡</div><div class="agent-name">Perishable Tracker</div></div></td><td class="mono">12,890</td><td class="mono">1,980</td><td class="mono">385</td><td class="mono" style="color:var(--accent);">0.6%</td><td><span class="trend-badge up">↑ 42%</span></td><td><div class="mini-spark"><div class="mini-spark-bar" style="height:20%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:35%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:55%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:72%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:88%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:95%;background:var(--accent);"></div></div></td></tr>
+          <tr><td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">🔧</div><div class="agent-name">Maintenance Bot</div></div></td><td class="mono">9,450</td><td class="mono">1,245</td><td class="mono">210</td><td class="mono" style="color:var(--accent);">0.9%</td><td><span class="trend-badge flat">→ 2%</span></td><td><div class="mini-spark"><div class="mini-spark-bar" style="height:60%;background:var(--text-dim);"></div><div class="mini-spark-bar" style="height:58%;background:var(--text-dim);"></div><div class="mini-spark-bar" style="height:62%;background:var(--text-dim);"></div><div class="mini-spark-bar" style="height:60%;background:var(--text-dim);"></div><div class="mini-spark-bar" style="height:61%;background:var(--text-dim);"></div><div class="mini-spark-bar" style="height:63%;background:var(--text-dim);"></div></div></td></tr>
+          <tr><td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#c4842d,#fbbf24);">📧</div><div class="agent-name">Email Outreach Agent</div></div></td><td class="mono">5,120</td><td class="mono">540</td><td class="mono">98</td><td class="mono" style="color:var(--warn);">2.1%</td><td><span class="trend-badge down">↓ 8%</span></td><td><div class="mini-spark"><div class="mini-spark-bar" style="height:80%;background:var(--warn);"></div><div class="mini-spark-bar" style="height:70%;background:var(--warn);"></div><div class="mini-spark-bar" style="height:60%;background:var(--warn);"></div><div class="mini-spark-bar" style="height:55%;background:var(--warn);"></div><div class="mini-spark-bar" style="height:48%;background:var(--warn);"></div><div class="mini-spark-bar" style="height:42%;background:var(--warn);"></div></div></td></tr>
+          <tr><td><div class="agent-cell"><div class="agent-icon" style="background:linear-gradient(135deg,#dc2626,#f87171);">📋</div><div class="agent-name">Compliance Checker</div></div></td><td class="mono">2,419</td><td class="mono">237</td><td class="mono">42</td><td class="mono" style="color:var(--accent);">0.2%</td><td><span class="trend-badge up">↑ 15%</span></td><td><div class="mini-spark"><div class="mini-spark-bar" style="height:45%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:50%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:58%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:62%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:68%;background:var(--accent);"></div><div class="mini-spark-bar" style="height:72%;background:var(--accent);"></div></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="cc-header"><div class="cc-title">Agents by Message Volume</div></div>
+        <div class="hbar-list">
+          <div class="hbar-row"><div class="hbar-label">Final Sale Agent</div><div class="hbar-track"><div class="hbar-fill" style="width:92%;background:var(--purple);"></div></div><div class="hbar-val">18,412</div></div>
+          <div class="hbar-row"><div class="hbar-label">Perishable Tracker</div><div class="hbar-track"><div class="hbar-fill" style="width:66%;background:var(--accent);"></div></div><div class="hbar-val">12,890</div></div>
+          <div class="hbar-row"><div class="hbar-label">Maintenance Bot</div><div class="hbar-track"><div class="hbar-fill" style="width:48%;background:var(--blue);"></div></div><div class="hbar-val">9,450</div></div>
+          <div class="hbar-row"><div class="hbar-label">Email Outreach</div><div class="hbar-track"><div class="hbar-fill" style="width:26%;background:var(--warn);"></div></div><div class="hbar-val">5,120</div></div>
+          <div class="hbar-row"><div class="hbar-label">Compliance Check</div><div class="hbar-track"><div class="hbar-fill" style="width:12%;background:var(--red);"></div></div><div class="hbar-val">2,419</div></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-header"><div class="cc-title">Error Rates by Agent</div></div>
+        <div class="hbar-list">
+          <div class="hbar-row"><div class="hbar-label">Email Outreach</div><div class="hbar-track"><div class="hbar-fill" style="width:84%;background:var(--warn);"></div></div><div class="hbar-val">2.1%</div></div>
+          <div class="hbar-row"><div class="hbar-label">Maintenance Bot</div><div class="hbar-track"><div class="hbar-fill" style="width:36%;background:var(--accent);opacity:0.6;"></div></div><div class="hbar-val">0.9%</div></div>
+          <div class="hbar-row"><div class="hbar-label">Perishable Tracker</div><div class="hbar-track"><div class="hbar-fill" style="width:24%;background:var(--accent);opacity:0.5;"></div></div><div class="hbar-val">0.6%</div></div>
+          <div class="hbar-row"><div class="hbar-label">Final Sale Agent</div><div class="hbar-track"><div class="hbar-fill" style="width:16%;background:var(--accent);opacity:0.4;"></div></div><div class="hbar-val">0.4%</div></div>
+          <div class="hbar-row"><div class="hbar-label">Compliance Check</div><div class="hbar-track"><div class="hbar-fill" style="width:8%;background:var(--accent);opacity:0.3;"></div></div><div class="hbar-val">0.2%</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+function navTo(target) {
+  const routes = {
+    'dashboard': 'A-03-command-center.html',
+    'clients': 'A-10-client-management.html',
+    'decisions': 'A-11-decision-inbox-agency.html',
+    'marketplace': 'A-04-agent-marketplace.html',
+    'builder': 'A-13-agent-builder.html',
+    'analytics': 'A-16-analytics.html',
+    'billing': 'A-12-billing-management.html',
+    'team': 'A-17-team-management.html',
+    'settings': 'A-18-audit-log.html'
+  };
+  if (routes[target]) {
+    window.location.href = routes[target];
+  } else {
+    alert('\u2192 ' + target + ' (screen not yet built)');
+  }
+}
+
+// View tab switching
+function setView(view, el) {
+  var tabs = document.querySelectorAll('.view-tab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  el.classList.add('active');
+  var panels = document.querySelectorAll('.view-panel');
+  for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+  var target = document.getElementById('view-' + view);
+  if (target) target.classList.add('active');
+}
+
+// Dropdown
+var ddOpen = false;
+function toggleDropdown() {
+  ddOpen = !ddOpen;
+  document.getElementById('time-dropdown').classList.toggle('open', ddOpen);
+  document.getElementById('date-popover').classList.remove('show');
+}
+function pickTime(el, label) {
+  var items = document.querySelectorAll('.dropdown-item');
+  for (var i = 0; i < items.length; i++) items[i].classList.remove('active');
+  el.classList.add('active');
+  document.getElementById('time-label').textContent = label;
+  document.getElementById('time-dropdown').classList.remove('open');
+  document.getElementById('date-popover').classList.remove('show');
+  ddOpen = false;
+}
+function openCustomDate() {
+  document.getElementById('time-dropdown').classList.remove('open');
+  ddOpen = false;
+  setTimeout(function() {
+    document.getElementById('date-popover').classList.add('show');
+  }, 50);
+}
+function closeCustomDate() {
+  document.getElementById('date-popover').classList.remove('show');
+}
+function applyCustomDate() {
+  var inputs = document.querySelectorAll('.dp-input[type=date]');
+  var from = inputs[0].value;
+  var to = inputs[1].value;
+  document.getElementById('time-label').textContent = from + ' → ' + to;
+  var items = document.querySelectorAll('.dropdown-item');
+  for (var i = 0; i < items.length; i++) items[i].classList.remove('active');
+  closeCustomDate();
+}
+document.addEventListener('click', function(e) {
+  var dd = document.getElementById('time-dropdown');
+  var dp = document.getElementById('date-popover');
+  if (!dd.contains(e.target) && !dp.contains(e.target)) {
+    dd.classList.remove('open');
+    dp.classList.remove('show');
+    ddOpen = false;
+  }
+});
+</script>
+</body>
+</html>

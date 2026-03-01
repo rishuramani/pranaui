@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — User Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --client-primary: #c41e3a; --client-primary-light: rgba(196,30,58,0.08); --client-primary-border: rgba(196,30,58,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08);
+    --red: #c25a5a; --red-bg: rgba(194,90,90,0.08);
+    --purple: #7c3aed; --blue: #2563eb;
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+  /* Client sidebar — same as C-09 */
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 20px 0; display: flex; flex-direction: column; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 20px; margin-bottom: 6px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 16px; font-weight: 800; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-client { padding: 0 20px; margin-bottom: 24px; }
+  .sb-client-name { font-size: 13px; font-weight: 700; }
+  .sb-client-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: var(--client-primary-light); color: var(--client-primary); margin-top: 2px; }
+  .sb-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; }
+  .sb-item { padding: 9px 14px; border-radius: var(--radius-xs); font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 10px; }
+  .sb-item:hover { background: var(--client-primary-light); color: var(--text); }
+  .sb-item.active { background: var(--client-primary-light); color: var(--client-primary); font-weight: 700; }
+  .sb-divider { height: 1px; background: var(--border-subtle); margin: 12px 20px; }
+  .sb-badge { font-size: 9px; font-weight: 700; color: #fff; background: var(--client-primary); min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; margin-left: auto; }
+
+  .sb-user { padding: 12px 20px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border-subtle); margin-top: auto; }
+  .sb-user-avatar { width: 30px; height: 30px; border-radius: 7px; background: linear-gradient(135deg, var(--client-primary), #e94560); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .sb-user-name { font-size: 12px; font-weight: 600; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); }
+
+  /* Main content */
+  .main { padding: 28px 32px; overflow-y: auto; min-width: 0; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .page-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-top: 2px; }
+  .btn { padding: 8px 16px; border-radius: var(--radius-xs); font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .btn-primary:hover { filter: brightness(0.92); }
+
+  /* Seat summary bar */
+  .seat-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+  .seat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 20px; box-shadow: var(--shadow-sm); flex: 1; }
+  .seat-label { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); margin-bottom: 2px; }
+  .seat-val { font-size: 22px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
+  .seat-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .seat-meter { height: 4px; background: var(--bg-warm); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .seat-meter-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+
+  /* Team table card */
+  .team-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .tc-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .tc-search { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg); outline: none; }
+  .tc-search:focus { border-color: var(--accent); }
+  .tc-count { font-size: 11px; color: var(--text-dim); font-weight: 500; white-space: nowrap; }
+
+  .team-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .team-table th { text-align: left; padding: 10px 16px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-dim); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .team-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12px; overflow: hidden; }
+  .team-table tr:last-child td { border-bottom: none; }
+  .team-table tr:hover { background: var(--bg); }
+  .team-table .col-member { width: 24%; }
+  .team-table .col-role { width: 10%; }
+  .team-table .col-depts { width: 20%; }
+  .team-table .col-status { width: 10%; }
+  .team-table .col-last { width: 14%; }
+  .team-table .col-action { width: 12%; text-align: right; }
+
+  .member-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .member-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .member-info { min-width: 0; }
+  .member-name { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .member-email { font-size: 10px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .role-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; }
+  .role-admin { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+  .role-member { background: var(--bg-warm); color: var(--text-muted); border: 1px solid var(--border); }
+
+  .dept-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .dept-chip { padding: 3px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; background: var(--bg); border: 1px solid var(--border-subtle); color: var(--text-muted); white-space: nowrap; }
+  .dept-chip.all { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+
+  .status-dot { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; }
+  .status-dot::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+  .status-dot.active::before { background: var(--accent-bright); }
+  .status-dot.pending::before { background: var(--warn); }
+
+  .action-btn { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); cursor: pointer; font-size: 10px; font-weight: 600; font-family: inherit; }
+  .action-btn:hover { background: var(--bg-warm); color: var(--text); }
+  .action-btn.resend { border-color: rgba(196,132,45,0.2); color: var(--warn); }
+  .action-btn.resend:hover { background: var(--warn-bg); }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,31,16,0.5); backdrop-filter: blur(6px); align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--bg-card); border-radius: 20px; padding: 28px; width: 480px; max-width: calc(100vw - 40px); box-shadow: 0 20px 60px rgba(42,31,16,0.25); animation: modalIn 0.25s ease; }
+  @keyframes modalIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; } }
+  .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .modal-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; }
+  .modal-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); outline: none; }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a89880' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+  .modal-checkbox-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .modal-checkbox { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer; user-select: none; transition: all 0.15s; }
+  .modal-checkbox:hover { border-color: var(--accent-border); color: var(--accent); }
+  .modal-checkbox.checked { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+  .modal-checkbox input { display: none; }
+  .modal-check-icon { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 8px; flex-shrink: 0; }
+  .modal-checkbox.checked .modal-check-icon { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+  .modal-btn { padding: 10px 24px; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
+  .modal-btn-cancel { background: var(--bg); border: 1px solid var(--border); color: var(--text-muted); }
+  .modal-btn-primary { background: var(--accent); color: #fff; }
+  .modal-btn-primary:hover { filter: brightness(0.92); }
+
+  /* Screen ID badge */
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 100; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="screen-id"><strong>C-10</strong> User Management</div>
+
+<!-- Invite User Modal -->
+<div class="modal-overlay" id="invite-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div class="modal-title">Invite User</div>
+    <div class="modal-desc">They'll receive an email invitation to join AMC Theatres on PranaOS.</div>
+    <div class="modal-field">
+      <div class="modal-label">Email Address</div>
+      <input type="email" class="modal-input" id="invite-email" placeholder="name@amctheatres.com">
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Role</div>
+      <select class="modal-select" id="invite-role">
+        <option value="member">Member — can use assigned agents and departments</option>
+        <option value="admin">Admin — full access + user management</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Assign to Departments</div>
+      <div class="modal-checkbox-row">
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">&#10003;</div> Concessions</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">&#10003;</div> Operations</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">&#10003;</div> Marketing</label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('invite-modal').classList.remove('show')">Cancel</button>
+      <button class="modal-btn modal-btn-primary" onclick="sendInvite()">Send Invite</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div class="member-avatar" id="edit-avatar" style="width:40px;height:40px;font-size:14px;background:linear-gradient(135deg,#c41e3a,#e94560);">JM</div>
+      <div>
+        <div class="modal-title" style="margin-bottom:0;" id="edit-name">Jessica Miller</div>
+        <div style="font-size:11px;color:var(--text-dim);" id="edit-email">jessica@amctheatres.com</div>
+      </div>
+      <span class="status-dot active" style="margin-left:auto;" id="edit-status">Active</span>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Role</div>
+      <select class="modal-select" id="edit-role">
+        <option value="member">Member — can use assigned agents and departments</option>
+        <option value="admin">Admin — full access + user management</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Departments</div>
+      <div class="modal-checkbox-row" id="edit-depts">
+        <label class="modal-checkbox checked" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">&#10003;</div> Concessions</label>
+        <label class="modal-checkbox checked" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">&#10003;</div> Operations</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">&#10003;</div> Marketing</label>
+      </div>
+    </div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button class="modal-btn" style="background:var(--red-bg);color:var(--red);border:1px solid rgba(194,90,90,0.15);" onclick="if(confirm('Remove this user from AMC Theatres? They will lose access immediately.'))document.getElementById('edit-modal').classList.remove('show')">Remove User</button>
+      <div style="display:flex;gap:8px;">
+        <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('edit-modal').classList.remove('show')">Cancel</button>
+        <button class="modal-btn modal-btn-primary" onclick="document.getElementById('edit-modal').classList.remove('show')">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+<div class="sidebar">
+  <div class="sb-logo"><svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg><div class="sb-logo-text">Prana<span>OS</span></div></div>
+  <div class="sb-client">
+    <div class="sb-client-name">AMC Theatres</div>
+    <div class="sb-client-badge">&#128100; Client Admin</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-item" onclick="navTo('dashboard')">&#128202; Dashboard</div>
+    <div class="sb-item" onclick="navTo('agents')">&#129302; Agents</div>
+    <div class="sb-item" onclick="navTo('chat')">&#128172; Chat</div>
+    <div class="sb-item" onclick="navTo('decisions')">&#128229; Decisions <span class="sb-badge">4</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-item" onclick="navTo('knowledge')">&#128218; Knowledge</div>
+    <div class="sb-item" onclick="navTo('departments')">&#127970; Departments</div>
+    <div class="sb-item active" onclick="navTo('team')">&#128101; Team</div>
+    <div class="sb-item" onclick="navTo('settings')">&#9881;&#65039; Settings</div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-user-avatar">JM</div>
+    <div><div class="sb-user-name">Jessica Miller</div><div class="sb-user-role">Admin &middot; All depts</div></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Team</div>
+      <div class="page-desc">Manage users, roles, and department access for AMC Theatres.</div>
+    </div>
+    <button class="btn btn-primary" onclick="document.getElementById('invite-modal').classList.add('show')">+ Invite User</button>
+  </div>
+
+  <!-- Seat summary bar -->
+  <div class="seat-bar">
+    <div class="seat-card">
+      <div class="seat-label">Seats Used</div>
+      <div class="seat-val">9 <span style="font-size:13px;font-weight:400;color:var(--text-dim);">/ 15</span></div>
+      <div class="seat-sub">6 seats available</div>
+      <div class="seat-meter"><div class="seat-meter-fill" style="width:60%;"></div></div>
+    </div>
+    <div class="seat-card">
+      <div class="seat-label">Monthly Cost</div>
+      <div class="seat-val" style="color:var(--accent);">$1,988</div>
+      <div class="seat-sub">9 seats included in plan</div>
+    </div>
+    <div class="seat-card">
+      <div class="seat-label">Active Now</div>
+      <div class="seat-val">7</div>
+      <div class="seat-sub">Last activity just now</div>
+    </div>
+    <div class="seat-card">
+      <div class="seat-label">Pending Invites</div>
+      <div class="seat-val" style="color:var(--warn);">2</div>
+      <div class="seat-sub">Oldest sent 2 days ago</div>
+    </div>
+  </div>
+
+  <!-- Team table -->
+  <div class="team-card">
+    <div class="tc-header">
+      <input type="text" class="tc-search" placeholder="Search team members..." oninput="filterTable(this.value)">
+      <span class="tc-count" id="tc-count">9 members</span>
+    </div>
+    <table class="team-table">
+      <thead><tr>
+        <th class="col-member">Member</th>
+        <th class="col-role">Role</th>
+        <th class="col-depts">Departments</th>
+        <th class="col-status">Status</th>
+        <th class="col-last">Last Active</th>
+        <th class="col-action"></th>
+      </tr></thead>
+      <tbody id="team-tbody">
+        <!-- Jessica Miller -->
+        <tr data-name="jessica miller" data-email="jessica@amctheatres.com">
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#c41e3a,#e94560);">JM</div><div class="member-info"><div class="member-name">Jessica Miller</div><div class="member-email">jessica@amctheatres.com</div></div></div></td>
+          <td><span class="role-badge role-admin">Admin</span></td>
+          <td><div class="dept-chips"><span class="dept-chip all">All Depts</span></div></td>
+          <td><span class="status-dot active">Active</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">Just now</td>
+          <td style="text-align:right;"><button class="action-btn" onclick="openEdit('JM','Jessica Miller','jessica@amctheatres.com','#c41e3a','#e94560','admin',['All Depts'],'active')">Edit</button></td>
+        </tr>
+        <!-- Kevin Park -->
+        <tr data-name="kevin park" data-email="kevin.park@amctheatres.com">
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);">KP</div><div class="member-info"><div class="member-name">Kevin Park</div><div class="member-email">kevin.park@amctheatres.com</div></div></div></td>
+          <td><span class="role-badge role-admin">Admin</span></td>
+          <td><div class="dept-chips"><span class="dept-chip">Concessions</span><span class="dept-chip">Operations</span></div></td>
+          <td><span class="status-dot active">Active</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">2 hrs ago</td>
+          <td style="text-align:right;"><button class="action-btn" onclick="openEdit('KP','Kevin Park','kevin.park@amctheatres.com','#7c3aed','#a78bfa','admin',['Concessions','Operations'],'active')">Edit</button></td>
+        </tr>
+        <!-- Lisa Chen -->
+        <tr data-name="lisa chen" data-email="lisa.chen@amctheatres.com">
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">LC</div><div class="member-info"><div class="member-name">Lisa Chen</div><div class="member-email">lisa.chen@amctheatres.com</div></div></div></td>
+          <td><span class="role-badge role-member">Member</span></td>
+          <td><div class="dept-chips"><span class="dept-chip">Concessions</span></div></td>
+          <td><span class="status-dot active">Active</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">1 hr ago</td>
+          <td style="text-align:right;"><button class="action-btn" onclick="openEdit('LC','Lisa Chen','lisa.chen@amctheatres.com','#2563eb','#60a5fa','member',['Concessions'],'active')">Edit</button></td>
+        </tr>
+        <!-- Omar Davis -->
+        <tr data-name="omar davis" data-email="omar.d@amctheatres.com">
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#c4842d,#fbbf24);">OD</div><div class="member-info"><div class="member-name">Omar Davis</div><div class="member-email">omar.d@amctheatres.com</div></div></div></td>
+          <td><span class="role-badge role-member">Member</span></td>
+          <td><div class="dept-chips"><span class="dept-chip">Concessions</span></div></td>
+          <td><span class="status-dot active">Active</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">4 hrs ago</td>
+          <td style="text-align:right;"><button class="action-btn" onclick="openEdit('OD','Omar Davis','omar.d@amctheatres.com','#c4842d','#fbbf24','member',['Concessions'],'active')">Edit</button></td>
+        </tr>
+        <!-- Marcus Rivera -->
+        <tr data-name="marcus rivera" data-email="marcus.r@amctheatres.com">
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#18856a,#2dd4a0);">MR</div><div class="member-info"><div class="member-name">Marcus Rivera</div><div class="member-email">marcus.r@amctheatres.com</div></div></div></td>
+          <td><span class="role-badge role-member">Member</span></td>
+          <td><div class="dept-chips"><span class="dept-chip">Operations</span></div></td>
+          <td><span class="status-dot active">Active</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">30 min ago</td>
+          <td style="text-align:right;"><button class="action-btn" onclick="openEdit('MR','Marcus Rivera','marcus.r@amctheatres.com','#18856a','#2dd4a0','member',['Operations'],'active')">Edit</button></td>
+        </tr>
+        <!-- Diana Tran -->
+        <tr data-name="diana tran" data-email="diana.t@amctheatres.com">
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#e94560,#f472b6);">DT</div><div class="member-info"><div class="member-name">Diana Tran</div><div class="member-email">diana.t@amctheatres.com</div></div></div></td>
+          <td><span class="role-badge role-member">Member</span></td>
+          <td><div class="dept-chips"><span class="dept-chip">Operations</span></div></td>
+          <td><span class="status-dot active">Active</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">1 day ago</td>
+          <td style="text-align:right;"><button class="action-btn" onclick="openEdit('DT','Diana Tran','diana.t@amctheatres.com','#e94560','#f472b6','member',['Operations'],'active')">Edit</button></td>
+        </tr>
+        <!-- Jake Morales -->
+        <tr data-name="jake morales" data-email="jake.m@amctheatres.com">
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#0891b2,#67e8f9);">JK</div><div class="member-info"><div class="member-name">Jake Morales</div><div class="member-email">jake.m@amctheatres.com</div></div></div></td>
+          <td><span class="role-badge role-member">Member</span></td>
+          <td><div class="dept-chips"><span class="dept-chip">Operations</span></div></td>
+          <td><span class="status-dot active">Active</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">3 hrs ago</td>
+          <td style="text-align:right;"><button class="action-btn" onclick="openEdit('JK','Jake Morales','jake.m@amctheatres.com','#0891b2','#67e8f9','member',['Operations'],'active')">Edit</button></td>
+        </tr>
+        <!-- Sarah Lee -->
+        <tr data-name="sarah lee" data-email="sarah.lee@amctheatres.com">
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#d97706,#fbbf24);opacity:0.7;">SL</div><div class="member-info"><div class="member-name" style="color:var(--text-muted);">Sarah Lee</div><div class="member-email">sarah.lee@amctheatres.com</div></div></div></td>
+          <td><span class="role-badge role-member">Member</span></td>
+          <td><div class="dept-chips"><span class="dept-chip">Marketing</span></div></td>
+          <td><span class="status-dot pending">Pending</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">Invited 2 days ago</td>
+          <td style="text-align:right;"><button class="action-btn resend" onclick="alert('Invite resent to sarah.lee@amctheatres.com')">Resend</button></td>
+        </tr>
+        <!-- Ryan Cooper -->
+        <tr data-name="ryan cooper" data-email="ryan.c@amctheatres.com">
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#7c3aed,#c084fc);opacity:0.7;">RC</div><div class="member-info"><div class="member-name" style="color:var(--text-muted);">Ryan Cooper</div><div class="member-email">ryan.c@amctheatres.com</div></div></div></td>
+          <td><span class="role-badge role-member">Member</span></td>
+          <td><div class="dept-chips"><span class="dept-chip">Marketing</span></div></td>
+          <td><span class="status-dot pending">Pending</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">Invited 1 day ago</td>
+          <td style="text-align:right;"><button class="action-btn resend" onclick="alert('Invite resent to ryan.c@amctheatres.com')">Resend</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<script>
+function navTo(target) {
+  var routes = {
+    'dashboard': 'C-04-client-dashboard.html',
+    'agents': 'C-05-agent-gui.html',
+    'chat': 'C-06-universal-chat.html',
+    'decisions': 'C-07-decision-inbox.html',
+    'departments': 'C-09-department-setup.html',
+    'team': 'C-10-user-management.html',
+    'settings': 'C-11-settings.html'
+  };
+  if (routes[target]) {
+    window.location.href = routes[target];
+  } else {
+    alert('\u2192 ' + target + ' (screen not yet built)');
+  }
+}
+
+var deptNames = ['Concessions', 'Operations', 'Marketing'];
+
+function openEdit(initials, name, email, c1, c2, role, depts, status) {
+  var av = document.getElementById('edit-avatar');
+  av.textContent = initials;
+  av.style.background = 'linear-gradient(135deg,' + c1 + ',' + c2 + ')';
+  av.style.opacity = '1';
+  document.getElementById('edit-name').textContent = name;
+  document.getElementById('edit-email').textContent = email;
+
+  var st = document.getElementById('edit-status');
+  st.className = 'status-dot ' + status;
+  st.textContent = status === 'active' ? 'Active' : 'Pending';
+
+  var sel = document.getElementById('edit-role');
+  sel.selectedIndex = role === 'admin' ? 1 : 0;
+
+  // Build dept checkboxes
+  var dc = document.getElementById('edit-depts');
+  dc.innerHTML = '';
+  for (var j = 0; j < deptNames.length; j++) {
+    var isAllDepts = depts.indexOf('All Depts') !== -1;
+    var isChecked = isAllDepts || depts.indexOf(deptNames[j]) !== -1;
+    var lbl = document.createElement('label');
+    lbl.className = 'modal-checkbox' + (isChecked ? ' checked' : '');
+    lbl.onclick = function() { this.classList.toggle('checked'); };
+    lbl.innerHTML = '<input type="checkbox"><div class="modal-check-icon">\u2713</div> ' + deptNames[j];
+    dc.appendChild(lbl);
+  }
+
+  document.getElementById('edit-modal').classList.add('show');
+}
+
+function sendInvite() {
+  var email = document.getElementById('invite-email').value;
+  if (!email || email.indexOf('@') === -1) {
+    alert('Please enter a valid email address.');
+    return;
+  }
+  alert('Invitation sent to ' + email + '!');
+  document.getElementById('invite-email').value = '';
+  // Reset checkboxes
+  var checks = document.querySelectorAll('#invite-modal .modal-checkbox');
+  for (var i = 0; i < checks.length; i++) {
+    checks[i].classList.remove('checked');
+  }
+  document.getElementById('invite-modal').classList.remove('show');
+}
+
+function filterTable(query) {
+  var q = query.toLowerCase().trim();
+  var rows = document.querySelectorAll('#team-tbody tr');
+  var visible = 0;
+  for (var i = 0; i < rows.length; i++) {
+    var name = rows[i].getAttribute('data-name') || '';
+    var email = rows[i].getAttribute('data-email') || '';
+    var match = name.indexOf(q) !== -1 || email.indexOf(q) !== -1;
+    rows[i].style.display = match ? '' : 'none';
+    if (match) visible++;
+  }
+  document.getElementById('tc-count').textContent = visible + ' member' + (visible !== 1 ? 's' : '');
+}
+</script>
+</body>
+</html>

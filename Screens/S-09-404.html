@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Page Not Found</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-card: #fffdf9; --bg-elevated: #f0e8dc;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-hover: #147a60; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 14px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  }
+  .container {
+    text-align: center; padding: 40px; max-width: 480px;
+  }
+  .logo {
+    display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 48px;
+  }
+  .logo svg { width: 32px; height: 32px; }
+  .logo-text { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-text span { color: var(--accent); }
+  .error-code {
+    font-size: 120px; font-weight: 800; letter-spacing: -4px;
+    color: var(--border); line-height: 1; margin-bottom: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .error-title {
+    font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px;
+  }
+  .error-desc {
+    font-size: 14px; color: var(--text-muted); font-weight: 300; line-height: 1.7;
+    margin-bottom: 32px;
+  }
+  .actions { display: flex; gap: 10px; justify-content: center; }
+  .btn {
+    padding: 12px 24px; border-radius: var(--radius-xs);
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.2s; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-primary {
+    background: var(--accent); color: #fff;
+    box-shadow: 0 2px 8px rgba(24,133,106,0.2);
+  }
+  .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--bg-card); color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--text-dim); color: var(--text); }
+  .help-text {
+    margin-top: 40px; font-size: 12px; color: var(--text-dim); font-weight: 300;
+  }
+  .help-text a {
+    color: var(--accent); text-decoration: none; font-weight: 500;
+  }
+  .help-text a:hover { text-decoration: underline; }
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 100; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>S-09</strong> 404 Page</div>
+
+<div class="container">
+  <div class="logo">
+    <svg viewBox="0 0 512 512" fill="none">
+      <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+      <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="256" cy="256" r="21" fill="#18856a"/>
+    </svg>
+    <span class="logo-text">Prana<span>OS</span></span>
+  </div>
+
+  <div class="error-code">404</div>
+  <div class="error-title">Page not found</div>
+  <div class="error-desc">
+    The page you're looking for doesn't exist or has been moved.<br>
+    Let's get you back on track.
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-secondary" onclick="history.back()">← Go Back</button>
+    <a class="btn btn-primary" href="A-03-command-center.html">Go to Dashboard</a>
+  </div>
+
+  <div class="help-text">
+    Need help? <a href="S-01-marketing-site.html">Visit our website</a> or contact support.
+  </div>
+</div>
+
+</body>
+</html>

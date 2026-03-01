@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Department Setup (Client Admin)</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --client-primary: #c41e3a; --client-primary-light: rgba(196,30,58,0.08); --client-primary-border: rgba(196,30,58,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08);
+    --red: #c25a5a; --red-bg: rgba(194,90,90,0.08);
+    --purple: #7c3aed; --blue: #2563eb;
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+  /* Client sidebar — simpler than agency */
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 20px 0; display: flex; flex-direction: column; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 20px; margin-bottom: 6px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 16px; font-weight: 800; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-client { padding: 0 20px; margin-bottom: 24px; }
+  .sb-client-name { font-size: 13px; font-weight: 700; }
+  .sb-client-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: var(--client-primary-light); color: var(--client-primary); margin-top: 2px; }
+  .sb-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; }
+  .sb-item { padding: 9px 14px; border-radius: var(--radius-xs); font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 10px; }
+  .sb-item:hover { background: var(--client-primary-light); color: var(--text); }
+  .sb-item.active { background: var(--client-primary-light); color: var(--client-primary); font-weight: 700; }
+  .sb-divider { height: 1px; background: var(--border-subtle); margin: 12px 20px; }
+  .sb-badge { font-size: 9px; font-weight: 700; color: #fff; background: var(--client-primary); min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; margin-left: auto; }
+
+  .main { padding: 28px 32px; overflow-y: auto; min-width: 0; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .page-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-top: 2px; }
+  .btn { padding: 8px 16px; border-radius: var(--radius-xs); font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .btn-primary:hover { filter: brightness(0.92); }
+
+  /* Info banner */
+  .info-banner { background: rgba(124,58,237,0.04); border: 1px solid rgba(124,58,237,0.1); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-muted); }
+  .info-banner strong { color: var(--purple); }
+
+  /* Department cards grid */
+  .dept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+  .dept-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); transition: all 0.15s; }
+  .dept-card:hover { box-shadow: var(--shadow-md); }
+  .dc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .dc-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .dc-info { flex: 1; min-width: 0; }
+  .dc-name { font-size: 14px; font-weight: 800; }
+  .dc-meta { font-size: 10px; color: var(--text-dim); }
+  .dc-actions { display: flex; gap: 4px; }
+  .dc-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); }
+  .dc-btn:hover { background: var(--bg-warm); color: var(--text); }
+
+  .dc-section { margin-bottom: 12px; }
+  .dc-section:last-child { margin-bottom: 0; }
+  .dc-section-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-dim); margin-bottom: 6px; }
+  .dc-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .dc-tag { padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+  .dc-tag.agent { background: var(--accent-bg); border: 1px solid var(--accent-border); color: var(--accent); }
+  .dc-tag.knowledge { background: var(--bg-warm); border: 1px solid var(--border); color: var(--text-muted); }
+  .dc-tag.user { background: rgba(37,99,235,0.06); border: 1px solid rgba(37,99,235,0.12); color: var(--blue); }
+
+  .dc-stats { display: flex; gap: 16px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+  .dc-stat { font-size: 10px; color: var(--text-dim); }
+  .dc-stat strong { color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+
+  /* Disabled agent state */
+  .dc-tag.agent.locked { opacity: 0.5; }
+  .dc-tag.agent.locked::after { content: '🔒'; font-size: 8px; }
+
+  /* Create dept card */
+  .dept-card.create { border-style: dashed; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; min-height: 200px; }
+  .dept-card.create:hover { border-color: var(--accent); background: var(--accent-bg); }
+  .dept-card.create .dc-create-icon { font-size: 28px; color: var(--text-dim); }
+  .dept-card.create .dc-create-text { font-size: 12px; font-weight: 600; color: var(--text-dim); }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,31,16,0.5); backdrop-filter: blur(6px); align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--bg-card); border-radius: 20px; padding: 28px; width: 480px; max-width: calc(100vw - 40px); box-shadow: 0 20px 60px rgba(42,31,16,0.25); animation: modalIn 0.25s ease; }
+  @keyframes modalIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; } }
+  .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .modal-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; }
+  .modal-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); outline: none; }
+  .modal-input:focus { border-color: var(--accent); }
+
+  /* Agent assignment in modal — client admin can only toggle, not add */
+  .agent-assign-list { display: flex; flex-direction: column; gap: 6px; }
+  .agent-assign-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-xs); cursor: pointer; transition: all 0.15s; }
+  .agent-assign-row:hover { background: var(--bg-warm); }
+  .agent-assign-row.checked { background: var(--accent-bg); border-color: var(--accent-border); }
+  .aa-check { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent; flex-shrink: 0; transition: all 0.15s; }
+  .agent-assign-row.checked .aa-check { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .aa-icon { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  .aa-info { flex: 1; min-width: 0; }
+  .aa-name { font-size: 12px; font-weight: 700; }
+  .aa-desc { font-size: 9px; color: var(--text-dim); }
+  .aa-agency { font-size: 8px; font-weight: 600; color: var(--text-dim); padding: 2px 6px; background: var(--bg-warm); border-radius: 3px; }
+
+  /* Knowledge source selector */
+  .knowledge-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .k-chip { padding: 6px 12px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer; background: var(--bg-card); }
+  .k-chip:hover { border-color: var(--accent-border); color: var(--accent); }
+  .k-chip.checked { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+  .k-chip-add { padding: 6px 12px; border-radius: var(--radius-xs); border: 1px dashed var(--border); font-size: 11px; font-weight: 600; color: var(--text-dim); cursor: pointer; background: none; font-family: inherit; }
+  .k-chip-add:hover { border-color: var(--accent); color: var(--accent); }
+
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+  .modal-btn { padding: 10px 24px; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
+  .modal-btn-cancel { background: var(--bg); border: 1px solid var(--border); color: var(--text-muted); }
+  .modal-btn-primary { background: var(--accent); color: #fff; }
+
+  .sb-user { padding: 12px 20px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border-subtle); margin-top: auto; }
+  .sb-user-avatar { width: 30px; height: 30px; border-radius: 7px; background: linear-gradient(135deg, var(--client-primary), #e94560); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .sb-user-name { font-size: 12px; font-weight: 600; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; }
+
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="screen-id"><strong>C-09</strong> Department Setup (Client Admin)</div>
+
+<!-- Create / Edit Department Modal -->
+<div class="modal-overlay" id="dept-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div class="modal-title" id="modal-dept-title">Create Department</div>
+    <div class="modal-desc">Organize your team and assign the agents your agency has deployed.</div>
+    <div class="modal-field">
+      <div class="modal-label">Department Name</div>
+      <input type="text" class="modal-input" id="modal-dept-name" placeholder="e.g. Concessions, Marketing, Operations…">
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Description (optional)</div>
+      <input type="text" class="modal-input" id="modal-dept-desc" placeholder="What does this department handle?">
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Assign Agents <span style="font-size:9px;font-weight:400;color:var(--text-dim);margin-left:4px;">Deployed by your agency</span></div>
+      <div class="agent-assign-list">
+        <div class="agent-assign-row checked" onclick="this.classList.toggle('checked')">
+          <div class="aa-check">✓</div>
+          <div class="aa-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);">🏷️</div>
+          <div class="aa-info"><div class="aa-name">Final Sale Agent</div><div class="aa-desc">Scans inventory, flags slow movers, suggests markdowns</div></div>
+          <span class="aa-agency">Prana IQ</span>
+        </div>
+        <div class="agent-assign-row" onclick="this.classList.toggle('checked')">
+          <div class="aa-check">✓</div>
+          <div class="aa-icon" style="background:linear-gradient(135deg,#c4842d,#fbbf24);">📧</div>
+          <div class="aa-info"><div class="aa-name">Email Outreach Agent</div><div class="aa-desc">Automates promotional emails and audience campaigns</div></div>
+          <span class="aa-agency">Prana IQ</span>
+        </div>
+        <div class="agent-assign-row" onclick="this.classList.toggle('checked')">
+          <div class="aa-check">✓</div>
+          <div class="aa-icon" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">🔧</div>
+          <div class="aa-info"><div class="aa-name">Maintenance Bot</div><div class="aa-desc">Automates work orders and vendor scheduling</div></div>
+          <span class="aa-agency">Prana IQ</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Knowledge Sources</div>
+      <div class="knowledge-chips">
+        <span class="k-chip checked" onclick="this.classList.toggle('checked')">📄 Product Catalog</span>
+        <span class="k-chip checked" onclick="this.classList.toggle('checked')">📊 Sales Data</span>
+        <span class="k-chip" onclick="this.classList.toggle('checked')">📋 SOPs</span>
+        <span class="k-chip" onclick="this.classList.toggle('checked')">🏢 Vendor Contacts</span>
+        <button class="k-chip-add" onclick="var n=prompt('Add knowledge source:');if(n){var c=document.createElement('span');c.className='k-chip checked';c.textContent=n;c.onclick=function(){this.classList.toggle('checked')};this.before(c);}">+ Add</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('dept-modal').classList.remove('show')">Cancel</button>
+      <button class="modal-btn modal-btn-primary" onclick="document.getElementById('dept-modal').classList.remove('show')">Save Department</button>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+<div class="sidebar">
+  <div class="sb-logo"><svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg><div class="sb-logo-text">Prana<span>OS</span></div></div>
+  <div class="sb-client">
+    <div class="sb-client-name">AMC Theatres</div>
+    <div class="sb-client-badge">👤 Client Admin</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-item" onclick="navTo('dashboard')">📊 Dashboard</div>
+    <div class="sb-item" onclick="navTo('agents')">🤖 Agents</div>
+    <div class="sb-item" onclick="navTo('chat')">💬 Chat</div>
+    <div class="sb-item" onclick="navTo('decisions')">📥 Decisions <span class="sb-badge">4</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-item" onclick="navTo('knowledge')">📚 Knowledge</div>
+    <div class="sb-item active" onclick="navTo('departments')">🏢 Departments</div>
+    <div class="sb-item" onclick="navTo('team')">👥 Team</div>
+    <div class="sb-item" onclick="navTo('settings')">⚙️ Settings</div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-user-avatar">JM</div>
+    <div><div class="sb-user-name">Jessica Miller</div><div class="sb-user-role">Admin · All depts</div></div>
+  </div>
+</div>
+</div>
+
+<div class="main">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Departments</div>
+      <div class="page-desc">Organize your team by department and assign the agents your agency has set up for you.</div>
+    </div>
+    <button class="btn btn-primary" onclick="openDeptModal()">+ New Department</button>
+  </div>
+
+  <div class="info-banner">
+    <span>ℹ️</span>
+    <span>Agents are deployed by your agency (<strong>Prana IQ</strong>). You can assign them to departments but can't add new ones. Contact your agency to request more agents.</span>
+  </div>
+
+  <div class="dept-grid">
+    <!-- Concessions -->
+    <div class="dept-card">
+      <div class="dc-header">
+        <div class="dc-icon" style="background:linear-gradient(135deg,#c41e3a,#e94560);">🍿</div>
+        <div class="dc-info"><div class="dc-name">Concessions</div><div class="dc-meta">Created Jan 15 &middot; 4 members</div></div>
+        <div class="dc-actions">
+          <button class="dc-btn" onclick="openDeptModal('Concessions','Concession stand inventory, pricing, and vendor management',['Final Sale Agent','Maintenance Bot'],['Product Catalog','Vendor Contacts'])">✏️</button>
+        </div>
+      </div>
+      <div class="dc-section">
+        <div class="dc-section-label">Agents</div>
+        <div class="dc-tags">
+          <span class="dc-tag agent">🏷️ Final Sale Agent</span>
+          <span class="dc-tag agent">🔧 Maintenance Bot</span>
+        </div>
+      </div>
+      <div class="dc-section">
+        <div class="dc-section-label">Knowledge</div>
+        <div class="dc-tags">
+          <span class="dc-tag knowledge">📄 Product Catalog</span>
+          <span class="dc-tag knowledge">🏢 Vendor Contacts</span>
+        </div>
+      </div>
+      <div class="dc-section">
+        <div class="dc-section-label">Members</div>
+        <div class="dc-tags">
+          <span class="dc-tag user">👤 Jessica Miller</span>
+          <span class="dc-tag user">👤 Kevin Park</span>
+          <span class="dc-tag user">👤 Lisa Chen</span>
+          <span class="dc-tag user">👤 Omar Davis</span>
+        </div>
+      </div>
+      <div class="dc-stats">
+        <div class="dc-stat"><strong>5,280</strong> messages this month</div>
+        <div class="dc-stat"><strong>212</strong> decisions made</div>
+      </div>
+    </div>
+
+    <!-- Operations -->
+    <div class="dept-card">
+      <div class="dc-header">
+        <div class="dc-icon" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">🔧</div>
+        <div class="dc-info"><div class="dc-name">Operations</div><div class="dc-meta">Created Feb 1 &middot; 3 members</div></div>
+        <div class="dc-actions">
+          <button class="dc-btn" onclick="openDeptModal('Operations','Facility maintenance, equipment, and venue management',['Maintenance Bot'],['SOPs','Vendor Contacts'])">✏️</button>
+        </div>
+      </div>
+      <div class="dc-section">
+        <div class="dc-section-label">Agents</div>
+        <div class="dc-tags">
+          <span class="dc-tag agent">🔧 Maintenance Bot</span>
+        </div>
+      </div>
+      <div class="dc-section">
+        <div class="dc-section-label">Knowledge</div>
+        <div class="dc-tags">
+          <span class="dc-tag knowledge">📋 SOPs</span>
+          <span class="dc-tag knowledge">🏢 Vendor Contacts</span>
+        </div>
+      </div>
+      <div class="dc-section">
+        <div class="dc-section-label">Members</div>
+        <div class="dc-tags">
+          <span class="dc-tag user">👤 Marcus Rivera</span>
+          <span class="dc-tag user">👤 Diana Tran</span>
+          <span class="dc-tag user">👤 Jake Morales</span>
+        </div>
+      </div>
+      <div class="dc-stats">
+        <div class="dc-stat"><strong>3,820</strong> messages this month</div>
+        <div class="dc-stat"><strong>148</strong> decisions made</div>
+      </div>
+    </div>
+
+    <!-- Marketing -->
+    <div class="dept-card">
+      <div class="dc-header">
+        <div class="dc-icon" style="background:linear-gradient(135deg,#c4842d,#fbbf24);">📣</div>
+        <div class="dc-info"><div class="dc-name">Marketing</div><div class="dc-meta">Created Feb 10 &middot; 2 members</div></div>
+        <div class="dc-actions">
+          <button class="dc-btn" onclick="openDeptModal('Marketing','Ad campaigns, promotions, and audience analytics',[],['Sales Data'])">✏️</button>
+        </div>
+      </div>
+      <div class="dc-section">
+        <div class="dc-section-label">Agents</div>
+        <div class="dc-tags">
+          <span style="font-size:11px;color:var(--text-dim);font-style:italic;">No agents assigned yet</span>
+        </div>
+      </div>
+      <div class="dc-section">
+        <div class="dc-section-label">Knowledge</div>
+        <div class="dc-tags">
+          <span class="dc-tag knowledge">📊 Sales Data</span>
+        </div>
+      </div>
+      <div class="dc-section">
+        <div class="dc-section-label">Members</div>
+        <div class="dc-tags">
+          <span class="dc-tag user">👤 Sarah Lee</span>
+          <span class="dc-tag user">👤 Ryan Cooper</span>
+        </div>
+      </div>
+      <div class="dc-stats">
+        <div class="dc-stat"><strong>520</strong> messages this month</div>
+        <div class="dc-stat"><strong>0</strong> decisions made</div>
+      </div>
+    </div>
+
+    <!-- Create new -->
+    <div class="dept-card create" onclick="openDeptModal()">
+      <div class="dc-create-icon">+</div>
+      <div class="dc-create-text">Create Department</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function navTo(target) {
+  const routes = {
+    'dashboard': 'C-04-client-dashboard.html',
+    'agents': 'C-05-agent-gui.html',
+    'chat': 'C-06-universal-chat.html',
+    'decisions': 'C-07-decision-inbox.html',
+    'departments': 'C-09-department-setup.html',
+    'team': 'C-10-user-management.html',
+    'settings': 'C-11-settings.html'
+  };
+  if (routes[target]) {
+    window.location.href = routes[target];
+  } else {
+    alert('→ ' + target + ' (screen not yet built)');
+  }
+}
+
+var allAgents = ['Final Sale Agent','Email Outreach Agent','Maintenance Bot'];
+var allKnowledge = ['Product Catalog','Sales Data','SOPs','Vendor Contacts'];
+
+function openDeptModal(name, desc, agents, knowledge) {
+  var isEdit = !!name;
+  document.getElementById('modal-dept-title').textContent = isEdit ? 'Edit Department' : 'Create Department';
+  document.getElementById('modal-dept-name').value = name || '';
+  document.getElementById('modal-dept-desc').value = desc || '';
+
+  // Set agent checkboxes
+  var rows = document.querySelectorAll('.agent-assign-row');
+  for (var i = 0; i < rows.length; i++) {
+    var agentName = rows[i].querySelector('.aa-name').textContent;
+    if (agents && agents.indexOf(agentName) !== -1) {
+      rows[i].classList.add('checked');
+    } else {
+      rows[i].classList.remove('checked');
+    }
+  }
+
+  // Set knowledge chips
+  var chips = document.querySelectorAll('.k-chip');
+  for (var j = 0; j < chips.length; j++) {
+    var chipText = chips[j].textContent.replace(/^[^\s]+\s/, '').trim();
+    // strip emoji prefix
+    var rawText = chips[j].textContent.trim();
+    if (knowledge && (knowledge.indexOf(chipText) !== -1 || knowledge.some(function(k) { return rawText.indexOf(k) !== -1; }))) {
+      chips[j].classList.add('checked');
+    } else {
+      chips[j].classList.remove('checked');
+    }
+  }
+
+  document.getElementById('dept-modal').classList.add('show');
+}
+</script>
+</body>
+</html>

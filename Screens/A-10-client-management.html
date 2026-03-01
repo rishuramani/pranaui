@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Client Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-card: #fffdf9; --bg-elevated: #f0e8dc;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-secondary: #4a3d2a; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08); --warn-border: rgba(196,132,45,0.18);
+    --red: #c25a5a; --red-bg: rgba(194,90,90,0.08); --red-border: rgba(194,90,90,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 14px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* Shell grid */
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; margin-bottom: 8px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-org { padding: 0 24px; margin-bottom: 28px; }
+  .sb-org-name { font-size: 12px; color: var(--text-muted); font-weight: 500; padding: 6px 12px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background 0.2s; }
+  .sb-org-name:hover { background: var(--border-subtle); }
+  .sb-org-dot { width: 7px; height: 7px; background: var(--accent-bright); border-radius: 50%; }
+  .sb-section { margin-bottom: 24px; }
+  .sb-section-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; padding: 0 24px; margin-bottom: 6px; }
+  .sb-nav { list-style: none; }
+  .sb-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; position: relative; }
+  .sb-nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+  .sb-nav-item.active { color: var(--accent); font-weight: 600; background: var(--accent-bg); }
+  .sb-nav-item.active::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--accent); border-radius: 0 2px 2px 0; }
+  .sb-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sb-nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; color: #fff; background: var(--error); min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .sb-nav-badge.warn { background: var(--warn); }
+  .sb-footer { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .sb-user { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 0; }
+  .sb-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+  .sb-user-info { flex: 1; min-width: 0; }
+  .sb-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); font-weight: 300; }
+
+  /* Main */
+  .main { padding: 28px 36px 80px; }
+
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .page-subtitle { font-size: 12px; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
+  .btn-primary { padding: 10px 20px; border: none; background: var(--accent); color: #fff; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .btn-primary:hover { filter: brightness(0.92); }
+
+  /* Summary cards */
+  .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 20px; box-shadow: var(--shadow-sm); }
+  .summary-label { font-size: 10px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .summary-value { font-size: 28px; font-weight: 800; margin-top: 2px; letter-spacing: -0.5px; }
+  .summary-sub { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .summary-sub.green { color: var(--accent); font-weight: 600; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-search { flex: 1; min-width: 200px; padding: 9px 14px 9px 36px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a89880' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 12px center no-repeat; outline: none; }
+  .filter-search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .filter-search::placeholder { color: var(--text-dim); }
+  .filter-select { padding: 9px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg-card); cursor: pointer; outline: none; }
+  .filter-select:focus { border-color: var(--accent); }
+
+  /* Table */
+  .table-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .client-table { width: 100%; border-collapse: collapse; }
+  .client-table th { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.4px; text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg); cursor: pointer; user-select: none; white-space: nowrap; }
+  .client-table th:hover { color: var(--text-muted); }
+  .client-table th .sort-icon { font-size: 10px; margin-left: 4px; opacity: 0.4; }
+  .client-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 13px; vertical-align: middle; }
+  .client-table tr:last-child td { border-bottom: none; }
+  .client-table tr { cursor: pointer; transition: background 0.1s; }
+  .client-table tbody tr:hover { background: var(--accent-bg); }
+
+  /* Client name cell */
+  .client-cell { display: flex; align-items: center; gap: 12px; }
+  .client-logo { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .client-info-name { font-size: 13px; font-weight: 700; }
+  .client-info-id { font-size: 10px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+
+  /* Health dot */
+  .health-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .health-dot.green { background: var(--accent-bright); }
+  .health-dot.yellow { background: #f0b429; }
+  .health-dot.red { background: var(--red); }
+  .health-label { font-size: 12px; font-weight: 500; }
+
+  /* Status badge */
+  .status-badge { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.3px; display: inline-block; }
+  .status-badge.active { background: var(--accent-bg); color: var(--accent); }
+  .status-badge.pending { background: var(--warn-bg); color: var(--warn); }
+  .status-badge.suspended { background: var(--red-bg); color: var(--red); }
+
+  /* Mono numbers */
+  .mono { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; }
+  .decision-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: var(--warn-bg); color: var(--warn); margin-left: 4px; }
+
+  /* Row actions */
+  .row-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
+  tr:hover .row-actions { opacity: 1; }
+  .row-action { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; transition: all 0.1s; }
+  .row-action:hover { background: var(--bg-elevated); border-color: var(--accent-border); }
+
+  /* Last activity */
+  .last-activity { font-size: 12px; color: var(--text-dim); }
+  .last-activity.recent { color: var(--accent); font-weight: 500; }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>A-10</strong> Client Management</div>
+
+<div class="shell">
+
+<!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 512 512" fill="none" width="28" height="28">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="sb-logo-text">Prana<span>OS</span></span>
+    </div>
+    <div class="sb-org">
+      <div class="sb-org-name"><span class="sb-org-dot"></span> Prana IQ</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Main</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('dashboard')"><span class="sb-nav-icon">📊</span> Command Center</li>
+        <li class="sb-nav-item active" onclick="navTo('clients')"><span class="sb-nav-icon">🏢</span> Clients <span class="sb-nav-badge warn">5</span></li>
+        <li class="sb-nav-item" onclick="navTo('decisions')"><span class="sb-nav-icon">📥</span> Decision Inbox <span class="sb-nav-badge">12</span></li>
+        <li class="sb-nav-item" onclick="navTo('marketplace')"><span class="sb-nav-icon">🤖</span> Agent Marketplace</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Manage</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('builder')"><span class="sb-nav-icon">⚡</span> Builder</li>
+        <li class="sb-nav-item" onclick="navTo('analytics')"><span class="sb-nav-icon">📈</span> Analytics</li>
+        <li class="sb-nav-item" onclick="navTo('billing')"><span class="sb-nav-icon">💳</span> Billing</li>
+        <li class="sb-nav-item" onclick="navTo('team')"><span class="sb-nav-icon">👥</span> Team</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">System</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('settings')"><span class="sb-nav-icon">⚙️</span> Settings</li>
+      </ul>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">RK</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Rishabh K.</div>
+          <div class="sb-user-role">Owner · Growth plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+<!-- Main -->
+<div class="main">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">Clients</div>
+      <div class="page-subtitle">Manage all client partitions across your agency</div>
+    </div>
+    <button class="btn-primary" onclick="window.location.href='A-05-client-setup.html'">+ Add Client</button>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="summary-row">
+    <div class="summary-card">
+      <div class="summary-label">Total Clients</div>
+      <div class="summary-value">7</div>
+      <div class="summary-sub green">+2 this month</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Active Seats</div>
+      <div class="summary-value">34</div>
+      <div class="summary-sub">Across all clients</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Monthly Revenue</div>
+      <div class="summary-value">$28.4k</div>
+      <div class="summary-sub green">↑ 18% from last month</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Pending Decisions</div>
+      <div class="summary-value">23</div>
+      <div class="summary-sub">Across 5 clients</div>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <input type="text" class="filter-search" id="search-input" placeholder="Search clients…" oninput="filterClients()">
+    <select class="filter-select" id="status-filter" onchange="filterClients()">
+      <option value="all">All Status</option>
+      <option value="active">Active</option>
+      <option value="pending">Pending Setup</option>
+      <option value="suspended">Suspended</option>
+    </select>
+    <select class="filter-select" id="health-filter" onchange="filterClients()">
+      <option value="all">All Health</option>
+      <option value="green">Healthy</option>
+      <option value="yellow">Needs Attention</option>
+      <option value="red">Issues</option>
+    </select>
+  </div>
+
+  <!-- Client table -->
+  <div class="table-card">
+    <table class="client-table">
+      <thead>
+        <tr>
+          <th>Client <span class="sort-icon">↕</span></th>
+          <th>Health <span class="sort-icon">↕</span></th>
+          <th>Status <span class="sort-icon">↕</span></th>
+          <th>Agents <span class="sort-icon">↕</span></th>
+          <th>Users <span class="sort-icon">↕</span></th>
+          <th>Decisions <span class="sort-icon">↕</span></th>
+          <th>Monthly <span class="sort-icon">↕</span></th>
+          <th>Last Active <span class="sort-icon">↕</span></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="client-tbody">
+        <tr data-status="active" data-health="green" data-name="AMC Theatres" onclick="window.location.href='A-08-agency-admin-view.html'">
+          <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#c41e3a,#e94560);">AMC</div><div><div class="client-info-name">AMC Theatres</div><div class="client-info-id">partition_amc_001</div></div></div></td>
+          <td><span class="health-dot green"></span><span class="health-label">Healthy</span></td>
+          <td><span class="status-badge active">Active</span></td>
+          <td class="mono">6</td>
+          <td class="mono">8</td>
+          <td class="mono">7 <span class="decision-badge">7 pending</span></td>
+          <td class="mono">$6,856</td>
+          <td><span class="last-activity recent">2 min ago</span></td>
+          <td><div class="row-actions"><div class="row-action" title="View as admin" onclick="event.stopPropagation();window.location.href='A-08-agency-admin-view.html'">👁️</div><div class="row-action" title="Billing" onclick="event.stopPropagation();window.location.href='A-12-billing-management.html'">💰</div><div class="row-action" title="More" onclick="event.stopPropagation();showMenu(this)">⋯</div></div></td>
+        </tr>
+        <tr data-status="active" data-health="green" data-name="Sip Coffee & Beer" onclick="window.location.href='A-08-agency-admin-view.html'">
+          <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">SIP</div><div><div class="client-info-name">Sip Coffee & Beer</div><div class="client-info-id">partition_sip_002</div></div></div></td>
+          <td><span class="health-dot green"></span><span class="health-label">Healthy</span></td>
+          <td><span class="status-badge active">Active</span></td>
+          <td class="mono">4</td>
+          <td class="mono">3</td>
+          <td class="mono">5 <span class="decision-badge">5 pending</span></td>
+          <td class="mono">$3,241</td>
+          <td><span class="last-activity recent">18 min ago</span></td>
+          <td><div class="row-actions"><div class="row-action" title="View" onclick="event.stopPropagation()">👁️</div><div class="row-action" title="Billing" onclick="event.stopPropagation()">💰</div><div class="row-action" title="More" onclick="event.stopPropagation();showMenu(this)">⋯</div></div></td>
+        </tr>
+        <tr data-status="active" data-health="yellow" data-name="Dutch Bros Region 14" onclick="window.location.href='A-08-agency-admin-view.html'">
+          <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">DB</div><div><div class="client-info-name">Dutch Bros Region 14</div><div class="client-info-id">partition_dutch_003</div></div></div></td>
+          <td><span class="health-dot yellow"></span><span class="health-label">Low usage</span></td>
+          <td><span class="status-badge active">Active</span></td>
+          <td class="mono">5</td>
+          <td class="mono">6</td>
+          <td class="mono">4 <span class="decision-badge">4 pending</span></td>
+          <td class="mono">$4,182</td>
+          <td><span class="last-activity">3 days ago</span></td>
+          <td><div class="row-actions"><div class="row-action" title="View" onclick="event.stopPropagation()">👁️</div><div class="row-action" title="Billing" onclick="event.stopPropagation()">💰</div><div class="row-action" title="More" onclick="event.stopPropagation();showMenu(this)">⋯</div></div></td>
+        </tr>
+        <tr data-status="active" data-health="green" data-name="Starbucks Metro" onclick="window.location.href='A-08-agency-admin-view.html'">
+          <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#059669,#34d399);">SBX</div><div><div class="client-info-name">Starbucks Metro</div><div class="client-info-id">partition_sbx_004</div></div></div></td>
+          <td><span class="health-dot green"></span><span class="health-label">Healthy</span></td>
+          <td><span class="status-badge active">Active</span></td>
+          <td class="mono">6</td>
+          <td class="mono">12</td>
+          <td class="mono">3</td>
+          <td class="mono">$8,940</td>
+          <td><span class="last-activity recent">Just now</span></td>
+          <td><div class="row-actions"><div class="row-action" title="View" onclick="event.stopPropagation()">👁️</div><div class="row-action" title="Billing" onclick="event.stopPropagation()">💰</div><div class="row-action" title="More" onclick="event.stopPropagation();showMenu(this)">⋯</div></div></td>
+        </tr>
+        <tr data-status="pending" data-health="yellow" data-name="Urban Plates" onclick="window.location.href='A-08-agency-admin-view.html'">
+          <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#d97706,#fbbf24);">UP</div><div><div class="client-info-name">Urban Plates</div><div class="client-info-id">partition_urban_005</div></div></div></td>
+          <td><span class="health-dot yellow"></span><span class="health-label">Pending integrations</span></td>
+          <td><span class="status-badge pending">Pending Setup</span></td>
+          <td class="mono">3</td>
+          <td class="mono">2</td>
+          <td class="mono">0</td>
+          <td class="mono">$2,491</td>
+          <td><span class="last-activity">1 week ago</span></td>
+          <td><div class="row-actions"><div class="row-action" title="View" onclick="event.stopPropagation()">👁️</div><div class="row-action" title="Billing" onclick="event.stopPropagation()">💰</div><div class="row-action" title="More" onclick="event.stopPropagation();showMenu(this)">⋯</div></div></td>
+        </tr>
+        <tr data-status="active" data-health="red" data-name="Board & Brew" onclick="window.location.href='A-08-agency-admin-view.html'">
+          <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#dc2626,#f87171);">BB</div><div><div class="client-info-name">Board & Brew</div><div class="client-info-id">partition_bb_006</div></div></div></td>
+          <td><span class="health-dot red"></span><span class="health-label">Integration error</span></td>
+          <td><span class="status-badge active">Active</span></td>
+          <td class="mono">4</td>
+          <td class="mono">2</td>
+          <td class="mono">4 <span class="decision-badge">4 pending</span></td>
+          <td class="mono">$2,735</td>
+          <td><span class="last-activity">12 hours ago</span></td>
+          <td><div class="row-actions"><div class="row-action" title="View" onclick="event.stopPropagation()">👁️</div><div class="row-action" title="Billing" onclick="event.stopPropagation()">💰</div><div class="row-action" title="More" onclick="event.stopPropagation();showMenu(this)">⋯</div></div></td>
+        </tr>
+        <tr data-status="suspended" data-health="red" data-name="Café Luna" onclick="window.location.href='A-08-agency-admin-view.html'" style="opacity:0.6;">
+          <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#6b7280,#9ca3af);">CL</div><div><div class="client-info-name">Café Luna</div><div class="client-info-id">partition_luna_007</div></div></div></td>
+          <td><span class="health-dot red"></span><span class="health-label">Billing overdue</span></td>
+          <td><span class="status-badge suspended">Suspended</span></td>
+          <td class="mono">2</td>
+          <td class="mono">1</td>
+          <td class="mono">0</td>
+          <td class="mono">$997</td>
+          <td><span class="last-activity">3 weeks ago</span></td>
+          <td><div class="row-actions"><div class="row-action" title="View" onclick="event.stopPropagation()">👁️</div><div class="row-action" title="Billing" onclick="event.stopPropagation()">💰</div><div class="row-action" title="More" onclick="event.stopPropagation();showMenu(this)">⋯</div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+</div><!-- /shell -->
+
+<script>
+function navTo(target) {
+  const routes = {
+    'dashboard': 'A-03-command-center.html',
+    'clients': 'A-10-client-management.html',
+    'decisions': 'A-11-decision-inbox-agency.html',
+    'marketplace': 'A-04-agent-marketplace.html',
+    'builder': 'A-13-agent-builder.html',
+    'analytics': 'A-16-analytics.html',
+    'billing': 'A-12-billing-management.html',
+    'team': 'A-17-team-management.html',
+    'settings': 'A-18-audit-log.html'
+  };
+  if (routes[target]) {
+    window.location.href = routes[target];
+  } else {
+    alert('→ ' + target + ' (screen not yet built)');
+  }
+}
+
+function filterClients() {
+  var search = document.getElementById('search-input').value.toLowerCase();
+  var statusFilter = document.getElementById('status-filter').value;
+  var healthFilter = document.getElementById('health-filter').value;
+  var rows = document.querySelectorAll('#client-tbody tr');
+
+  rows.forEach(function(row) {
+    var name = (row.getAttribute('data-name') || '').toLowerCase();
+    var status = row.getAttribute('data-status');
+    var health = row.getAttribute('data-health');
+
+    var matchSearch = !search || name.indexOf(search) !== -1;
+    var matchStatus = statusFilter === 'all' || status === statusFilter;
+    var matchHealth = healthFilter === 'all' || health === healthFilter;
+
+    row.style.display = (matchSearch && matchStatus && matchHealth) ? '' : 'none';
+  });
+}
+
+function showMenu(el) {
+  var name = el.closest('tr').getAttribute('data-name');
+  var status = el.closest('tr').getAttribute('data-status');
+  var action = prompt(
+    name + '\n\nChoose an action:\n1 = View as admin (A-08)\n2 = Manage billing (A-09)\n3 = Users & Teams (A-07)\n4 = ' + (status === 'suspended' ? 'Reactivate' : 'Suspend') + ' client\n5 = Archive client',
+    '1'
+  );
+  if (action === '1') window.location.href = 'A-08-agency-admin-view.html';
+  else if (action === '2') window.location.href = 'A-12-billing-management.html';
+  else if (action === '3') window.location.href = 'A-08-agency-admin-view.html';
+  else if (action === '4') alert((status === 'suspended' ? 'Reactivated ' : 'Suspended ') + name + '. All agents ' + (status === 'suspended' ? 'resumed.' : 'paused.'));
+  else if (action === '5') alert('Archived ' + name + '. Soft delete — data retained for 90 days.');
+}
+</script>
+</body>
+</html>

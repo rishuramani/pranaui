@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Development Spec & Build Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0;
+    --bg-card: #fffdf9;
+    --bg-elevated: #f0e8dc;
+    --border: #e2d5c4;
+    --border-subtle: #ede4d6;
+    --text: #2a1f10;
+    --text-muted: #7a6348;
+    --text-dim: #a89880;
+    --accent: #18856a;
+    --accent-bg: rgba(45,212,160,0.07);
+    --accent-border: rgba(24,133,106,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04);
+    --shadow-md: 0 4px 14px rgba(42,31,16,0.06);
+    --phase0: #a78bfa;
+    --phase1: #18856a;
+    --phase2: #4a8cc7;
+    --phase3: #c4842d;
+    --phase4: #e06b6b;
+    --phase5: #7c6dab;
+    --phase6: #5ba3a3;
+    --phase7: #8b7355;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 60px 40px; }
+
+  /* Cover */
+  .cover { margin-bottom: 80px; }
+  .cover-badge {
+    display: inline-block; font-size: 11px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--accent); font-weight: 600;
+    margin-bottom: 16px; padding: 4px 12px;
+    background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 6px;
+  }
+  .cover-title { font-size: 40px; font-weight: 800; letter-spacing: -1.5px; margin-bottom: 12px; }
+  .cover-sub { font-size: 16px; color: var(--text-muted); font-weight: 300; line-height: 1.8; max-width: 650px; }
+  .cover-divider { width: 48px; height: 3px; background: linear-gradient(90deg, var(--accent), transparent); border-radius: 2px; margin-top: 40px; }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+    margin-bottom: 60px;
+  }
+  .stat {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .stat-num { font-size: 28px; font-weight: 800; }
+  .stat-label { font-size: 11px; color: var(--text-dim); font-weight: 500; margin-top: 2px; }
+
+  /* Build phase */
+  .build-phase { margin-bottom: 80px; }
+  .bp-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 8px;
+  }
+  .bp-badge {
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 6px; font-weight: 700; color: #fff;
+  }
+  .bp-title { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  .bp-desc {
+    font-size: 14px; color: var(--text-muted); font-weight: 300;
+    line-height: 1.7; margin-bottom: 8px; max-width: 650px;
+  }
+  .bp-deps {
+    font-size: 12px; color: var(--text-dim); font-weight: 300;
+    margin-bottom: 28px; padding: 10px 16px;
+    background: var(--bg-elevated); border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .bp-deps strong { color: var(--text-muted); font-weight: 600; }
+
+  /* Screen card */
+  .screen-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px; margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .sc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .sc-id {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600;
+    color: var(--accent); background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    padding: 4px 10px; border-radius: 6px;
+  }
+  .sc-name { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  .sc-priority {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px;
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 4px; margin-left: auto;
+  }
+  .sc-priority.p0 { color: #c25a5a; background: rgba(194,90,90,0.08); }
+  .sc-priority.p1 { color: var(--phase3); background: rgba(196,132,45,0.08); }
+  .sc-priority.p2 { color: var(--text-dim); background: var(--bg-elevated); }
+  .sc-status { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 8px; margin-left: 4px; }
+  .sc-status.mockup-done { color: var(--accent); background: rgba(45,212,160,0.12); border: 1px solid var(--accent-border); }
+  .sc-status.mockup-next { color: #c4842d; background: rgba(196,132,45,0.1); border: 1px solid rgba(196,132,45,0.18); }
+
+  .sc-persona {
+    font-size: 10px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 2px 8px; border-radius: 4px;
+  }
+  .sc-persona.agency { color: var(--phase1); background: rgba(24,133,106,0.06); }
+  .sc-persona.client { color: var(--phase3); background: rgba(196,132,45,0.06); }
+  .sc-persona.user { color: var(--phase2); background: rgba(74,140,199,0.06); }
+  .sc-persona.platform { color: var(--phase0); background: rgba(167,139,250,0.06); }
+  .sc-persona.shared { color: var(--text-muted); background: var(--bg-elevated); }
+
+  .sc-desc {
+    font-size: 14px; color: var(--text-muted); font-weight: 300;
+    line-height: 1.7; margin-bottom: 20px; max-width: 650px;
+  }
+
+  /* Subsections */
+  .sc-section { margin-bottom: 20px; }
+  .sc-section:last-child { margin-bottom: 0; }
+  .sc-section-title {
+    font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 10px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .sc-section-title.deps { color: var(--phase4); }
+  .sc-section-title.features { color: var(--accent); }
+  .sc-section-title.tasks { color: var(--phase2); }
+  .sc-section-title.data { color: var(--phase5); }
+  .sc-section-title.notes { color: var(--text-dim); }
+
+  /* Item list */
+  .sc-items { list-style: none; }
+  .sc-item {
+    font-size: 13px; color: var(--text-muted); font-weight: 300;
+    line-height: 1.6; padding: 6px 0; padding-left: 20px;
+    position: relative; border-bottom: 1px solid var(--border-subtle);
+  }
+  .sc-item:last-child { border-bottom: none; }
+  .sc-item::before {
+    content: ''; position: absolute; left: 0; top: 13px;
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .sc-section.deps-sec .sc-item::before { background: var(--phase4); opacity: 0.4; }
+  .sc-section.features-sec .sc-item::before { background: var(--accent); opacity: 0.4; }
+  .sc-section.tasks-sec .sc-item::before { background: var(--phase2); opacity: 0.4; }
+  .sc-section.data-sec .sc-item::before { background: var(--phase5); opacity: 0.4; }
+  .sc-section.notes-sec .sc-item::before { background: var(--text-dim); opacity: 0.3; }
+
+  .sc-item strong { color: var(--text); font-weight: 600; }
+  .sc-item code {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    background: var(--bg-elevated); padding: 1px 6px; border-radius: 4px;
+    color: var(--text-muted);
+  }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); margin: 60px 0; position: relative; }
+  .divider::after {
+    content: ''; position: absolute; left: 0; top: 0;
+    width: 40px; height: 1px; background: var(--accent); opacity: 0.5;
+  }
+
+  /* Data model */
+  .data-model {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px; margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .dm-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .dm-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-bottom: 16px; }
+  .dm-entity {
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 20px; margin-bottom: 10px;
+  }
+  .dm-entity-name {
+    font-family: 'IBM Plex Mono', monospace; font-size: 13px;
+    font-weight: 600; color: var(--accent); margin-bottom: 6px;
+  }
+  .dm-field {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+    color: var(--text-muted); line-height: 1.8;
+  }
+  .dm-field .type { color: var(--text-dim); }
+  .dm-field .key { color: var(--phase3); }
+
+  @media (max-width: 700px) {
+    .container { padding: 40px 20px; }
+    .stats-bar { grid-template-columns: repeat(3, 1fr); }
+    .sc-header { flex-wrap: wrap; }
+    .sc-priority { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-badge">Development Spec v1.0</div>
+    <h1 class="cover-title">PranaOS<br>Build Plan</h1>
+    <p class="cover-sub">Every screen broken into dependencies, features, and developer tasks. Organized in build phases — each phase unlocks the next. Hand this to your developer and build one screen at a time.</p>
+    <div class="cover-divider"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">39</div><div class="stat-label">Total Screens</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--accent);">30</div><div class="stat-label">Mockups Done</div></div>
+    <div class="stat"><div class="stat-num" style="color:#c25a5a;">19</div><div class="stat-label">P0 (MVP)</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--phase3);">15</div><div class="stat-label">P1 (Scale)</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--text-dim);">5</div><div class="stat-label">P2 (Optimize)</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--accent);">30</div><div class="stat-label">Build Phases</div></div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!--  PHASE 0: DATA MODEL & INFRASTRUCTURE                            -->
+  <!-- ================================================================ -->
+  <div class="build-phase">
+    <div class="bp-header">
+      <span class="bp-badge" style="background:var(--phase0);">Phase 0</span>
+      <span class="bp-title">Data Model & Infrastructure</span>
+    </div>
+    <div class="bp-desc">Before any screen gets built, the core data model and infrastructure must exist. This is the foundation everything else plugs into.</div>
+    <div class="bp-deps"><strong>Depends on:</strong> Nothing — this is ground zero</div>
+
+    <div class="data-model">
+      <div class="dm-title">Core Data Model</div>
+      <div class="dm-desc">Multi-tenant hierarchy: Platform → Agency → Client → Department → User. Every query is scoped by tenant.</div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">Agency</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          name, slug, logo_url, brand_colors <span class="type">jsonb</span><br>
+          plan_tier <span class="type">enum (starter, growth, enterprise)</span><br>
+          stripe_customer_id, stripe_subscription_id <span class="type">string</span><br>
+          onboarding_completed <span class="type">boolean</span><br>
+          created_at, updated_at <span class="type">timestamp</span>
+        </div>
+      </div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">AgencySeat</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          agency_id <span class="type">FK → Agency</span><br>
+          user_id <span class="type">FK → User</span><br>
+          role <span class="type">enum (owner, admin, member)</span><br>
+          status <span class="type">enum (active, invited, deactivated)</span>
+        </div>
+      </div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">Partition (Client)</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          agency_id <span class="type">FK → Agency</span><br>
+          name, slug, logo_url, brand_colors <span class="type">jsonb</span><br>
+          type <span class="type">enum (internal, client)</span> — internal = free agency partition<br>
+          billing_config <span class="type">jsonb</span> — base_fee, usage_markup_pct, custom_overrides<br>
+          status <span class="type">enum (active, suspended, archived)</span><br>
+          created_at, updated_at <span class="type">timestamp</span>
+        </div>
+      </div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">Department</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          partition_id <span class="type">FK → Partition</span><br>
+          name <span class="type">string</span><br>
+          agent_access <span class="type">uuid[] — which agents this dept can see</span><br>
+          knowledge_access <span class="type">uuid[] — which knowledge stores</span>
+        </div>
+      </div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">User</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          email, name, avatar_url <span class="type">string</span><br>
+          auth_provider <span class="type">enum (email, google, github)</span><br>
+          password_hash <span class="type">string nullable</span><br>
+          onboarding_completed <span class="type">boolean</span>
+        </div>
+      </div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">PartitionMembership</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          partition_id <span class="type">FK → Partition</span><br>
+          user_id <span class="type">FK → User</span><br>
+          department_id <span class="type">FK → Department nullable</span><br>
+          role <span class="type">enum (admin, member, viewer)</span><br>
+          is_agency_admin <span class="type">boolean — true when agency member accessing client</span>
+        </div>
+      </div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">Agent</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          name, description, icon_url <span class="type">string</span><br>
+          industry_tags, usecase_tags <span class="type">string[]</span><br>
+          source <span class="type">enum (pranaos, agency_built, agency_cloned)</span><br>
+          created_by_agency_id <span class="type">FK → Agency nullable</span><br>
+          marketplace_status <span class="type">enum (private, pending_review, published)</span><br>
+          gui_config <span class="type">jsonb — defines the agent's custom UI</span><br>
+          system_prompt <span class="type">text</span><br>
+          required_integrations <span class="type">string[] — e.g. ["shopify", "google_ads"]</span>
+        </div>
+      </div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">AgentDeployment</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          agent_id <span class="type">FK → Agent</span><br>
+          partition_id <span class="type">FK → Partition</span><br>
+          config <span class="type">jsonb — per-client agent configuration</span><br>
+          integration_credentials <span class="type">jsonb encrypted</span><br>
+          pending_auth <span class="type">string[] — integrations awaiting client auth</span><br>
+          status <span class="type">enum (active, paused, error)</span>
+        </div>
+      </div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">KnowledgeStore</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          partition_id <span class="type">FK → Partition</span><br>
+          name <span class="type">string</span><br>
+          ragie_collection_id <span class="type">string — external Ragie reference</span><br>
+          status <span class="type">enum (indexing, ready, error)</span>
+        </div>
+      </div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">Integration</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          partition_id <span class="type">FK → Partition</span><br>
+          provider <span class="type">string — "shopify", "google_ads", "slack", etc.</span><br>
+          credentials <span class="type">jsonb encrypted</span><br>
+          status <span class="type">enum (connected, pending_client_auth, error, revoked)</span><br>
+          connected_by <span class="type">enum (agency, client)</span>
+        </div>
+      </div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">Decision</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          agent_deployment_id <span class="type">FK → AgentDeployment</span><br>
+          partition_id <span class="type">FK → Partition</span><br>
+          title, description <span class="type">string</span><br>
+          type <span class="type">string — "approval", "review", "selection"</span><br>
+          payload <span class="type">jsonb — agent-specific decision data</span><br>
+          status <span class="type">enum (pending, approved, rejected, deferred)</span><br>
+          decided_by <span class="type">FK → User nullable</span><br>
+          decided_at <span class="type">timestamp nullable</span><br>
+          created_at <span class="type">timestamp</span>
+        </div>
+      </div>
+
+      <div class="dm-entity">
+        <div class="dm-entity-name">BillingRecord</div>
+        <div class="dm-field">
+          <span class="key">id</span> <span class="type">uuid PK</span><br>
+          partition_id <span class="type">FK → Partition</span><br>
+          period_start, period_end <span class="type">date</span><br>
+          base_fee <span class="type">decimal</span><br>
+          usage_charges <span class="type">jsonb — {messages: n, actions: n, api_calls: n, cost: decimal}</span><br>
+          total <span class="type">decimal</span><br>
+          status <span class="type">enum (draft, sent, paid, overdue)</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">INFRA</span>
+        <span class="sc-name">Infrastructure Tasks</span>
+      </div>
+      <div class="sc-desc">Non-screen work that must exist before any UI can function.</div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Database setup:</strong> PostgreSQL with row-level security (RLS) policies for multi-tenant isolation. Every query must scope to agency → partition → department</li>
+          <li class="sc-item"><strong>Auth system:</strong> OAuth2 (Google, GitHub) + email/password. JWT tokens with embedded tenant context (<code>agency_id</code>, <code>partition_id</code>, <code>role</code>)</li>
+          <li class="sc-item"><strong>API framework:</strong> REST or tRPC. All endpoints require auth middleware that enforces tenant boundaries</li>
+          <li class="sc-item"><strong>Encryption layer:</strong> Integration credentials and API keys must be encrypted at rest (AES-256). Decrypt only at runtime for agent execution</li>
+          <li class="sc-item"><strong>File storage:</strong> S3-compatible for logos, brand assets, uploaded docs. Namespaced by <code>/agency_id/partition_id/</code></li>
+          <li class="sc-item"><strong>Ragie integration:</strong> SDK setup for knowledge base creation, document indexing, and retrieval. One Ragie collection per KnowledgeStore</li>
+          <li class="sc-item"><strong>Stripe integration:</strong> Products for plans (Starter, Growth, Enterprise), metered billing for partitions and usage, Checkout Sessions for self-serve signup</li>
+          <li class="sc-item"><strong>Email service:</strong> Transactional emails (invites, billing) with agency-branded templates. Support custom from-name and logo injection</li>
+          <li class="sc-item"><strong>Real-time:</strong> WebSocket or SSE for live activity feeds, decision notifications, agent status updates</li>
+          <li class="sc-item"><strong>Background jobs:</strong> Queue system for agent execution, knowledge indexing, billing calculations, email sending</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================================ -->
+  <!--  PHASE 1: AUTH & CORE SETUP SCREENS                              -->
+  <!-- ================================================================ -->
+  <div class="build-phase">
+    <div class="bp-header">
+      <span class="bp-badge" style="background:var(--phase1);">Phase 1</span>
+      <span class="bp-title">Auth & Core Setup Screens</span>
+    </div>
+    <div class="bp-desc">The screens that create accounts, partitions, departments, and users. These are the "plumbing" screens that every other screen depends on.</div>
+    <div class="bp-deps"><strong>Depends on:</strong> Phase 0 (data model, auth, Stripe)</div>
+
+    <!-- S-04 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">S-04</span>
+        <span class="sc-name">Sign Up + Checkout</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Agency creates account, selects plan, enters payment. One seat included. Names their organization.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Auth system (OAuth + email/password)</li>
+          <li class="sc-item">Stripe Checkout Sessions configured with plan products</li>
+          <li class="sc-item">Agency + AgencySeat tables</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Auth options:</strong> "Sign up with Google," "Sign up with GitHub," or email/password</li>
+          <li class="sc-item"><strong>Org naming:</strong> Input for agency name after auth. Auto-generates slug</li>
+          <li class="sc-item"><strong>Plan selection:</strong> 3 cards — Starter ($500/mo), Growth ($750/mo), Enterprise (Contact us). Feature comparison below</li>
+          <li class="sc-item"><strong>Stripe Checkout:</strong> Embedded checkout or redirect. Card input, confirm, activate immediately</li>
+          <li class="sc-item"><strong>Post-payment redirect:</strong> On success → Onboarding Survey (A-01). On failure → retry with error messaging</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build sign-up page with OAuth buttons + email/password form</li>
+          <li class="sc-item">Implement OAuth flows (Google, GitHub) with callback handlers</li>
+          <li class="sc-item">Build org-naming step (validate uniqueness of slug)</li>
+          <li class="sc-item">Create Stripe Checkout Session on plan selection (<code>mode: subscription</code>)</li>
+          <li class="sc-item">Handle Stripe webhook <code>checkout.session.completed</code> → create Agency + AgencySeat records</li>
+          <li class="sc-item">Set JWT with <code>agency_id</code> and <code>role: owner</code> after successful signup</li>
+          <li class="sc-item">Build Enterprise "Contact us" form that sends to PranaOS sales inbox</li>
+          <li class="sc-item">Error states: payment failure, duplicate email, OAuth denied</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- A-05 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">A-05</span>
+        <span class="sc-name">Client Setup</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Create a client (partition). Used for both agency's own internal partition and real clients. Name, logo, brand colors. Creates a data-isolated environment.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Authenticated agency session (S-04)</li>
+          <li class="sc-item">Partition + Integration tables</li>
+          <li class="sc-item">File storage for logo uploads</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Client name:</strong> Text input. Auto-slug</li>
+          <li class="sc-item"><strong>Logo upload:</strong> Drag-and-drop or file picker. Preview in context</li>
+          <li class="sc-item"><strong>Brand colors:</strong> Primary + secondary color pickers. Live preview of how the client's site will look</li>
+          <li class="sc-item"><strong>Partition type flag:</strong> If first setup and part of onboarding flow, type = "internal" (free). Otherwise type = "client" (billed at $50/mo)</li>
+          <li class="sc-item"><strong>Live preview panel:</strong> Right-side preview showing the client dashboard mockup with their logo and colors applied</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build client setup form (name, slug validation, logo upload, color pickers)</li>
+          <li class="sc-item">Implement logo upload → S3 with partition-scoped path</li>
+          <li class="sc-item">Build live preview component that renders a mini client dashboard with injected brand</li>
+          <li class="sc-item">Create Partition record on submit. If type = "client", trigger Stripe metered billing add-on</li>
+          <li class="sc-item">Create default PartitionMembership with <code>is_agency_admin: true</code> for the creating user</li>
+          <li class="sc-item">Handle "internal" partition creation (no billing, flag <code>type: internal</code>)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- A-07 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">A-07</span>
+        <span class="sc-name">Department + User Setup</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Agency-side user and team management. Scope selector switches between agency team and any client (counts update). Three tabs: Departments (cards with agent + knowledge source tags, ✏️ edit and 🗑️ delete per card), Team Members (user table with search/filters), Pending Invites (resend/revoke). Department create/edit modal uses search + tag input for agents and knowledge sources. Invite + bulk invite modals.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Partition exists (A-05)</li>
+          <li class="sc-item">Department, User, PartitionMembership tables</li>
+          <li class="sc-item">Email service for invite sending</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Scope selector:</strong> Dropdown switches between agency team and any client. Department count, user count, and pending invite count update. Tab badges update</li>
+          <li class="sc-item"><strong>Department cards:</strong> 2-column grid. Each card shows agent access tags (purple) and knowledge source tags (blue). ✏️ edit opens pre-filled modal, 🗑️ delete with confirm. "+ Add department" dashed card</li>
+          <li class="sc-item"><strong>Department modal:</strong> Search + tag input for both agents and knowledge sources. Type to filter, click to add as chip, × to remove. Works for create (blank) and edit (pre-filled). Knowledge sources are folders and connected data (not individual files)</li>
+          <li class="sc-item"><strong>Bidirectional access:</strong> Department agent access writable from both A-07 (department-centric) and A-06 (agent-centric). Same underlying data</li>
+          <li class="sc-item"><strong>Team Members tab:</strong> Full table with avatar, name, email, department tag, role badge (Admin/Member/Viewer), status (Active/Pending/Expired), last active, Edit/Remove actions. Search bar + department + role filters</li>
+          <li class="sc-item"><strong>Invite modal:</strong> Email, department, role selector with descriptions, optional personal note</li>
+          <li class="sc-item"><strong>Bulk invite:</strong> Textarea for multiple emails (one per line or comma-separated), shared department + role assignment</li>
+          <li class="sc-item"><strong>Pending Invites tab:</strong> Table with email, department, role, status, sent date. Resend (flashes ✓ Sent) and Revoke actions</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build scope selector: query partitions for this agency, switch all data on change</li>
+          <li class="sc-item">Build department CRUD with card grid layout</li>
+          <li class="sc-item">Build search + tag input component (reusable): text input with dropdown, click to add chip, × to remove. Used for agent access and knowledge source access</li>
+          <li class="sc-item">Build agent access: read/write <code>Department.agent_deployment_ids[]</code>. Bidirectional sync with A-06 department access chips</li>
+          <li class="sc-item">Build knowledge source access: read/write <code>Department.knowledge_source_ids[]</code>. Sources are folders/connections, not individual files</li>
+          <li class="sc-item">Build user table with search, department filter, role filter, pagination</li>
+          <li class="sc-item">Build invite flow: validate email → create User (if new) → create PartitionMembership → send agency-branded email with one-click accept</li>
+          <li class="sc-item">Build bulk invite: parse textarea → validate emails → batch create invites with shared dept + role</li>
+          <li class="sc-item">Build invite status tracking (pending/accepted/expired with 7-day TTL). Resend resets TTL</li>
+          <li class="sc-item">Handle invite acceptance: set password → complete membership → redirect to client portal</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================================ -->
+  <!--  PHASE 2: AGENT INFRASTRUCTURE                                   -->
+  <!-- ================================================================ -->
+  <div class="build-phase">
+    <div class="bp-header">
+      <span class="bp-badge" style="background:var(--phase2);">Phase 2</span>
+      <span class="bp-title">Agent Infrastructure</span>
+    </div>
+    <div class="bp-desc">The marketplace, agent configuration, and the two core agent interfaces (GUI and chat). This is where the product's core value lives.</div>
+    <div class="bp-deps"><strong>Depends on:</strong> Phase 1 (accounts, partitions, departments)</div>
+
+    <!-- A-04 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">A-04</span>
+        <span class="sc-name">Agent Marketplace</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Browse all available agents by industry + use case. Preview GUIs. Deploy to a partition, clone for editing, or request a custom build. This is the "App Store" for AI agents.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Agent table populated with at least 3-5 seed agents from PranaOS</li>
+          <li class="sc-item">AgentDeployment table for deploy action</li>
+          <li class="sc-item">At least one partition exists to deploy to</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Filter bar:</strong> Filter by industry (Retail, SaaS, Healthcare, etc.) and use case (Marketing, Sales, Operations, Finance, HR). Multi-select both</li>
+          <li class="sc-item"><strong>Search:</strong> Text search across agent names, descriptions, tags</li>
+          <li class="sc-item"><strong>Agent cards:</strong> Icon, name, one-line description, industry/use-case badges, source badge (PranaOS / Community), required integrations icons</li>
+          <li class="sc-item"><strong>Card click → detail drawer/modal:</strong> Full description, GUI preview screenshot, list of integrations, deployment count, "Deploy" / "Clone" / "Preview" buttons</li>
+          <li class="sc-item"><strong>Deploy action:</strong> Select partition → creates AgentDeployment → redirects to A-06 for configuration</li>
+          <li class="sc-item"><strong>Clone action:</strong> Creates a copy of the Agent owned by this agency → opens in Agent Builder (A-13, P1)</li>
+          <li class="sc-item"><strong>Featured section:</strong> Curated agents at top of page, set by Platform Admin</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build marketplace browse page with filter sidebar + grid layout</li>
+          <li class="sc-item">Implement full-text search on agents (<code>name</code>, <code>description</code>, <code>industry_tags</code>, <code>usecase_tags</code>)</li>
+          <li class="sc-item">Build agent card component (reusable — used in marketplace, client dashboard, etc.)</li>
+          <li class="sc-item">Build agent detail drawer: full info, screenshot preview, integration requirements, action buttons</li>
+          <li class="sc-item">Implement "Deploy" flow: select target partition → create AgentDeployment → redirect to config</li>
+          <li class="sc-item">Implement "Clone" flow: deep copy Agent record with <code>source: agency_cloned</code>, new ownership</li>
+          <li class="sc-item">Seed the database with 3-5 first-party agents (Final Sale, Paid Ads, Knowledge Q&A at minimum)</li>
+          <li class="sc-item">Build featured agents query (agents where <code>featured: true</code>, ordered by <code>featured_order</code>)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- A-06 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">A-06</span>
+        <span class="sc-name">Agent Configuration + Integrations</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Per-client agent configuration with 5 tabs: Integrations (OAuth connect/disconnect, pending client auth, progress bar, department scoping), Knowledge Base (drag-drop upload, Google Drive sync, indexed doc list with status), Behavior (scan config, automation toggles, notification toggles), System Prompt (monospace editor with template variables), and Test Sandbox (mini chat against live data in sandbox mode).</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">AgentDeployment exists (from A-04 deploy action)</li>
+          <li class="sc-item">Integration table + OAuth provider configs (Shopify, Google, Slack, etc.)</li>
+          <li class="sc-item">KnowledgeStore + Ragie SDK for document indexing</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>5-tab layout:</strong> Integrations, Knowledge Base, Behavior, System Prompt, Test. Tab badge shows pending integration count</li>
+          <li class="sc-item"><strong>Department access:</strong> Chip-based department selector at top of Integrations tab — add/remove which departments can use this agent. Writable from both A-06 and A-07</li>
+          <li class="sc-item"><strong>Integration connection:</strong> Required + optional integrations. Each shows status (Connected ✅, Pending ⏳, Not Connected), department scope badge, OAuth connect button, disconnect button. Progress bar showing X of Y connected</li>
+          <li class="sc-item"><strong>"Mark as pending":</strong> Available on both required and optional integrations. Flags for client onboarding (C-02)</li>
+          <li class="sc-item"><strong>Knowledge Base:</strong> Client + department scope dropdowns (no technical jargon). Drag-drop upload zone, Google Drive folder sync, indexed document list with status (Indexed ✓ / Indexing ⏳), remove per doc</li>
+          <li class="sc-item"><strong>Behavior config:</strong> Agent-specific form fields (scan frequency, thresholds, exclusions). Automation toggles (auto-approve, exclude sale items, exclude new arrivals). Notification toggles</li>
+          <li class="sc-item"><strong>System prompt editor:</strong> Monospace editor with template variables (<code>{{client_name}}</code>, <code>{{min_days_in_stock}}</code>, etc.). Save + reset to default</li>
+          <li class="sc-item"><strong>Test sandbox:</strong> Mini chat against live connected data in sandbox mode. Pre-loaded example exchange. Source attribution per response</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build 5-tab layout with badge counts</li>
+          <li class="sc-item">Build department access chips: read/write to <code>AgentDeployment.department_ids[]</code>. Sync bidirectionally with A-07 department config</li>
+          <li class="sc-item">Build integration connection UI: required vs optional sections, status from Integration table, progress bar</li>
+          <li class="sc-item">Implement OAuth flows per provider (Shopify, Google, Slack, Square). Store credentials encrypted. "Mark as pending" sets <code>pending_client_auth</code></li>
+          <li class="sc-item">Build knowledge scope selector: client dropdown (from agency's partitions) + department dropdown. Scopes all uploads to selected scope</li>
+          <li class="sc-item">Build file upload → indexing pipeline: upload to S3 → index → poll status → update doc list</li>
+          <li class="sc-item">Build Google Drive folder picker → auto-sync selected folders</li>
+          <li class="sc-item">Build dynamic config form renderer from <code>agent.gui_config.settings_schema</code> (JSON Schema) → renders fields + toggles</li>
+          <li class="sc-item">Build system prompt editor: monospace, template variable injection, save + reset</li>
+          <li class="sc-item">Build test sandbox: chat UI calling agent with current config, sandbox flag, source attribution</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- C-05 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">C-05</span>
+        <span class="sc-name">Agent GUI (Framework)</span>
+        <span class="sc-persona client">Client Admin</span>
+        <span class="sc-persona user">User</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Dedicated agent interface shell. Example built as Final Sale Agent: scan action, stats strip, decision banner, full results table with per-row approve/reject, urgency filtering, search, bulk actions, progress overlay with staged status updates, settings drawer, and scan history.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">AgentDeployment with at least one connected integration</li>
+          <li class="sc-item">Agent execution engine (calls LLM with agent's system prompt + connected data)</li>
+          <li class="sc-item">Decision table for human-in-the-loop outputs</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Agent shell:</strong> Client header (branded), back button → C-04, agent icon + name + description, meta bar (status dot, last scan time, frequency, integration status). Action buttons: "▶ Run scan now" (primary), "⚙️ Settings" (secondary)</li>
+          <li class="sc-item"><strong>Stats strip:</strong> 4 KPI cards specific to agent type. Final Sale example: Items Scanned, Flagged for Markdown, Revenue Recovered, Time Saved</li>
+          <li class="sc-item"><strong>Decision banner:</strong> Amber warning bar when pending items exist. Shows count + description + "Review items ↓" scroll action. Auto-hides when all items actioned</li>
+          <li class="sc-item"><strong>Results table:</strong> Full data table with columns: Product (image + name + SKU), Days in Stock, Urgency badge (High/Med/Low with color), Suggested Markdown %, Est. Recovery $, Action buttons. Search bar + urgency filter tabs (All/High/Med/Low). Per-row Approve/Reject buttons that animate to confirmed state</li>
+          <li class="sc-item"><strong>Bulk actions:</strong> Table footer with pending/approved/rejected counts + "✓ Approve all" and "Reject all" buttons</li>
+          <li class="sc-item"><strong>Settings drawer:</strong> Slide-in panel with scan config (frequency, min days, max markdown %), automation toggles (auto-approve low urgency, exclude sale items, exclude new arrivals), notification toggles, connected integration status</li>
+          <li class="sc-item"><strong>Scan progress overlay:</strong> Modal with spinner, progress bar, staged status messages (Connecting → Pulling data → Analyzing → Generating → Complete)</li>
+          <li class="sc-item"><strong>Recent History:</strong> Chronological log of past scan runs and approval batches with approver name, timestamp, and recovery estimates</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build agent shell component: header chrome, back nav, status bar, action buttons (reused by all agents)</li>
+          <li class="sc-item">Design <code>gui_config</code> schema: define how agents declare their UI (component types, layouts, data bindings, stat cards, table columns)</li>
+          <li class="sc-item">Build GUI renderer: reads <code>gui_config</code> → renders components with live data</li>
+          <li class="sc-item">Build action execution pipeline: button click → API call → agent runs → WebSocket progress updates → results → update UI</li>
+          <li class="sc-item">Build results table component: sortable columns, search filter, urgency filter tabs, per-row actions, bulk actions</li>
+          <li class="sc-item">Build decision card/row component: approve/reject → creates/updates Decision record → animate button state</li>
+          <li class="sc-item">Build settings drawer: agent-specific config (scan frequency, thresholds, automation rules, notifications)</li>
+          <li class="sc-item">Build scan progress overlay: WebSocket-driven status messages with progress bar</li>
+          <li class="sc-item">Build history log: query past agent runs and decision batches</li>
+          <li class="sc-item">Build graceful error states: integration disconnected, agent timeout, rate limit hit</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- C-06 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">C-06</span>
+        <span class="sc-name">Universal Chat</span>
+        <span class="sc-persona client">Client Admin</span>
+        <span class="sc-persona user">User</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Full-screen "ask anything" chat with conversation sidebar and smart intent routing. Analyzes queries to route to the best agent (Final Sale, Paid Ads, Email Drafter, Revenue Reporter) or knowledge base. Shows routing indicator → typing animation → rich response with source attribution.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Agent execution engine</li>
+          <li class="sc-item">Ragie retrieval for knowledge base queries</li>
+          <li class="sc-item">AgentDeployment records to know which agents are available</li>
+          <li class="sc-item">Department-scoped access (user only sees agents/knowledge their department allows)</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Full-screen layout:</strong> Left sidebar (280px) with conversation list + search + "new chat" button. Main area with messages + input bar. Fills viewport height</li>
+          <li class="sc-item"><strong>Conversation sidebar:</strong> Each item shows title, preview text, routed-agent badge (colored), and timestamp. Active state highlighted. Click to load. Search bar to filter</li>
+          <li class="sc-item"><strong>Empty state:</strong> Center-aligned "Ask anything about [Client Name]" + 4 suggested prompt chips based on active agents. Clicking a chip sends it as a message</li>
+          <li class="sc-item"><strong>Smart routing:</strong> Intent detection classifies query → routes to best agent. Visible "Routing to [Agent]…" spinner before typing begins. Supports: inventory → Final Sale, ads → Paid Ads, vendor → Knowledge Base, email → Email Drafter, revenue → Revenue Reporter, fallback → Knowledge Base</li>
+          <li class="sc-item"><strong>Message bubbles:</strong> User messages right-aligned in client-primary color. AI responses left-aligned with agent avatar + white card. Rich formatting: bold, lists, links, code. Avatar varies by agent</li>
+          <li class="sc-item"><strong>Source attribution:</strong> Below each AI response: colored badge with agent name + data source text. Links to open agent GUI or source document</li>
+          <li class="sc-item"><strong>Typing indicator:</strong> Three bouncing dots with agent avatar while response generates</li>
+          <li class="sc-item"><strong>Input bar:</strong> Auto-resizing textarea (up to 120px), send button, Enter to send / Shift+Enter for newline. Hint: "Routes to the best agent automatically"</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build chat UI: message list with auto-scroll, auto-resizing textarea, send button, rich markdown rendering</li>
+          <li class="sc-item">Build routing layer: classify incoming query → select best agent → show routing indicator → pass to agent execution → stream response</li>
+          <li class="sc-item">Implement streaming responses (SSE or WebSocket) with typing indicator during generation</li>
+          <li class="sc-item">Build RAG query path: if no specific agent matches, query Ragie knowledge base → return with citations</li>
+          <li class="sc-item">Build source attribution component: agent badge + data source + link to agent GUI or source doc</li>
+          <li class="sc-item">Build conversation persistence: store messages per user per partition, load history, search conversations</li>
+          <li class="sc-item">Build conversation sidebar: list, search, new chat, active state management</li>
+          <li class="sc-item">Build suggested prompts: generate 4 prompts from active agents' capabilities on empty state</li>
+          <li class="sc-item">Scope all queries by department: only route to agents/knowledge the user's department can access</li>
+          <li class="sc-item">Widget mode (P1): floating chat bubble on C-04/C-05 that opens a panel version of this interface</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================================ -->
+  <!--  PHASE 3: CLIENT EXPERIENCE                                      -->
+  <!-- ================================================================ -->
+  <div class="build-phase">
+    <div class="bp-header">
+      <span class="bp-badge" style="background:var(--phase3);">Phase 3</span>
+      <span class="bp-title">Client Experience</span>
+    </div>
+    <div class="bp-desc">The screens end-clients see. Dashboard, onboarding, decision inbox, walkthroughs. These screens must feel branded to the agency.</div>
+    <div class="bp-deps"><strong>Depends on:</strong> Phase 2 (agents, chat, GUI framework)</div>
+
+    <!-- C-04 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">C-04</span>
+        <span class="sc-name">Client Dashboard (Agent Launcher)</span>
+        <span class="sc-persona client">Client Admin</span>
+        <span class="sc-persona user">User</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Client-branded portal home screen. Top nav, 4 KPI stats (Active Agents, Decisions, Messages, Time Saved), full-width ROI card with labor rate × hours + revenue impact vs cost, 6 agent cards with time saved metric, activity feed, pending decisions with quick-approve, floating universal chat bar.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Partition with brand config (logo, colors)</li>
+          <li class="sc-item">AgentDeployments for this partition</li>
+          <li class="sc-item">Decision records for pending count badges</li>
+          <li class="sc-item">Universal Chat widget (C-06)</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Branded header:</strong> Client logo + name, top nav tabs (Home, Agents, Decisions with badge, Knowledge, Settings). Client primary color applied to active states, badges, CTAs via CSS custom properties</li>
+          <li class="sc-item"><strong>Stats row:</strong> 4 KPI cards — Active Agents (↑ count), Decisions This Week (↑ %), Messages Sent (chat interactions), Time Saved This Month (hours, ↑ %)</li>
+          <li class="sc-item"><strong>ROI card:</strong> Full-width breakdown: Time Saved (hours × labor rate = $ value), Revenue Impact (recovered + savings), Monthly Cost, Return multiplier (e.g. 8.1x). "Edit assumptions ⚙️" link → settings for labor rate</li>
+          <li class="sc-item"><strong>Agent grid:</strong> 3-column cards with emoji icon, name, status dot (active/paused), description, stats footer (decisions count + time saved). Click → C-05 Agent GUI</li>
+          <li class="sc-item"><strong>Activity feed:</strong> Left column — recent agent actions with timestamps, department tags, action links</li>
+          <li class="sc-item"><strong>Pending decisions:</strong> Right column — quick-approve buttons that animate to ✓ and decrement nav badge</li>
+          <li class="sc-item"><strong>Floating chat bar:</strong> Fixed bottom-center, "Ask anything about [Client]…", Enter → opens C-06 with message pre-filled</li>
+          <li class="sc-item"><strong>Footer:</strong> "Powered by PranaOS · Implemented by [Agency Name]"</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build client portal layout with injected branding (CSS custom properties per partition: --client-primary, --client-primary-light, etc.)</li>
+          <li class="sc-item">Build top nav with decision badge count (WebSocket for real-time updates)</li>
+          <li class="sc-item">Build agent card grid: fetch AgentDeployments, show time saved per deployment</li>
+          <li class="sc-item">Build ROI card: sum hours × labor_rate + revenue attribution vs cost. Store <code>Partition.roi_config</code> jsonb (labor_rate, revenue_rules)</li>
+          <li class="sc-item">Build "Edit assumptions" settings modal (labor rate, revenue attribution rules)</li>
+          <li class="sc-item">Build activity feed and pending decisions panel with quick-approve actions</li>
+          <li class="sc-item">Build floating chat bar → C-06 navigation with message pre-fill</li>
+          <li class="sc-item">Department scoping: regular users see only their department's agents and activity</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- C-01 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">C-01</span>
+        <span class="sc-name">Client Welcome (Branded)</span>
+        <span class="sc-persona client">Client Admin</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Full-screen branded welcome. Subtle radial background gradients (client-primary top-right, accent bottom-left). Agency strip pill at top ("Set up by Prana IQ" with logo). Hero: large client logo, "Welcome to your AI workspace", subtitle with agent count. Agent list: 6 cards with gradient icon backgrounds, name, description, ✓ check. Amber auth callout showing 1 pending connection (Square POS) with security messaging. Green CTA "Let's get started →" with loading state, routes to C-02. Skip link routes to C-03. Trust strip (encrypted, SOC 2, data control). Powered by PranaOS footer.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Invite acceptance flow (from A-07)</li>
+          <li class="sc-item">Partition brand config</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Branded welcome:</strong> Agency logo, "Welcome to [Platform Name]", "Set up by [Agency Name]"</li>
+          <li class="sc-item"><strong>What's waiting:</strong> List of agents configured with one-line descriptions. "Your agency has set up 3 AI tools for you"</li>
+          <li class="sc-item"><strong>CTA:</strong> "Let's get started" → routes to C-02 (Integration Auth) if any pending, or C-03 (Walkthrough) if none</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build welcome page: full-screen, centered, branded</li>
+          <li class="sc-item">Query AgentDeployments for this partition to show "what's waiting" list</li>
+          <li class="sc-item">Routing logic: check <code>AgentDeployment.pending_auth</code> → if any pending, route to C-02. Else route to C-03</li>
+          <li class="sc-item">Mark <code>user.onboarding_completed = false</code> until walkthrough finishes — prevent skipping</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- C-02 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">C-02</span>
+        <span class="sc-name">Integration Auth Requests</span>
+        <span class="sc-persona client">Client Admin</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Step 2 of client onboarding (after C-01). Step indicator dots at top (Welcome ✓, Connect accounts, Walkthrough). Centered layout with "Connect your accounts" header. Progress bar (X of 3 connected, percentage). Three integration cards: Square POS (Final Sale Agent), Google Drive (all agents), Meta Ads (Paid Ads Manager). Each shows provider icon, name, agent tag, description, data access scope (read-only/read+manage), Connect button. Click Connect → "Connecting…" spinner → "✓ Connected" with card highlight. Progress bar and continue button update live. All connected → step dots advance, completion overlay ("🎉 All connected!") auto-appears. Security callout about encryption. Skip link to C-03. Continue button enables after first connection.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Integration records with <code>status: pending_client_auth</code></li>
+          <li class="sc-item">OAuth provider configs for each pending integration</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Integration list:</strong> Each pending integration as a card: provider icon, provider name, which agent needs it, what data it accesses (one-line explanation), "Connect" button</li>
+          <li class="sc-item"><strong>Sequential or parallel:</strong> Client can connect them in any order. Each "Connect" triggers an OAuth popup</li>
+          <li class="sc-item"><strong>Progress indicator:</strong> "2 of 3 connected" progress bar</li>
+          <li class="sc-item"><strong>Skip option:</strong> "Skip for now — you can connect later in Settings." Agents that need this integration show limited functionality</li>
+          <li class="sc-item"><strong>Security messaging:</strong> "Your data is encrypted and only accessed by the tools your agency configured." Builds trust</li>
+          <li class="sc-item"><strong>Completion:</strong> All connected → auto-advance to C-03 (Walkthrough)</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Query Integrations where <code>status: pending_client_auth</code> for this partition</li>
+          <li class="sc-item">Build integration card: icon, name, description, agent association, "Connect" CTA</li>
+          <li class="sc-item">Implement OAuth popup flow for each provider — on success, update Integration status to <code>connected</code>, set <code>connected_by: client</code></li>
+          <li class="sc-item">Build progress bar component tracking connected vs total</li>
+          <li class="sc-item">Implement skip flow: advance to walkthrough, leave integrations as pending</li>
+          <li class="sc-item">Auto-advance on all connected</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- C-07 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">C-07</span>
+        <span class="sc-name">Decision Inbox</span>
+        <span class="sc-persona client">Client Admin</span>
+        <span class="sc-persona user">User</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Centralized queue of all agent decisions needing human input. Summary stats, status tabs (Pending/Approved/Rejected/All) with live counts, agent and urgency filters, expandable detail cards with quick actions (Approve/Reject/Defer), "View in agent →" deep links, and live badge decrement on action.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Decision table with records created by agents</li>
+          <li class="sc-item">Agent GUI (C-05) for "view in context" deep link</li>
+          <li class="sc-item">Department-scoped access</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Summary bar:</strong> 4 KPI cards — Pending count, Approved This Week (with trend), Avg. Response Time (with improvement), Est. Value Pending (total $ if all approved)</li>
+          <li class="sc-item"><strong>Status tabs:</strong> Pill tabs with counts: Pending (7), Approved (18), Rejected (3), All (28). Clicking filters the list. Active tab uses client-primary color</li>
+          <li class="sc-item"><strong>Filter bar:</strong> Agent dropdown (All/Final Sale/Paid Ads/Email Drafter/Revenue Reporter), urgency dropdown, search input</li>
+          <li class="sc-item"><strong>Decision cards:</strong> Each card: agent icon (colored per type), agent name, decision title, description, meta row (urgency badge, timestamp, department tag, value estimate). Expandable "Show details ↓" reveals structured data</li>
+          <li class="sc-item"><strong>Quick actions:</strong> Approve/Reject/Defer buttons per card. Email decisions show "Send/Discard/Preview email →". Revenue anomalies show "Acknowledge/Investigate later". Actions animate to resolved badge with approver name + timestamp</li>
+          <li class="sc-item"><strong>View in context:</strong> "View in agent →" link navigates to C-05 with <code>?decision=ID</code></li>
+          <li class="sc-item"><strong>Live counts:</strong> Resolving decrements pending count in summary card, tab count, and nav badge simultaneously. Cards fade to 60% opacity when resolved</li>
+          <li class="sc-item"><strong>Agent variety:</strong> 7 decisions across 4 agents (Paid Ads ×2, Final Sale ×2, Email Drafter ×2, Revenue Reporter ×1) showing different action patterns per agent type</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build decision list page: query Decision table, scope by partition + department permissions</li>
+          <li class="sc-item">Build decision card component: agent icon, title, description, urgency, expandable details, action buttons</li>
+          <li class="sc-item">Implement resolve actions: PATCH Decision status + <code>decided_by</code> + <code>decided_at</code>. Trigger agent follow-up (e.g., apply markdown in Shopify, pause campaign)</li>
+          <li class="sc-item">Build "view in context" deep link: route to C-05 with <code>?decision=DECISION_ID</code></li>
+          <li class="sc-item">Build status tabs with count queries, agent/urgency filter dropdowns, search</li>
+          <li class="sc-item">Build summary KPI cards: pending count, weekly approved, avg response time, pending value sum</li>
+          <li class="sc-item">Build real-time badge: WebSocket subscription to new decisions → update counts</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- C-03 + C-08 Walkthroughs -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">C-03</span>
+        <span class="sc-name">Client Guided Walkthrough</span>
+        <span class="sc-persona client">Client Admin</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">3-step interactive walkthrough overlay on client dashboard. Spotlight/dimmer system with tooltip. Step 1: highlight agents, click to advance. Step 2: inline agent preview with real data (1,247 items, 12 flagged, $4,280 recovery), click Approve. Step 3: chat bar with pre-filled question, press Enter. Completion overlay. Under 2 minutes. Previously: Interactive 3-step tour for first-time client admins: (1) open an agent → (2) see real data → (3) try the chat. Under 2 minutes. Not a video — they interact with real screens.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Client Dashboard (C-04)</li>
+          <li class="sc-item">At least one Agent GUI (C-05) with live data</li>
+          <li class="sc-item">Universal Chat (C-06)</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Step 1 — "Here are your agents":</strong> Highlight the agent cards on the dashboard with a tooltip. "Click one to see what it can do." Advance when they click</li>
+          <li class="sc-item"><strong>Step 2 — "This is real data":</strong> Inside the agent GUI, highlight a key insight or metric. "This is analyzing your actual data right now." Advance after 5 seconds or on click</li>
+          <li class="sc-item"><strong>Step 3 — "Try asking anything":</strong> Open the chat widget, pre-fill a suggested question. "Press send to see it work." Advance when they send a message and receive a response</li>
+          <li class="sc-item"><strong>Completion:</strong> "You're ready. Explore anytime." Dismiss overlay. Set <code>user.onboarding_completed = true</code></li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build walkthrough overlay system: spotlight/highlight specific elements, show tooltip with text + progress dots, advance on specific user action</li>
+          <li class="sc-item">Build 3-step walkthrough sequence with step-specific advancement triggers (click, timer, message sent)</li>
+          <li class="sc-item">Pre-fill chat with suggested question based on active agents</li>
+          <li class="sc-item">On completion: set onboarding flag, dismiss overlay, never show again</li>
+          <li class="sc-item">Gate: if <code>user.onboarding_completed = false</code>, force walkthrough (no skip on first login)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">C-08</span>
+        <span class="sc-name">User Walkthrough</span>
+        <span class="sc-persona user">User</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">2-step simplified walkthrough for non-admin users. Same spotlight overlay as C-03. Department-scoped view (Operations only, 2 agents). Step 1: highlight tools, click to advance. Step 2: chat bar with pre-filled question. Completion: "That's it!" Under 60 seconds. Previously: 60-second mini-tour for first-time users (non-admin). Simpler than client admin walkthrough. Same overlay system, fewer steps.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Walkthrough overlay system (built for C-03)</li>
+          <li class="sc-item">Department-scoped agent view</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Step 1 — "Here are your tools":</strong> Highlight agent cards with tooltip. "These are AI tools that help with your work. Click one to try it"</li>
+          <li class="sc-item"><strong>Step 2 — "Ask anything":</strong> Open chat, suggested question. "Try it — ask about anything related to your work"</li>
+          <li class="sc-item"><strong>Completion:</strong> "That's it — you're ready." Dismiss. Under 60 seconds</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Reuse walkthrough overlay system from C-03</li>
+          <li class="sc-item">Configure 2-step sequence (simplified from client admin's 3-step)</li>
+          <li class="sc-item">Scope suggested prompts to user's department agents</li>
+          <li class="sc-item">Set onboarding flag on completion</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================================ -->
+  <!--  PHASE 4: AGENCY ONBOARDING                                      -->
+  <!-- ================================================================ -->
+  <div class="build-phase">
+    <div class="bp-header">
+      <span class="bp-badge" style="background:var(--phase4);">Phase 4</span>
+      <span class="bp-title">Agency Onboarding</span>
+    </div>
+    <div class="bp-desc">The guided flow that walks agencies through setting up their own business as the first client. Orchestrates screens from Phases 1-3 into a linear walkthrough.</div>
+    <div class="bp-deps"><strong>Depends on:</strong> Phase 1 (setup screens), Phase 2 (agents), Phase 3 (client experience) — this phase is an orchestration layer on top of existing screens</div>
+
+    <!-- A-01 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">A-01</span>
+        <span class="sc-name">Onboarding Survey</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">3-question context survey after sign-up. Personalizes what comes next.</div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Q1:</strong> "What kind of clients do you serve?" — multi-select industry tags (Retail, SaaS, Healthcare, Real Estate, etc.)</li>
+          <li class="sc-item"><strong>Q2:</strong> "How many clients do you serve?" — single select (1-5, 6-20, 20+)</li>
+          <li class="sc-item"><strong>Q3:</strong> "Have you implemented AI tools for clients before?" — (Yes / No / I'm exploring)</li>
+          <li class="sc-item"><strong>Output:</strong> Stored on Agency record. Used to pre-filter marketplace agents and customize onboarding tone</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build 3-step survey with one question per step, progress indicator</li>
+          <li class="sc-item">Store responses on Agency record (add <code>survey_responses jsonb</code>)</li>
+          <li class="sc-item">On completion → route to A-02 (Self-Setup Walkthrough)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- A-02 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">A-02</span>
+        <span class="sc-name">Agency Self-Setup Walkthrough</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">The core onboarding flow. Orchestrates the agency through: creating their internal partition → departments → users → knowledge base → integrations → choosing agents → previewing their client site → testing chat + agents. Uses the same screens built in Phases 1-3 but wrapped in a guided progress bar.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">All Phase 1 screens (A-05, A-07)</li>
+          <li class="sc-item">All Phase 2 screens (A-04, A-06, C-05, C-06)</li>
+          <li class="sc-item">Client Dashboard (C-04) for preview</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Progress bar:</strong> Persistent top bar showing 7 steps: Setup → Departments → Team → Knowledge → Integrations → Agents → Launch</li>
+          <li class="sc-item"><strong>Step 1 (Setup):</strong> Uses A-05 in "internal" mode. Creates free partition with agency's own brand</li>
+          <li class="sc-item"><strong>Step 2 (Departments):</strong> Uses A-07 department creation. Pre-suggests common agency departments (Sales, Operations, Delivery)</li>
+          <li class="sc-item"><strong>Step 3 (Team):</strong> Uses A-07 user invite. Optional — "Skip for now" allowed</li>
+          <li class="sc-item"><strong>Step 4 (Knowledge):</strong> Uses A-06 knowledge base panel. Upload files, connect Drive. "Add the docs your team references daily"</li>
+          <li class="sc-item"><strong>Step 5 (Integrations):</strong> Uses A-06 integration panel. Connect accounts the agency uses (Google Ads, Slack, etc.)</li>
+          <li class="sc-item"><strong>Step 6 (Agents):</strong> Uses A-04 marketplace, pre-filtered by survey responses. "Pick 1-3 agents to start with"</li>
+          <li class="sc-item"><strong>Step 7 (Launch):</strong> Preview client site (C-04), test an agent (C-05), test chat (C-06). "This is what your clients will see." CTA: "Looks great — take me to my dashboard"</li>
+          <li class="sc-item"><strong>Contextual coaching:</strong> Each step has a brief explanation: "You're building this for your agency first. Once you see how it works, you'll build it for clients the exact same way."</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build onboarding wizard wrapper: progress bar, step navigation, skip handling, state persistence</li>
+          <li class="sc-item">Wire each step to existing screen components (A-05, A-07, A-06, A-04) with onboarding-specific props (coaching text, simplified views)</li>
+          <li class="sc-item">Build "internal" partition auto-creation with <code>type: internal</code></li>
+          <li class="sc-item">Pre-populate department suggestions based on survey responses</li>
+          <li class="sc-item">Pre-filter marketplace by survey industry tags in Step 6</li>
+          <li class="sc-item">Build Launch step: render C-04 in preview mode → enable click-through to C-05 and C-06 for testing</li>
+          <li class="sc-item">On completion: set <code>agency.onboarding_completed = true</code>, redirect to Agency Command Center (A-03)</li>
+          <li class="sc-item">Handle resume: if user drops out mid-onboarding, return to last incomplete step on next login</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- A-08 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">A-08</span>
+        <span class="sc-name">Client Site (Agency Admin View)</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Agency's view of any client site. Dark admin bar (sticky top) with PranaOS logo, green pulse "Admin view" indicator, client quick-switcher dropdown, shortcut buttons (Integrations, Users, Knowledge, Performance), "View as client" toggle, and "← Agency Dashboard" link. Admin overlay panel below with 5 summary cards (Integrations status, Users & Teams counts, Knowledge Base sync status, Activity Log, Usage & Billing). Client dashboard renders below with ⚙️ gear icons on agent cards (appear on hover, link to A-06 config). Toggle hides overlay + shortcuts + gear icons to show exact client view. Client switcher updates logo, name, and chat placeholder without page reload.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Client Dashboard (C-04)</li>
+          <li class="sc-item">PartitionMembership with <code>is_agency_admin: true</code></li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Admin bar:</strong> Persistent top bar when agency member views client site. Shows: "Viewing as admin on [Client Name]", toggle to "View as client", link back to Agency Dashboard</li>
+          <li class="sc-item"><strong>Admin view extras:</strong> Agent config shortcuts, integration status, usage stats, edit department access — all accessible from the admin bar</li>
+          <li class="sc-item"><strong>"View as client" toggle:</strong> Hides admin bar, shows exactly what the client sees. For QA and presentation purposes</li>
+          <li class="sc-item"><strong>Quick switch:</strong> Dropdown in admin bar to switch between clients without going back to Agency Dashboard</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build admin bar component: conditional render when <code>is_agency_admin: true</code></li>
+          <li class="sc-item">Build toggle state: admin view shows extra controls overlaid on client dashboard; client view hides them</li>
+          <li class="sc-item">Build quick-switch dropdown: query all partitions for this agency → switch context</li>
+          <li class="sc-item">Ensure all client pages (C-04, C-05, C-06, C-07) render the admin bar when accessed by agency member</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================================ -->
+  <!--  PHASE 5: AGENCY OPERATIONS                                      -->
+  <!-- ================================================================ -->
+  <div class="build-phase">
+    <div class="bp-header">
+      <span class="bp-badge" style="background:var(--phase5);">Phase 5</span>
+      <span class="bp-title">Agency Operations</span>
+    </div>
+    <div class="bp-desc">The command center, client management, decision inbox, and billing. The daily operating screens for agencies managing multiple clients.</div>
+    <div class="bp-deps"><strong>Depends on:</strong> Phase 4 (onboarding complete, at least one client exists)</div>
+
+    <!-- A-03 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">A-03</span>
+        <span class="sc-name">Agency Command Center</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">The agency's daily home screen. Overview of all clients, alerts, agent performance, pending decisions, billing summary. Quick access to everything.</div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Alerts panel:</strong> Integration disconnects, agent errors, client billing due. Sorted by urgency</li>
+          <li class="sc-item"><strong>Client grid:</strong> All partitions as cards — name, logo, agent count, pending decisions, health status. Click → opens client site as admin (A-08)</li>
+          <li class="sc-item"><strong>Decision inbox summary:</strong> "12 decisions pending across 4 clients." Link to full Decision Inbox (A-11)</li>
+          <li class="sc-item"><strong>Quick actions:</strong> "Add client," "Browse agents," "View analytics"</li>
+          <li class="sc-item"><strong>Billing summary:</strong> Total MRR from clients, upcoming invoices, overdue payments</li>
+          <li class="sc-item"><strong>Navigation:</strong> Sidebar with: Dashboard, Clients, Marketplace, Agents (builder), Analytics, Billing, Team, Settings</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build dashboard layout: sidebar navigation + main content area</li>
+          <li class="sc-item">Build alerts query: integrations with <code>status: error</code>, agents with <code>status: error</code>, billing with <code>status: overdue</code></li>
+          <li class="sc-item">Build client grid: query all partitions for agency with aggregated stats</li>
+          <li class="sc-item">Build decision inbox summary: count pending decisions across all partitions</li>
+          <li class="sc-item">Build billing summary: sum <code>base_fee</code> + <code>usage_charges</code> across all active BillingRecords</li>
+          <li class="sc-item">Build sidebar navigation component (reused across all agency screens)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- A-09 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">A-09</span>
+        <span class="sc-name">Client Billing Setup</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Two-column layout: form left, live invoice preview right. Template bar with dropdown (Standard E-Commerce / Enterprise / Starter / Custom) + save/manage. Base fee card ($997/seat × 6 seats, billing cycle selector). Usage markup card (percentage input, readonly platform cost from last 30 days). Infrastructure card (partition fee, pass-through toggle). Custom line items table with add/remove rows, one-time vs monthly frequency. Sticky preview card: itemized breakdown, monthly total, green margin footer showing revenue after cost basis. All inputs live-update the preview. Breadcrumb: Clients > AMC > Billing.</div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Base fee input:</strong> Monthly fixed charge. Default from template or custom amount</li>
+          <li class="sc-item"><strong>Usage markup:</strong> Percentage markup on PranaOS usage costs (messages, actions, API calls). Default 100% (2x passthrough)</li>
+          <li class="sc-item"><strong>Custom line items:</strong> Add manual line items (e.g., "Implementation fee — $500," "Priority support — $200/mo")</li>
+          <li class="sc-item"><strong>Template system:</strong> Save a billing config as a template. Apply to new clients. "Standard E-Commerce Client" template</li>
+          <li class="sc-item"><strong>Preview:</strong> "At current usage, this client's next invoice will be approximately $X"</li>
+          <li class="sc-item"><strong>Save:</strong> Stored in Partition.billing_config</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build billing config form: base fee, markup %, custom line items (add/remove rows)</li>
+          <li class="sc-item">Build template CRUD: save config as template, list templates, apply template to partition</li>
+          <li class="sc-item">Build invoice preview calculator: estimate from current usage data</li>
+          <li class="sc-item">Store config in <code>partition.billing_config</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- A-10 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">A-10</span>
+        <span class="sc-name">Client Management</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Full client management table with summary cards (7 clients, 34 seats, $28.4k revenue, 23 pending decisions). Search + filter bar (status, health). Table: client logo/name/partition ID, health dots (green/yellow/red with labels), status badges (active/pending/suspended), agent count, user count, pending decisions with badge, monthly billing, last activity. Row hover shows action buttons (view as admin → A-08, billing → A-09, more menu with suspend/archive). 7 client rows showing range of states. Add Client button → A-05.</div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Client table:</strong> Name, logo, status (active/suspended), agent count, user count, pending decisions, monthly billing, last activity</li>
+          <li class="sc-item"><strong>Client click:</strong> Opens client detail panel or navigates to client site as admin (A-08)</li>
+          <li class="sc-item"><strong>Actions:</strong> Add client (→ A-05), suspend client, archive client, manage billing (→ A-09)</li>
+          <li class="sc-item"><strong>Search + filter:</strong> Search by name, filter by status, sort by any column</li>
+          <li class="sc-item"><strong>Health indicators:</strong> Green (active + no issues), Yellow (low usage or pending integrations), Red (errors or overdue billing)</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build client list/table with aggregated data per partition</li>
+          <li class="sc-item">Build health score calculation: combine integration status, error rate, usage trend, billing status</li>
+          <li class="sc-item">Build client actions: suspend (deactivates all agents), archive (soft delete), add (redirect to A-05)</li>
+          <li class="sc-item">Build search and sort functionality</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- A-11 -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">A-11</span>
+        <span class="sc-name">Decision Inbox (Agency)</span>
+        <span class="sc-persona agency">Agency</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Cross-client decision inbox. Summary strip (23 pending, 5 high urgency, 5 clients, $12.4k potential). Tabs: Pending/Approved/Rejected/All. Filter bar with client dropdown, agent dropdown, urgency dropdown, search. Bulk action bar (appears on selection) with approve/reject/clear. 7 decision cards spanning 5 clients: each card has checkbox, client logo+name, agent tag, urgency badge (high/med/low), timestamp, title, description, impact estimate, approve/reject/view-in-context buttons. Resolve action fades card and shows badge. Client filter works across cards.</div>
+
+      <div class="sc-section deps-sec">
+        <div class="sc-section-title deps">Dependencies</div>
+        <ul class="sc-items">
+          <li class="sc-item">Decision Inbox component (C-07) — reuse with different scope</li>
+        </ul>
+      </div>
+
+      <div class="sc-section features-sec">
+        <div class="sc-section-title features">Features</div>
+        <ul class="sc-items">
+          <li class="sc-item"><strong>Same as C-07 but cross-client:</strong> Each decision card also shows which client it belongs to</li>
+          <li class="sc-item"><strong>Client filter:</strong> Filter by specific client or show all</li>
+          <li class="sc-item"><strong>"View in context":</strong> Opens client site as admin (A-08) with the agent focused on the decision</li>
+          <li class="sc-item"><strong>Bulk actions:</strong> Select multiple decisions → approve all / reject all</li>
+        </ul>
+      </div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Reuse Decision Inbox component (C-07) with scope param: <code>scope: "agency"</code> queries across all agency partitions</li>
+          <li class="sc-item">Add client name/logo to each decision card</li>
+          <li class="sc-item">Add client filter dropdown</li>
+          <li class="sc-item">Implement bulk selection + batch approve/reject endpoint</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================================ -->
+  <!--  PHASE 6: MARKETING SITE                                         -->
+  <!-- ================================================================ -->
+  <div class="build-phase">
+    <div class="bp-header">
+      <span class="bp-badge" style="background:var(--phase6);">Phase 6</span>
+      <span class="bp-title">Marketing Site</span>
+    </div>
+    <div class="bp-desc">The public-facing pages that drive sign-ups. Can be built in parallel with Phases 1-5 since it's a separate codebase.</div>
+    <div class="bp-deps"><strong>Depends on:</strong> Brand guide (complete). Interactive demo requires a working agent (Phase 2). Can parallelize with product development.</div>
+
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">S-01</span>
+        <span class="sc-name">Marketing Site + Hero</span>
+        <span class="sc-persona shared">Public</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Full marketing landing page. Sticky nav with blur backdrop (logo, links, login, CTA). Hero: animated badge ("Now in public beta"), headline with gradient highlight, sub-copy, dual CTAs (start free + try demo), trust logos. How it Works: 3-step visual with connecting line (browse agents → deploy to client → bill and grow). Agent Marketplace preview: 6 agent cards with gradient icons, descriptions, deploy counts, "Try demo" links. Dark metrics band (47 agencies, 340+ workspaces, $2.1M managed, 12k decisions). Social proof: 5 client logos, 3 testimonials with star ratings. Final CTA section. Footer with copyright. Responsive breakpoints. Radial gradient atmosphere effects.</div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build landing page: hero section with tagline, supporting copy, primary CTA</li>
+          <li class="sc-item">Build "How it works" section: 3-step visual (Browse agents → Deploy to client → Watch the magic)</li>
+          <li class="sc-item">Build public marketplace preview: read-only grid of featured agents (pulls from same Agent table)</li>
+          <li class="sc-item">Build social proof section (testimonials, client logos — placeholder for now)</li>
+          <li class="sc-item">Apply Golden Sand brand: fonts, colors, spacing per brand guide v3</li>
+          <li class="sc-item">Responsive: mobile-first</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">S-02</span>
+        <span class="sc-name">Interactive Demo</span>
+        <span class="sc-persona shared">Public</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Interactive demo page. Green demo banner at top with sign-up link. App chrome with Final Sale Agent header (KPIs: 1,247 scanned, 12 flagged, $4,280 recovery). Chat interface with welcome message containing embedded decision card (Jumbo Popcorn Bucket, 127 days, 25% off, $890 recovery) with approve/reject. 3 suggested prompt buttons. 5-message rate limit with counter. 3 canned responses with data tables (top 3 slowest, revenue recovery, items over 90 days) + graceful fallbacks. Typing indicator animation. CTA overlay triggers after 3 interactions: "Want this for your clients?" with sign-up button and dismiss option. Input disables at limit.</div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Create a demo partition with pre-loaded sample data (fake Shopify catalog, sample ad campaigns)</li>
+          <li class="sc-item">Build demo entry point: stripped-down agent GUI (C-05) that works without auth</li>
+          <li class="sc-item">Rate limit demo usage (sessions per IP, max interactions per session)</li>
+          <li class="sc-item">CTA overlay after demo: "Want this for your clients? Sign up now"</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header">
+        <span class="sc-id">S-03</span>
+        <span class="sc-name">Pricing + Calculator</span>
+        <span class="sc-persona shared">Public</span>
+        <span class="sc-priority p0">P0</span><span class="sc-status mockup-done">✓ Mockup</span>
+      </div>
+      <div class="sc-desc">Full pricing page. Monthly/annual toggle (20% discount). 3 tier cards: Starter ($49/seat), Growth ($99/seat, featured), Enterprise (custom). Feature comparison lists with checkmarks and disabled items. Interactive margin calculator with 3 sliders (clients, seats/client, your price/seat) driving live results panel showing total seats, revenue, platform cost, partition fees, usage costs, monthly margin with gradient progress bar and margin %. 7-item FAQ accordion. Cross-linked nav to all marketing pages. Brand-aligned CTAs and footer.</div>
+
+      <div class="sc-section tasks-sec">
+        <div class="sc-section-title tasks">Developer Tasks</div>
+        <ul class="sc-items">
+          <li class="sc-item">Build pricing cards: 3 tiers with feature comparison grid</li>
+          <li class="sc-item">Build margin calculator: inputs (# clients, avg price per client) → outputs (your cost, your revenue, your margin %). Interactive sliders</li>
+          <li class="sc-item">Build CTAs: "Start now" → S-04, "Talk to sales" → Calendly/form, "Enterprise" → contact form</li>
+          <li class="sc-item">FAQ accordion section below pricing</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================================ -->
+  <!--  PHASE 7: P1 SCREENS                                             -->
+  <!-- ================================================================ -->
+  <div class="build-phase">
+    <div class="bp-header">
+      <span class="bp-badge" style="background:var(--phase7);">Phase 7</span>
+      <span class="bp-title">Scale Features (P1)</span>
+    </div>
+    <div class="bp-desc">Post-MVP screens that unlock scale: agent builder, analytics, team management, billing management, platform admin. Build after MVP is live and agencies are onboarding.</div>
+    <div class="bp-deps"><strong>Depends on:</strong> Phases 0-6 complete. MVP live with real agencies.</div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">A-12</span><span class="sc-name">Billing Management</span><span class="sc-persona agency">Agency</span><span class="sc-priority p1">P1</span><span class="sc-status mockup-done">✓ Mockup</span></div>
+      <div class="sc-desc">Agency billing dashboard with sidebar nav. Summary cards: $28.4k revenue, $7.2k platform cost, $21.2k margin (74.5%), $4.1k outstanding (2 overdue). Period selector + status filter + search. Billing table: 7 clients with columns for base fee, usage bar, markup amount, total invoice, status badges (paid/sent/overdue/draft), and contextual actions (view/edit/send/remind/mark paid). Café Luna row dimmed (suspended). Usage metering panel: 4 meters (LLM messages, agent actions, API calls, storage) with progress bars, projected percentages, and accrued costs.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build billing dashboard: list all clients with current period charges (base + usage)</li>
+        <li class="sc-item">Build invoice generator: pulls from BillingRecord, creates PDF or hosted invoice page</li>
+        <li class="sc-item">Build payment tracking: mark invoices as sent/paid/overdue</li>
+        <li class="sc-item">Build usage metering: track messages, actions, API calls per partition per period</li>
+        <li class="sc-item">Optional: Stripe Connect integration for automated payment collection from end-clients</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">A-13</span><span class="sc-name">Agent Builder (IDE)</span><span class="sc-persona agency">Agency</span><span class="sc-priority p1">P1</span><span class="sc-status mockup-done">✓ Mockup</span></div>
+      <div class="sc-desc">Dark-themed IDE layout. Top bar: back, agent name (editable), auto-save status, Test and Deploy buttons. Left panel with 3 tabs (Chat / Code / Config). Chat: vibe-coding conversation showing user describing agent → builder generating GUI + logic + integrations with change summaries. Code: syntax-highlighted gui_config.json with file tabs for system_prompt.md and integrations.json. Config: form fields for name, description, icon picker, color picker, schedule dropdown, connected integrations. Right panel: live preview of the generated agent dashboard (KPIs, decision card, category bar chart) in a framed preview with Desktop/Mobile toggle.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build builder UI: chat panel (left) + live preview (right) + code panel (toggle)</li>
+        <li class="sc-item">Build code generation pipeline: user prompt → LLM generates agent config (<code>gui_config</code>, <code>system_prompt</code>, integration requirements)</li>
+        <li class="sc-item">Build live preview: render agent GUI from generated config in real-time as code changes</li>
+        <li class="sc-item">Build code toggle: switch between chat-based editing and raw JSON/code editing</li>
+        <li class="sc-item">Build test mode: connect sample data and run the agent in preview</li>
+        <li class="sc-item">Build deploy action: creates Agent record, optionally creates AgentDeployment to a partition</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">A-14</span><span class="sc-name">Agent Clone + Edit</span><span class="sc-persona agency">Agency</span><span class="sc-priority p1">P1</span><span class="sc-status mockup-done">✓ Mockup</span></div>
+      <div class="sc-desc">Dark IDE layout matching A-13. Clone banner with purple badge: "Cloned from Final Sale Agent v1.2" with "View original" link. Lineage card showing agent ancestry. Builder chat: user adapts Final Sale Agent → Perishable Tracker for Sip Coffee — swaps days_in_stock for expiry dates, changes thresholds, adds expiry timeline. Code panel shows gui_config with green-highlighted new/changed lines and cloned_from field. Preview: Sip Coffee branded perishable tracker with KPIs (Tracked/Expiring Soon/Waste Cost), decision cards for Oat Milk and Croissants with markdown/pull actions, and NEW-badged Expiry Timeline sorted by date with red/amber urgency dots. Interactive builder chat with 3 canned responses.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build clone action: deep copy Agent record → open in Agent Builder with all config pre-loaded</li>
+        <li class="sc-item">Track lineage: <code>cloned_from_id</code> on Agent record</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">A-15</span><span class="sc-name">Publish Agent</span><span class="sc-persona agency">Agency</span><span class="sc-priority p1">P1</span><span class="sc-status mockup-done">✓ Folded</span></div>
+      <div class="sc-desc">FOLDED INTO A-13/A-14: Publish flow is now integrated into the Agent Builder. Tags tab with searchable/addable categories + "Submit for Review" button replaces the separate publish screen. Success overlay with pending review status. (Build ✓ → Test ✓ → Publish [active] → Review). Agent identity card with icon, name, version badge. Listing details: display name, short/full description fields. Tags section: industry (Retail, F&B selected), use case (Inventory, Revenue Recovery selected), integrations (Shopify selected) — all toggleable. Screenshots: 3-slot grid with 2 filled (mock Dashboard and Chat previews with badges) + empty upload slot. Pre-submission checklist: 6 automated checks (5 passed, 1 manual review warning). Submit bar with Save Draft and Submit for Review. Success overlay: rocket icon, "Submitted for Review" with 48-hour estimate and pending status badge.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build publish form: tags (industry + use case), description, screenshots upload, review submission</li>
+        <li class="sc-item">Update Agent <code>marketplace_status</code> to <code>pending_review</code></li>
+        <li class="sc-item">Notify Platform Admin of new submission</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">A-16</span><span class="sc-name">Analytics Dashboard</span><span class="sc-persona agency">Agency</span><span class="sc-priority p1">P1</span><span class="sc-status mockup-done">✓ Mockup</span></div>
+      <div class="sc-desc">Three-level analytics with Portfolio/Per Client/Per Agent view tabs. 5 summary KPI cards with sparklines: total messages (48.3k), agent actions (6.8k), decisions made (1.2k), revenue attributed ($42.8k), error rate (0.8%). Full-width SVG area chart for usage over time with Messages/Actions/Decisions toggle. Usage by client horizontal bar chart (6 clients ranked). Decision outcomes bar chart (approved 68%, dismissed, auto-executed, expired) with approval rate. Agent performance table: 5 agents with messages, actions, decisions, error rate, trend badges (up/down/flat), and 30-day mini sparklines. Time range selector (7d/30d/90d/custom). Export button.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build analytics data pipeline: aggregate usage events (messages, actions, decisions) per agent, per partition, per period</li>
+        <li class="sc-item">Build per-agent view: usage chart, action count, decision throughput, error rate</li>
+        <li class="sc-item">Build per-client view: all agents for a client, combined usage, user activity</li>
+        <li class="sc-item">Build portfolio view: all clients, combined metrics, revenue attribution</li>
+        <li class="sc-item">Build time-range selector: 7d, 30d, 90d, custom</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">A-17</span><span class="sc-name">Team Management</span><span class="sc-persona agency">Agency</span><span class="sc-priority p1">P1</span><span class="sc-status mockup-done">✓ Mockup</span></div>
+      <div class="sc-desc">4 summary cards: seats used (4/5 with meter bar), monthly cost ($1,988), active now (3), pending invites (1). Team table with fixed proportional columns: member (avatar + name + email), role badges (Owner/Admin/Member), client access chips (All Clients or specific), status dots (Active/Pending), last active timestamp, action menu. Invite modal: email, name, role dropdown, client assignment checkboxes (toggleable with All Clients option), cost warning ($497/mo per seat), send invite. Pending member row shows resend invite button.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build team list: all AgencySeats with role, status, assigned client count</li>
+        <li class="sc-item">Build invite flow: email → create AgencySeat + User → send invite</li>
+        <li class="sc-item">Build client assignment: multi-select which partitions each team member can access</li>
+        <li class="sc-item">Stripe: trigger subscription update when seat count changes (+$500-1K per seat)</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">C-09</span><span class="sc-name">Department Setup (Client Admin)</span><span class="sc-persona client">Client Admin</span><span class="sc-priority p1">P1</span><span class="sc-status mockup-done">✓ Mockup</span></div>
+      <div class="sc-desc">Client admin sidebar with Sip Coffee & Beer branding and Client Admin badge. Info banner explains agents are deployed by agency (Prana IQ). Department card grid: 3 departments (Operations, Inventory & F&B, Marketing) + dashed Create card. Each card shows: icon, name, created date, member count, assigned agents as accent pills, knowledge sources as warm pills, member tags as blue pills, monthly stats (messages + decisions). Edit button opens modal pre-loaded with department data. Create/Edit modal: name, description, agent assignment rows (toggle-to-assign from agency-deployed agents with Prana IQ badge), knowledge source chips (toggleable + Add button with prompt), Save/Cancel. Marketing dept shown with no agents assigned state.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Reuse department CRUD from A-07, scoped to client admin role</li>
+        <li class="sc-item">Client admin can create/rename departments but NOT add agents (only assign from what agency deployed)</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">C-10</span><span class="sc-name">User Management (Client Admin)</span><span class="sc-persona client">Client Admin</span><span class="sc-priority p1">P1</span><span class="sc-status mockup-next">→ Next</span></div>
+      <div class="sc-desc">Client admin invites users, assigns departments, sets roles.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Reuse user invite flow from A-07, scoped to client admin role</li>
+        <li class="sc-item">Client admin can only assign to departments within their partition</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">C-11</span><span class="sc-name">Integrations + Knowledge Base (Client Admin)</span><span class="sc-persona client">Client Admin</span><span class="sc-priority p1">P1</span></div>
+      <div class="sc-desc">Client admin connects additional integrations and uploads files to knowledge base.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Reuse integration + knowledge base panels from A-06, scoped to client admin role</li>
+        <li class="sc-item">Client admin can add new integrations and upload files but cannot reconfigure agent behavior</li>
+      </ul></div>
+    </div>
+
+    <!-- PLATFORM ADMIN P1 -->
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">P-01</span><span class="sc-name">Platform Health</span><span class="sc-persona platform">Platform</span><span class="sc-priority p1">P1</span></div>
+      <div class="sc-desc">System status, API monitoring, error rates, active sessions.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build health dashboard: uptime, API latency (p50, p95, p99), error rate, active WebSocket connections</li>
+        <li class="sc-item">Build alerting: threshold-based alerts (error rate > 1%, latency > 2s)</li>
+        <li class="sc-item">Integrate with monitoring service (Datadog, Grafana, or custom)</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">P-02</span><span class="sc-name">Agency Management</span><span class="sc-persona platform">Platform</span><span class="sc-priority p1">P1</span></div>
+      <div class="sc-desc">All agencies: plans, usage, health scores, support needs.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build agency table: name, plan, seats, partitions, MRR, last active, health</li>
+        <li class="sc-item">Build agency detail view: full usage, partition list, support history</li>
+        <li class="sc-item">Build actions: upgrade/downgrade plan, add credits, suspend agency</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">P-03</span><span class="sc-name">Revenue Dashboard</span><span class="sc-persona platform">Platform</span><span class="sc-priority p1">P1</span></div>
+      <div class="sc-desc">MRR, churn, expansion revenue, per-agency billing.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build revenue metrics: MRR, MRR growth, churn rate, expansion revenue, LTV</li>
+        <li class="sc-item">Build per-agency revenue breakdown</li>
+        <li class="sc-item">Pull from Stripe API or replicate billing data locally</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">P-04</span><span class="sc-name">Agent Review Queue</span><span class="sc-persona platform">Platform</span><span class="sc-priority p1">P1</span></div>
+      <div class="sc-desc">Submitted agents pending review. Approve, reject, request changes.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build review queue: agents where <code>marketplace_status: pending_review</code></li>
+        <li class="sc-item">Build review UI: preview agent config, test agent, approve/reject with feedback</li>
+        <li class="sc-item">On approve: set <code>marketplace_status: published</code>. On reject: set <code>rejected</code> + notify agency</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">P-05</span><span class="sc-name">Marketplace Curation</span><span class="sc-persona platform">Platform</span><span class="sc-priority p1">P1</span></div>
+      <div class="sc-desc">Feature agents, manage categories, organize taxonomy.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build featured agent management: drag-to-order, toggle featured flag</li>
+        <li class="sc-item">Build category/tag management: CRUD for industry and use-case tags</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">P-06</span><span class="sc-name">Platform Client View</span><span class="sc-persona platform">Platform</span><span class="sc-priority p1">P1</span></div>
+      <div class="sc-desc">PranaOS's own client site for internal dogfooding.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Create a "PranaOS Internal" agency with platform admin as owner</li>
+        <li class="sc-item">Create internal partition using existing client setup flow</li>
+        <li class="sc-item">Deploy internal-use agents (support analytics, content agents, etc.)</li>
+        <li class="sc-item">No new code — just configuration of existing systems. Validates everything works end-to-end</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ================================================================ -->
+  <!--  PHASE 8: P2 OPTIMIZATION                                        -->
+  <!-- ================================================================ -->
+  <div class="build-phase">
+    <div class="bp-header">
+      <span class="bp-badge" style="background:var(--text-dim);">Phase 8</span>
+      <span class="bp-title">Optimization (P2)</span>
+    </div>
+    <div class="bp-desc">Nice-to-haves that improve the experience once the core is solid. Build based on user feedback and data.</div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">A-18</span><span class="sc-name">Request Agent Build</span><span class="sc-persona agency">Agency</span><span class="sc-priority p2">P2</span></div>
+      <div class="sc-desc">Submit custom build request to PranaOS. Form: describe agent, use case, integrations, budget. PranaOS team reviews and quotes.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build request form with rich text description, integration checkboxes, budget range</li>
+        <li class="sc-item">Store in a BuildRequest table. Notify PranaOS team via email/Slack</li>
+        <li class="sc-item">Build status tracking: submitted → quoted → in progress → delivered</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">C-12</span><span class="sc-name">Client Analytics</span><span class="sc-persona client">Client Admin</span><span class="sc-priority p2">P2</span></div>
+      <div class="sc-desc">Client-side analytics: usage by department, agent, user. Value delivered metrics.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Reuse analytics components from A-16, scoped to single partition</li>
+        <li class="sc-item">Add user-level breakdown (which users are most active)</li>
+        <li class="sc-item">Add "value delivered" metrics: decisions made, revenue impacted, time saved (agent-reported)</li>
+      </ul></div>
+    </div>
+
+    <div class="screen-card">
+      <div class="sc-header"><span class="sc-id">P-07</span><span class="sc-name">Ecosystem Analytics</span><span class="sc-persona platform">Platform</span><span class="sc-priority p2">P2</span></div>
+      <div class="sc-desc">Platform-wide intelligence: most cloned agents, deployment rates, industry trends, catalog gaps.</div>
+      <div class="sc-section tasks-sec"><div class="sc-section-title tasks">Developer Tasks</div><ul class="sc-items">
+        <li class="sc-item">Build aggregated analytics across all agencies: most deployed agents, most cloned, fastest growing industries</li>
+        <li class="sc-item">Build catalog gap analysis: industries/use-cases with no agents available</li>
+        <li class="sc-item">Build agency contribution leaderboard: who's publishing the most, who's getting the most deployments</li>
+      </ul></div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

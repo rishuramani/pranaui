@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Brand Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand-600: #0d3d2e;
+    --brand-500: #115c45;
+    --brand-400: #18856a;
+    --brand-300: #2dd4a0;
+    --brand-200: #6eecd0;
+    --brand-100: #b8f5e6;
+    --brand-50: #f0fdf7;
+  }
+
+  [data-theme="light"] {
+    --bg: #faf6f0;
+    --bg-card: #fffdf9;
+    --bg-elevated: #f0e8dc;
+    --bg-tinted: #f0faf4;
+    --border: #e2d5c4;
+    --border-subtle: #ede4d6;
+    --text: #2a1f10;
+    --text-secondary: #4a3d2a;
+    --text-muted: #7a6348;
+    --text-dim: #a89880;
+    --accent: #18856a;
+    --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07);
+    --accent-border: rgba(24,133,106,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04);
+    --shadow-md: 0 4px 14px rgba(42,31,16,0.06);
+    --hero-bg: linear-gradient(135deg, #0d3d2e, #115c45);
+    --hero-text: #ffffff;
+    --hero-sub: rgba(255,255,255,0.6);
+    --hero-accent: #6eecd0;
+    --code-bg: #f0e8dc;
+    --toggle-bg: #e2d5c4;
+    --toggle-dot: #fffdf9;
+  }
+
+  [data-theme="dark"] {
+    --bg: #0c0e0d;
+    --bg-card: #141716;
+    --bg-elevated: #1a1e1c;
+    --bg-tinted: rgba(45,212,160,0.04);
+    --border: #232826;
+    --border-subtle: #1e2220;
+    --text: #e4e8e6;
+    --text-secondary: #c0c8c4;
+    --text-muted: #8a9490;
+    --text-dim: #4a5450;
+    --accent: #2dd4a0;
+    --accent-bright: #6eecd0;
+    --accent-bg: rgba(45,212,160,0.06);
+    --accent-border: rgba(45,212,160,0.12);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 14px rgba(0,0,0,0.25);
+    --hero-bg: linear-gradient(135deg, #0d3d2e, #18856a);
+    --hero-text: #ffffff;
+    --hero-sub: rgba(255,255,255,0.55);
+    --hero-accent: #6eecd0;
+    --code-bg: #1a1e1c;
+    --toggle-bg: #232826;
+    --toggle-dot: #2dd4a0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.4s, color 0.3s;
+  }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 60px 40px; }
+
+  /* Toggle */
+  .theme-toggle {
+    position: fixed; top: 24px; right: 24px; z-index: 100;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    padding: 8px 14px; border-radius: 40px; cursor: pointer;
+    box-shadow: var(--shadow-md); transition: all 0.3s; user-select: none;
+  }
+  .theme-toggle:hover { border-color: var(--accent); }
+  .toggle-label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+  .toggle-track {
+    width: 40px; height: 22px; background: var(--toggle-bg);
+    border-radius: 11px; position: relative; transition: background 0.3s;
+  }
+  .toggle-thumb {
+    width: 16px; height: 16px; background: var(--toggle-dot);
+    border-radius: 50%; position: absolute; top: 3px; left: 3px;
+    transition: transform 0.3s, background 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  [data-theme="dark"] .toggle-thumb { transform: translateX(18px); }
+
+  /* Cover */
+  .cover { margin-bottom: 80px; }
+  .cover-badge {
+    display: inline-block; font-size: 11px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--accent); font-weight: 600;
+    margin-bottom: 16px; padding: 4px 12px;
+    background: var(--accent-bg); border: 1px solid var(--accent-border);
+    border-radius: 6px;
+  }
+  .cover-title {
+    font-size: 44px; font-weight: 800; letter-spacing: -1.5px;
+    line-height: 1.15; margin-bottom: 16px;
+  }
+  .cover-sub {
+    font-size: 17px; color: var(--text-muted); font-weight: 300;
+    line-height: 1.8; max-width: 600px;
+  }
+  .cover-divider {
+    width: 48px; height: 3px; border-radius: 2px; margin-top: 40px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+
+  /* Section */
+  .section { margin-bottom: 80px; }
+  .section-label {
+    font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 8px;
+  }
+  .section-title {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px;
+  }
+  .section-desc {
+    font-size: 15px; color: var(--text-muted); margin-bottom: 32px;
+    max-width: 600px; font-weight: 300; line-height: 1.8;
+  }
+
+  /* Card */
+  .card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px; box-shadow: var(--shadow-sm);
+    transition: background 0.3s, border-color 0.3s; margin-bottom: 16px;
+  }
+  .card-label {
+    font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.3px;
+    margin-bottom: 10px; line-height: 1.35;
+  }
+  .card-body {
+    font-size: 15px; color: var(--text-muted); font-weight: 300; line-height: 1.8;
+  }
+
+  /* Values */
+  .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .value-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px; box-shadow: var(--shadow-sm);
+    transition: all 0.3s;
+  }
+  .value-icon { font-size: 28px; margin-bottom: 14px; }
+  .value-name { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .value-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; line-height: 1.7; }
+
+  /* Hero block */
+  .hero-block {
+    background: var(--hero-bg); border-radius: 20px;
+    padding: 56px 40px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-block::before {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(110,236,208,0.1), transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-tagline {
+    font-size: 34px; font-weight: 800; letter-spacing: -1px;
+    color: var(--hero-text); position: relative;
+  }
+  .hero-tagline span { color: var(--hero-accent); }
+  .hero-sub {
+    font-size: 16px; color: var(--hero-sub); font-weight: 300;
+    margin-top: 12px; position: relative; max-width: 520px;
+    margin-left: auto; margin-right: auto; line-height: 1.7;
+  }
+  .hero-context {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--hero-sub); position: relative; margin-top: 20px; opacity: 0.5;
+  }
+
+  /* Voice table */
+  .voice-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-sm);
+  }
+  .voice-table th {
+    text-align: left; padding: 14px 20px; font-size: 11px;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    color: var(--text-dim); font-weight: 600;
+    border-bottom: 1px solid var(--border); background: var(--bg-elevated);
+  }
+  .voice-table td {
+    padding: 14px 20px; font-size: 14px;
+    border-bottom: 1px solid var(--border-subtle);
+    vertical-align: top; color: var(--text-muted); font-weight: 300; line-height: 1.6;
+  }
+  .voice-table td:first-child { font-weight: 600; color: var(--text); }
+  .voice-table tr:last-child td { border-bottom: none; }
+
+  /* Do/Don't */
+  .dodont-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .do-card, .dont-card {
+    border-radius: 16px; padding: 24px; box-shadow: var(--shadow-sm);
+    background: var(--bg-card);
+  }
+  .do-card { border: 1px solid var(--accent-border); }
+  .dont-card { border: 1px solid rgba(232,113,113,0.18); }
+  .dodont-label {
+    font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase;
+    font-weight: 600; margin-bottom: 12px;
+  }
+  .do-card .dodont-label { color: var(--accent); }
+  .dont-card .dodont-label { color: #c85a5a; }
+  [data-theme="dark"] .dont-card .dodont-label { color: #f87171; }
+  .dodont-item {
+    font-size: 13px; color: var(--text-muted); font-weight: 300;
+    line-height: 1.7; padding: 6px 0; border-bottom: 1px solid var(--border-subtle);
+  }
+  .dodont-item:last-child { border-bottom: none; }
+
+  /* Guardrails */
+  .guardrail {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 24px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 14px;
+    margin-bottom: 10px; box-shadow: var(--shadow-sm);
+  }
+  .guardrail-text { font-size: 15px; flex: 1; }
+  .guardrail-text em { color: var(--text-muted); font-style: normal; font-weight: 300; }
+  .guardrail-divider { color: var(--text-dim); font-weight: 300; font-size: 14px; }
+
+  /* Logo */
+  .logo-showcase { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .logo-variant {
+    border-radius: 16px; padding: 48px 24px;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 20px; min-height: 180px;
+    border: 1px solid var(--border);
+  }
+  .logo-variant.dark-bg { background: #0c0e0d; border-color: #232826; }
+  .logo-variant.light-bg { background: #faf6f0; border-color: #e2d5c4; }
+  .logo-variant.accent-bg { background: linear-gradient(135deg, #0d3d2e, #115c45); border-color: transparent; }
+  .logo-variant-label { font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 500; }
+  .logo-variant.dark-bg .logo-variant-label { color: #555; }
+  .logo-variant.light-bg .logo-variant-label { color: #a89880; }
+  .logo-variant.accent-bg .logo-variant-label { color: rgba(255,255,255,0.4); }
+  .logo-lockup { display: flex; align-items: center; gap: 14px; }
+  .logo-wordmark { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+  .logo-symbol svg { width: 48px; height: 48px; }
+
+  .logo-rules { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .logo-rule {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; box-shadow: var(--shadow-sm);
+  }
+  .logo-rule-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .logo-rule-desc { font-size: 12px; color: var(--text-muted); font-weight: 300; line-height: 1.6; }
+
+  /* Palette */
+  .palette-row { display: flex; gap: 4px; margin-bottom: 20px; border-radius: 14px; overflow: hidden; }
+  .swatch {
+    flex: 1; padding: 24px 12px 12px; min-height: 90px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .swatch-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; opacity: 0.8; margin-bottom: 2px; }
+  .swatch-hex { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; opacity: 0.9; }
+  .palette-label { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+
+  /* Accessibility note */
+  .a11y-note {
+    background: var(--accent-bg); border: 1px solid var(--accent-border);
+    border-radius: 14px; padding: 20px 24px; margin-top: 20px;
+  }
+  .a11y-note-title { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 6px; }
+  .a11y-note-body { font-size: 13px; color: var(--text-muted); font-weight: 300; line-height: 1.7; }
+
+  /* Typography */
+  .type-specimen {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px; margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .type-family { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 16px; }
+  .type-sample {
+    margin-bottom: 16px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .type-sample:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .type-meta { display: flex; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  .type-role {
+    font-size: 11px; color: var(--text-dim); font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.5px; min-width: 80px;
+  }
+  .type-spec { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); }
+
+  /* Attribution */
+  .attribution-demo {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 40px; text-align: center;
+    box-shadow: var(--shadow-sm);
+  }
+  .attr-line { font-size: 13px; color: var(--text-dim); font-weight: 300; line-height: 2; }
+  .attr-line span { font-weight: 500; color: var(--text-muted); }
+  .attr-prana { color: var(--accent) !important; }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .container { padding: 40px 20px; }
+    .cover-title { font-size: 32px; }
+    .values-grid { grid-template-columns: 1fr; }
+    .dodont-grid { grid-template-columns: 1fr; }
+    .logo-showcase { grid-template-columns: 1fr; }
+    .logo-rules { grid-template-columns: 1fr; }
+    .hero-tagline { font-size: 26px; }
+    .palette-row { flex-wrap: wrap; }
+    .swatch { min-width: 70px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="theme-toggle" onclick="toggleTheme()">
+  <span class="toggle-label">☀️</span>
+  <div class="toggle-track"><div class="toggle-thumb"></div></div>
+  <span class="toggle-label">🌙</span>
+</div>
+
+<div class="container">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div class="cover-badge">Brand Guide v3.0</div>
+    <h1 class="cover-title">PranaOS<br>Brand Guide</h1>
+    <p class="cover-sub">The visual and verbal identity for PranaOS — the AI agent platform that empowers consultants, agencies, and service providers to superpower their clients with AI.</p>
+    <div class="cover-divider"></div>
+  </div>
+
+  <!-- 01 MISSION -->
+  <div class="section">
+    <div class="section-label">01 · Foundation</div>
+    <h2 class="section-title">Mission</h2>
+    <div class="section-desc">Why PranaOS exists.</div>
+    <div class="card">
+      <div class="card-label">Our Mission</div>
+      <div class="card-title">Democratize AI for every business through empowered service providers.</div>
+      <div class="card-body">We believe the fastest path to getting AI into every business isn't building for every business directly — it's empowering the agencies, consultants, solopreneurs, and MSPs who already serve them.</div>
+    </div>
+  </div>
+
+  <!-- 02 VISION -->
+  <div class="section">
+    <div class="section-label">02 · Foundation</div>
+    <h2 class="section-title">Vision</h2>
+    <div class="section-desc">Where we're going.</div>
+    <div class="card">
+      <div class="card-label">Our Vision</div>
+      <div class="card-title">Every business powered by Prana is best in class — because of us.</div>
+      <div class="card-body">We give solopreneurs, agencies, consultants, and MSPs the ability to share in the spread of the technology of the next generation. When their clients win, they win. When they win, we win.</div>
+    </div>
+  </div>
+
+  <!-- 03 VALUES -->
+  <div class="section">
+    <div class="section-label">03 · Foundation</div>
+    <h2 class="section-title">Values</h2>
+    <div class="section-desc">What we stand for.</div>
+    <div class="values-grid">
+      <div class="value-card">
+        <div class="value-icon">⚡</div>
+        <div class="value-name">Empowerment</div>
+        <div class="value-desc">We make others look brilliant. Everything we build is in service of making the people who use it look like heroes to their clients.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🏗️</div>
+        <div class="value-name">Reliability</div>
+        <div class="value-desc">Infrastructure you bet your business on. Our partners' livelihoods depend on us. We take that seriously.</div>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">✨</div>
+        <div class="value-name">Magic</div>
+        <div class="value-desc">Running your business should feel like magic — the "I can't believe how easy that was" kind. Not the "I don't know how it works" kind.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 TAGLINE -->
+  <div class="section">
+    <div class="section-label">04 · Voice</div>
+    <h2 class="section-title">Tagline</h2>
+    <div class="section-desc">Two forms — a short primary for lockups and a supporting line for hero sections.</div>
+    <div class="hero-block">
+      <div class="hero-tagline">Superpower your clients <span>with AI.</span></div>
+      <div class="hero-sub">The AI platform for agencies, consultants, and builders who want to give their clients superpowers.</div>
+      <div class="hero-context">Primary tagline · use next to logo or as hero headline</div>
+    </div>
+  </div>
+
+  <!-- 05 TONE & VOICE -->
+  <div class="section">
+    <div class="section-label">05 · Voice</div>
+    <h2 class="section-title">Tone & Voice</h2>
+    <div class="section-desc">We sound like an encouraging coach — a mentor who genuinely believes in what you're building and knows exactly how to help.</div>
+    <table class="voice-table">
+      <thead><tr><th>Context</th><th>Voice</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>Marketing & brand story</td><td>"We" — inclusive, team feel</td><td>"We're building the infrastructure for the next generation of AI-powered businesses."</td></tr>
+        <tr><td>Product pages & docs</td><td>"You" — empowering, direct</td><td>"Deploy AI agents your clients will love — in minutes, not months."</td></tr>
+        <tr><td>Feature descriptions</td><td>"PranaOS" — authoritative</td><td>"PranaOS handles the infrastructure so you can focus on your clients."</td></tr>
+        <tr><td>UI copy & notifications</td><td>Warm, clear, action-oriented</td><td>"Your agent is live. Your client can start using it now."</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 06 PERSONALITY -->
+  <div class="section">
+    <div class="section-label">06 · Voice</div>
+    <h2 class="section-title">Personality Guardrails</h2>
+    <div class="section-desc">The boundaries that keep our tone consistent.</div>
+    <div class="guardrail"><div class="guardrail-text">Ambitious <em>but not arrogant</em></div><div class="guardrail-divider">·</div><div class="guardrail-text" style="text-align:right;">Confident, not boastful</div></div>
+    <div class="guardrail"><div class="guardrail-text">Magical <em>but not mystical</em></div><div class="guardrail-divider">·</div><div class="guardrail-text" style="text-align:right;">Delightful, not confusing</div></div>
+    <div class="guardrail"><div class="guardrail-text">Supportive <em>but not hand-holdy</em></div><div class="guardrail-divider">·</div><div class="guardrail-text" style="text-align:right;">Encouraging, not patronizing</div></div>
+    <div class="guardrail"><div class="guardrail-text">Technical <em>but not jargony</em></div><div class="guardrail-divider">·</div><div class="guardrail-text" style="text-align:right;">Capable, not gatekeeping</div></div>
+  </div>
+
+  <!-- 07 WRITING -->
+  <div class="section">
+    <div class="section-label">07 · Voice</div>
+    <h2 class="section-title">Writing Principles</h2>
+    <div class="section-desc">How we write at every level.</div>
+    <div class="dodont-grid">
+      <div class="do-card">
+        <div class="dodont-label">✓ Do</div>
+        <div class="dodont-item">"Deploy AI agents your clients will love."</div>
+        <div class="dodont-item">"Your agent is live. Your client can start chatting now."</div>
+        <div class="dodont-item">"See which products are losing momentum — and recover the revenue."</div>
+        <div class="dodont-item">"Something went wrong connecting to Shopify. Let's try again."</div>
+      </div>
+      <div class="dont-card">
+        <div class="dodont-label">✗ Don't</div>
+        <div class="dodont-item">"Leverage our RAG pipeline with vector embeddings for semantic retrieval."</div>
+        <div class="dodont-item">"Error 403: Unauthorized access to resource endpoint /api/v2/agents."</div>
+        <div class="dodont-item">"Utilize our proprietary AI infrastructure to optimize business outcomes."</div>
+        <div class="dodont-item">"Please configure your OAuth2 token refresh interval for SSO integration."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 08 LOGO -->
+  <div class="section">
+    <div class="section-label">08 · Visual Identity</div>
+    <h2 class="section-title">Logo</h2>
+    <div class="section-desc">The Breath Mark symbol with PranaOS wordmark. "Prana" in primary text, "OS" in brand green.</div>
+    <div class="logo-showcase">
+      <div class="logo-variant light-bg">
+        <div class="logo-lockup">
+          <div class="logo-symbol"><svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="256" cy="256" r="238" stroke="#18856a" stroke-width="6" opacity="0.20"/><circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/><circle cx="256" cy="256" r="153" stroke="#18856a" stroke-width="10.5" opacity="0.38"/><path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="256" r="21" fill="#18856a"/></svg></div>
+          <div class="logo-wordmark" style="color:#2a1f10;">Prana<span style="color:#18856a;">OS</span></div>
+        </div>
+        <div class="logo-variant-label">Light / warm background</div>
+      </div>
+      <div class="logo-variant dark-bg">
+        <div class="logo-lockup">
+          <div class="logo-symbol"><svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="256" cy="256" r="238" stroke="#2dd4a0" stroke-width="6" opacity="0.22"/><circle cx="256" cy="256" r="196" stroke="#2dd4a0" stroke-width="8.5" opacity="0.32"/><circle cx="256" cy="256" r="153" stroke="#2dd4a0" stroke-width="10.5" opacity="0.45"/><path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#2dd4a0" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="256" r="21" fill="#2dd4a0"/></svg></div>
+          <div class="logo-wordmark" style="color:#e4e8e6;">Prana<span style="color:#2dd4a0;">OS</span></div>
+        </div>
+        <div class="logo-variant-label">Dark background</div>
+      </div>
+      <div class="logo-variant accent-bg">
+        <div class="logo-lockup">
+          <div class="logo-symbol"><svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="256" cy="256" r="238" stroke="#6eecd0" stroke-width="6" opacity="0.22"/><circle cx="256" cy="256" r="196" stroke="#6eecd0" stroke-width="8.5" opacity="0.32"/><circle cx="256" cy="256" r="153" stroke="#6eecd0" stroke-width="10.5" opacity="0.40"/><path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#ffffff" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="256" r="21" fill="#6eecd0"/></svg></div>
+          <div class="logo-wordmark" style="color:#ffffff;">Prana<span style="color:#6eecd0;">OS</span></div>
+        </div>
+        <div class="logo-variant-label">Brand background</div>
+      </div>
+    </div>
+    <div class="logo-rules">
+      <div class="logo-rule"><div class="logo-rule-title">Clear space</div><div class="logo-rule-desc">Minimum 1× cap-height of "P" on all sides. No elements should encroach on this zone.</div></div>
+      <div class="logo-rule"><div class="logo-rule-title">Minimum size</div><div class="logo-rule-desc">Full lockup: 80px wide. Symbol only: 16px. Rings drop off below 24px — only breath mark + core remain.</div></div>
+      <div class="logo-rule"><div class="logo-rule-title">Don't</div><div class="logo-rule-desc">Don't stretch, rotate, recolor, add drop shadows, or place on busy backgrounds without a container.</div></div>
+      <div class="logo-rule"><div class="logo-rule-title">Symbol standalone</div><div class="logo-rule-desc">Use for favicons, app icons, badges, and loading states. Works at all sizes with progressive ring removal.</div></div>
+    </div>
+  </div>
+
+  <!-- 09 COLORS -->
+  <div class="section">
+    <div class="section-label">09 · Visual Identity</div>
+    <h2 class="section-title">Color System</h2>
+    <div class="section-desc">Emerald Circuit brand scale with Golden Sand warm neutrals. The split-complementary relationship (green ~160° / gold ~33°) creates natural vibrancy.</div>
+
+    <div class="palette-label">Brand Scale (Emerald Circuit)</div>
+    <div class="palette-row">
+      <div class="swatch" style="background:#0d3d2e;color:#fff;"><div class="swatch-label">600</div><div class="swatch-hex">#0d3d2e</div></div>
+      <div class="swatch" style="background:#115c45;color:#fff;"><div class="swatch-label">500</div><div class="swatch-hex">#115c45</div></div>
+      <div class="swatch" style="background:#18856a;color:#fff;"><div class="swatch-label">400</div><div class="swatch-hex">#18856a</div></div>
+      <div class="swatch" style="background:#2dd4a0;color:#0d3d2e;"><div class="swatch-label">300</div><div class="swatch-hex">#2dd4a0</div></div>
+      <div class="swatch" style="background:#6eecd0;color:#0d3d2e;"><div class="swatch-label">200</div><div class="swatch-hex">#6eecd0</div></div>
+      <div class="swatch" style="background:#b8f5e6;color:#0d3d2e;"><div class="swatch-label">100</div><div class="swatch-hex">#b8f5e6</div></div>
+    </div>
+
+    <div class="palette-label">Light Mode — Golden Sand Neutrals</div>
+    <div class="palette-row">
+      <div class="swatch" style="background:#fffdf9;color:#a89880;border:1px solid #e2d5c4;"><div class="swatch-label">Parchment</div><div class="swatch-hex">#fffdf9</div></div>
+      <div class="swatch" style="background:#faf6f0;color:#a89880;"><div class="swatch-label">Linen</div><div class="swatch-hex">#faf6f0</div></div>
+      <div class="swatch" style="background:#f0e8dc;color:#8c7458;"><div class="swatch-label">Wheat</div><div class="swatch-hex">#f0e8dc</div></div>
+      <div class="swatch" style="background:#e2d5c4;color:#7a6348;"><div class="swatch-label">Sandstone</div><div class="swatch-hex">#e2d5c4</div></div>
+      <div class="swatch" style="background:#7a6348;color:#fff;"><div class="swatch-label">Driftwood</div><div class="swatch-hex">#7a6348</div></div>
+      <div class="swatch" style="background:#2a1f10;color:#fff;"><div class="swatch-label">Espresso</div><div class="swatch-hex">#2a1f10</div></div>
+    </div>
+
+    <div class="palette-label">Dark Mode Neutrals</div>
+    <div class="palette-row">
+      <div class="swatch" style="background:#0c0e0d;color:#4a5450;"><div class="swatch-label">Void</div><div class="swatch-hex">#0c0e0d</div></div>
+      <div class="swatch" style="background:#141716;color:#4a5450;"><div class="swatch-label">Coal</div><div class="swatch-hex">#141716</div></div>
+      <div class="swatch" style="background:#1a1e1c;color:#4a5450;"><div class="swatch-label">Slate</div><div class="swatch-hex">#1a1e1c</div></div>
+      <div class="swatch" style="background:#232826;color:#6a7470;"><div class="swatch-label">Granite</div><div class="swatch-hex">#232826</div></div>
+      <div class="swatch" style="background:#8a9490;color:#fff;"><div class="swatch-label">Mist</div><div class="swatch-hex">#8a9490</div></div>
+      <div class="swatch" style="background:#e4e8e6;color:#333;"><div class="swatch-label">Cloud</div><div class="swatch-hex">#e4e8e6</div></div>
+    </div>
+
+    <div class="a11y-note">
+      <div class="a11y-note-title">Accessibility Rules</div>
+      <div class="a11y-note-body">
+        <strong>Green as text:</strong> Use #18856a (400) on light backgrounds — passes AA at 4.5:1. Never use #2dd4a0 (300) as readable text on light backgrounds (fails at 1.9:1). Bright green is for decorative fills, borders, icons, and dark-mode text only.<br><br>
+        <strong>Body text:</strong> Use #7a6348 (Driftwood) for muted body text — passes AA at 5.6:1. Use #2a1f10 (Espresso) for primary text — passes AAA at 15.9:1.<br><br>
+        <strong>Dark mode:</strong> #2dd4a0 works as accent text on dark backgrounds (6.4:1 on #0d3d2e).
+      </div>
+    </div>
+  </div>
+
+  <!-- 10 TYPOGRAPHY -->
+  <div class="section">
+    <div class="section-label">10 · Visual Identity</div>
+    <h2 class="section-title">Typography</h2>
+    <div class="section-desc">Plus Jakarta Sans for all UI, marketing, and brand. IBM Plex Mono reserved for code blocks, data labels, and technical metadata only.</div>
+    <div class="type-specimen">
+      <div class="type-family">Plus Jakarta Sans</div>
+      <div class="type-sample"><div class="type-meta"><span class="type-role">Display</span><span class="type-spec">48px · 800 · -1.5px</span></div><div style="font-size:42px;font-weight:800;letter-spacing:-1.5px;line-height:1.1;">Superpower your clients</div></div>
+      <div class="type-sample"><div class="type-meta"><span class="type-role">H1</span><span class="type-spec">32px · 700 · -0.5px</span></div><div style="font-size:28px;font-weight:700;letter-spacing:-0.5px;">Deploy AI agents in minutes</div></div>
+      <div class="type-sample"><div class="type-meta"><span class="type-role">H2</span><span class="type-spec">24px · 600</span></div><div style="font-size:22px;font-weight:600;">Built for agencies who serve businesses</div></div>
+      <div class="type-sample"><div class="type-meta"><span class="type-role">Body</span><span class="type-spec">15px · 300-400 · 1.8 line-height</span></div><div style="font-size:15px;font-weight:300;line-height:1.8;color:var(--text-muted);max-width:500px;">PranaOS gives consultants and agencies the AI infrastructure they need to deliver powerful, custom solutions to their clients — without building from scratch.</div></div>
+      <div class="type-sample"><div class="type-meta"><span class="type-role">Label</span><span class="type-spec">11-12px · 600 · uppercase · 0.5px</span></div><div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--accent);">Our Mission</div></div>
+    </div>
+    <div class="type-specimen">
+      <div class="type-family">IBM Plex Mono — Technical Use Only</div>
+      <div class="type-sample"><div class="type-meta"><span class="type-role">Code</span><span class="type-spec">13px · 400</span></div><div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--text-muted);background:var(--code-bg);padding:12px 16px;border-radius:8px;">const agent = await prana.deploy({ client: "acme" })</div></div>
+      <div class="type-sample"><div class="type-meta"><span class="type-role">Data</span><span class="type-spec">11px · 500</span></div><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;color:var(--text-dim);">MRR $24,500 · 12 AGENTS · 847 ACTIONS/DAY</div></div>
+    </div>
+  </div>
+
+  <!-- 11 ATTRIBUTION -->
+  <div class="section">
+    <div class="section-label">11 · System</div>
+    <h2 class="section-title">Attribution Model</h2>
+    <div class="section-desc">Three-tier attribution for the client experience. Visibility scales with pricing tier.</div>
+    <div class="attribution-demo">
+      <div class="attr-line">Powered by <span class="attr-prana">PranaOS</span> · Implemented by <span>Bright Agency</span> · For <span>Acme Corp</span></div>
+      <div style="margin-top:16px;font-size:11px;color:var(--text-dim);font-weight:300;line-height:1.7;">
+        Lower tiers: Full attribution visible<br>
+        Mid tiers: "Powered by PranaOS" badge only<br>
+        Top tier: Fully white-labeled — PranaOS invisible
+      </div>
+    </div>
+  </div>
+
+  <!-- 12 THEME MODES -->
+  <div class="section">
+    <div class="section-label">12 · System</div>
+    <h2 class="section-title">Theme Modes</h2>
+    <div class="section-desc">Light mode (Golden Sand) is the default across all surfaces. Dark mode is available for user preference and extended-use admin interfaces. Toggle the switch at the top right to preview.</div>
+    <div class="card">
+      <div class="card-label">Light Mode (Default)</div>
+      <div class="card-body">Golden Sand warm neutrals — Linen background (#faf6f0), Parchment cards (#fffdf9), Sandstone borders (#e2d5c4). Deeper green accent (#18856a) for text. Communicates approachability, warmth, and trust. Used for marketing site, brand materials, client-facing dashboards, documentation, and onboarding.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Dark Mode (Supported)</div>
+      <div class="card-body">Rich dark backgrounds (#0c0e0d), elevated cards (#141716), bright teal accent (#2dd4a0). Available as user preference across all admin interfaces. Agency dashboards may default to dark for extended use. Communicates technical depth and focus.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function toggleTheme() {
+  const html = document.documentElement;
+  html.setAttribute('data-theme', html.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+}
+</script>
+</body>
+</html>

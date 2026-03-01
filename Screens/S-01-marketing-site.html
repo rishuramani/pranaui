@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — AI Agents for Agencies</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-dark: #2a1f10; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880; --text-on-dark: #f5ede0;
+    --accent: #18856a; --accent-bright: #2dd4a0; --accent-glow: rgba(45,212,160,0.15);
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --gold: #c4842d; --gold-light: rgba(196,132,45,0.1);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08); --shadow-lg: 0 12px 40px rgba(42,31,16,0.12);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+  /* ===== NAV ===== */
+  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 16px 40px; display: flex; align-items: center; background: rgba(250,246,240,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(226,213,196,0.5); transition: all 0.3s; }
+  .nav-logo { display: flex; align-items: center; gap: 10px; }
+  .nav-logo svg { width: 32px; height: 32px; }
+  .nav-logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+  .nav-logo-text span { color: var(--accent); }
+  .nav-links { display: flex; gap: 32px; margin-left: 60px; }
+  .nav-link { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: color 0.15s; }
+  .nav-link:hover { color: var(--text); }
+  .nav-spacer { flex: 1; }
+  .nav-cta { padding: 9px 22px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .nav-cta:hover { filter: brightness(0.92); transform: translateY(-1px); }
+  .nav-login { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-right: 16px; cursor: pointer; text-decoration: none; }
+  .nav-login:hover { color: var(--accent); }
+
+  /* ===== HERO ===== */
+  .hero { padding: 160px 40px 100px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%); pointer-events: none; }
+  .hero::after { content: ''; position: absolute; bottom: -100px; left: -100px; width: 400px; height: 400px; background: radial-gradient(circle, var(--gold-light) 0%, transparent 70%); pointer-events: none; }
+
+  .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 28px; animation: fadeUp 0.6s ease; }
+  .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-bright); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+  .hero-title { font-size: clamp(36px, 5.5vw, 64px); font-weight: 800; letter-spacing: -2px; line-height: 1.1; max-width: 780px; margin: 0 auto 20px; animation: fadeUp 0.6s ease 0.1s both; }
+  .hero-title .highlight { background: linear-gradient(135deg, var(--accent), var(--accent-bright)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+  .hero-sub { font-size: clamp(16px, 2vw, 19px); font-weight: 300; color: var(--text-muted); max-width: 560px; margin: 0 auto 36px; line-height: 1.7; animation: fadeUp 0.6s ease 0.2s both; }
+
+  .hero-ctas { display: flex; align-items: center; justify-content: center; gap: 14px; animation: fadeUp 0.6s ease 0.3s both; flex-wrap: wrap; }
+  .cta-primary { padding: 16px 36px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(24,133,106,0.3); transition: all 0.2s; }
+  .cta-primary:hover { filter: brightness(0.92); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(24,133,106,0.35); }
+  .cta-secondary { padding: 16px 36px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+  .cta-secondary:hover { background: var(--bg-warm); color: var(--text); }
+
+  .hero-proof { margin-top: 48px; display: flex; align-items: center; justify-content: center; gap: 24px; animation: fadeUp 0.6s ease 0.4s both; }
+  .hero-proof-text { font-size: 12px; color: var(--text-dim); font-weight: 400; }
+  .hero-proof-logos { display: flex; align-items: center; gap: 16px; }
+  .hero-proof-logo { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff; opacity: 0.7; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== HOW IT WORKS ===== */
+  .section { padding: 80px 40px; max-width: 1080px; margin: 0 auto; }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 12px; text-align: center; }
+  .section-title { font-size: clamp(28px, 3.5vw, 40px); font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 12px; }
+  .section-sub { font-size: 15px; color: var(--text-muted); font-weight: 300; text-align: center; max-width: 520px; margin: 0 auto 48px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; position: relative; }
+  .steps::before { content: ''; position: absolute; top: 50px; left: 16%; right: 16%; height: 2px; background: linear-gradient(90deg, var(--accent-bright), var(--accent), var(--accent-bright)); opacity: 0.2; }
+  .step { text-align: center; position: relative; }
+  .step-num { width: 56px; height: 56px; border-radius: 16px; background: var(--accent-bg); border: 2px solid var(--accent-border); display: inline-flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: var(--accent); margin-bottom: 16px; position: relative; z-index: 1; }
+  .step-title { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+  .step-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; line-height: 1.6; max-width: 260px; margin: 0 auto; }
+  .step-icon { font-size: 28px; margin-bottom: 6px; }
+
+  /* ===== AGENT MARKETPLACE PREVIEW ===== */
+  .marketplace-section { background: var(--bg-warm); padding: 80px 40px; }
+  .marketplace-inner { max-width: 1080px; margin: 0 auto; }
+  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .agent-preview-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow-sm); transition: all 0.2s; cursor: pointer; }
+  .agent-preview-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
+  .apc-top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .apc-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .apc-name { font-size: 14px; font-weight: 700; }
+  .apc-category { font-size: 10px; color: var(--text-dim); font-weight: 500; }
+  .apc-desc { font-size: 12px; color: var(--text-muted); font-weight: 300; line-height: 1.6; margin-bottom: 14px; }
+  .apc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+  .apc-stat { font-size: 10px; color: var(--text-dim); }
+  .apc-stat strong { color: var(--text); font-weight: 700; }
+  .apc-deploy { font-size: 11px; font-weight: 600; color: var(--accent); cursor: pointer; }
+
+  .marketplace-cta { text-align: center; margin-top: 32px; }
+  .marketplace-cta-btn { padding: 12px 28px; background: none; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+  .marketplace-cta-btn:hover { background: var(--bg-card); color: var(--text); border-color: var(--accent-border); }
+
+  /* ===== SOCIAL PROOF ===== */
+  .proof-section { padding: 80px 40px; max-width: 1080px; margin: 0 auto; }
+  .logos-strip { display: flex; align-items: center; justify-content: center; gap: 40px; margin-bottom: 48px; flex-wrap: wrap; }
+  .logo-item { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--text-dim); opacity: 0.5; }
+  .logo-item-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; color: #fff; }
+
+  .testimonials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .testimonial { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); }
+  .testimonial-stars { color: #f0b429; font-size: 14px; margin-bottom: 12px; letter-spacing: 2px; }
+  .testimonial-text { font-size: 13px; color: var(--text-muted); font-weight: 400; line-height: 1.7; font-style: italic; margin-bottom: 16px; }
+  .testimonial-author { display: flex; align-items: center; gap: 10px; }
+  .testimonial-avatar { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+  .testimonial-name { font-size: 12px; font-weight: 700; }
+  .testimonial-role { font-size: 11px; color: var(--text-dim); }
+
+  /* ===== METRICS BAND ===== */
+  .metrics-band { background: var(--bg-dark); padding: 60px 40px; }
+  .metrics-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; text-align: center; }
+  .metric-value { font-size: 36px; font-weight: 800; color: var(--accent-bright); font-family: 'IBM Plex Mono', monospace; letter-spacing: -1px; }
+  .metric-label { font-size: 12px; color: rgba(245,237,224,0.5); font-weight: 400; margin-top: 4px; }
+
+  /* ===== FINAL CTA ===== */
+  .final-cta { padding: 100px 40px; text-align: center; position: relative; }
+  .final-cta::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 500px; height: 300px; background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%); pointer-events: none; }
+  .final-cta-title { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -1.5px; margin-bottom: 12px; position: relative; }
+  .final-cta-sub { font-size: 15px; color: var(--text-muted); font-weight: 300; margin-bottom: 32px; max-width: 440px; margin-left: auto; margin-right: auto; position: relative; }
+  .final-cta-btns { display: flex; align-items: center; justify-content: center; gap: 14px; position: relative; flex-wrap: wrap; }
+
+  /* ===== FOOTER ===== */
+  .footer { border-top: 1px solid var(--border); padding: 40px; }
+  .footer-inner { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+  .footer-logo { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
+  .footer-logo span { color: var(--accent); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-link { font-size: 12px; color: var(--text-dim); text-decoration: none; cursor: pointer; }
+  .footer-link:hover { color: var(--accent); }
+  .footer-copy { font-size: 11px; color: var(--text-dim); }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .steps { grid-template-columns: 1fr; gap: 32px; }
+    .steps::before { display: none; }
+    .agent-grid { grid-template-columns: 1fr; }
+    .testimonials { grid-template-columns: 1fr; }
+    .metrics-inner { grid-template-columns: repeat(2, 1fr); }
+    .hero { padding: 130px 24px 80px; }
+    .section, .proof-section { padding: 60px 24px; }
+    .footer-inner { flex-direction: column; gap: 16px; text-align: center; }
+    .footer-links { flex-wrap: wrap; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>S-01</strong> Marketing Site + Hero</div>
+
+<!-- Nav -->
+<div class="nav">
+  <div class="nav-logo">
+    <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg>
+    <div class="nav-logo-text">Prana<span>OS</span></div>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" onclick="document.querySelector('.marketplace-section').scrollIntoView({behavior:'smooth'})">Agents</a>
+    <a class="nav-link" onclick="window.open('S-01b-partners.html','_self')">Partners</a>
+    <a class="nav-link" onclick="window.open('S-03-pricing.html','_self')">Pricing</a>
+    <a class="nav-link" onclick="window.open('S-02-interactive-demo.html','_self')">Try Demo</a>
+    <a class="nav-link">Docs</a>
+  </div>
+  <div class="nav-spacer"></div>
+  <a class="nav-login" onclick="window.location.href='S-05-login.html'">Log in</a>
+  <button class="nav-cta" onclick="window.location.href='S-03-pricing.html'">Get Started Free</button>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-badge"><span class="hero-badge-dot"></span> Now in public beta</div>
+  <h1 class="hero-title">Superpower your clients<br><span class="highlight">with AI.</span></h1>
+  <p class="hero-sub">The AI platform for agencies, consultants, and builders who want to give their clients superpowers — in minutes, not months.</p>
+  <div class="hero-ctas">
+    <button class="cta-primary" onclick="window.location.href='S-03-pricing.html'">Start building free →</button>
+    <button class="cta-secondary" onclick="window.open('S-02-interactive-demo.html','_self')">Try a live demo</button>
+  </div>
+  <div class="hero-proof">
+    <span class="hero-proof-text">Already powering</span>
+    <div class="hero-proof-logos">
+      <div class="hero-proof-logo" style="background:linear-gradient(135deg,#c41e3a,#e94560);">AMC</div>
+      <div class="hero-proof-logo" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">SIP</div>
+      <div class="hero-proof-logo" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">DB</div>
+      <div class="hero-proof-logo" style="background:linear-gradient(135deg,#059669,#34d399);">SBX</div>
+    </div>
+  </div>
+</div>
+
+<!-- How it works -->
+<div class="section">
+  <div class="section-label">How it works</div>
+  <div class="section-title">You're three steps from AI-powered clients</div>
+  <div class="section-sub">Deploy AI agents your clients will love. PranaOS handles the infrastructure so you can focus on your clients.</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num"><span class="step-icon">🤖</span></div>
+      <div class="step-title">Browse & pick your agents</div>
+      <div class="step-desc">Choose from a marketplace of ready-to-go agents — inventory, ads, email, reporting. Configure each one to your client's tools.</div>
+    </div>
+    <div class="step">
+      <div class="step-num"><span class="step-icon">🚀</span></div>
+      <div class="step-title">Deploy to your client</div>
+      <div class="step-desc">Each client gets their own branded workspace. You decide what they see, what they access, and how it feels. Their AI, your way.</div>
+    </div>
+    <div class="step">
+      <div class="step-num"><span class="step-icon">💰</span></div>
+      <div class="step-title">Set your price & grow</div>
+      <div class="step-desc">You set the pricing. You own the margin. Built-in billing, usage tracking, and decision management — so you look brilliant.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Agent Marketplace Preview -->
+<div class="marketplace-section">
+  <div class="marketplace-inner">
+    <div class="section-label">Agent Marketplace</div>
+    <div class="section-title">Agents that make your clients look like geniuses</div>
+    <div class="section-sub">Each agent connects to real tools, works with real data, and surfaces decisions your clients can act on today.</div>
+    <div class="agent-grid">
+      <div class="agent-preview-card" onclick="window.open('S-02-interactive-demo.html','_self')">
+        <div class="apc-top">
+          <div class="apc-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);">🏷️</div>
+          <div><div class="apc-name">Final Sale Agent</div><div class="apc-category">Inventory &middot; Shopify</div></div>
+        </div>
+        <div class="apc-desc">Scans inventory daily, identifies slow movers, and recommends strategic markdowns with estimated recovery amounts.</div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>142</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+      </div>
+      <div class="agent-preview-card">
+        <div class="apc-top">
+          <div class="apc-icon" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">📣</div>
+          <div><div class="apc-name">Paid Ads Manager</div><div class="apc-category">Advertising &middot; Meta Ads</div></div>
+        </div>
+        <div class="apc-desc">Monitors ROAS in real-time, pauses underperforming campaigns, and reallocates budget to top performers automatically.</div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>98</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+      </div>
+      <div class="agent-preview-card">
+        <div class="apc-top">
+          <div class="apc-icon" style="background:linear-gradient(135deg,#059669,#34d399);">✉️</div>
+          <div><div class="apc-name">Email Drafter</div><div class="apc-category">Communication &middot; Gmail</div></div>
+        </div>
+        <div class="apc-desc">Drafts customer-facing and vendor emails using your client's tone, templates, and knowledge base. One-click send.</div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>210</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+      </div>
+      <div class="agent-preview-card">
+        <div class="apc-top">
+          <div class="apc-icon" style="background:linear-gradient(135deg,#d97706,#fbbf24);">📊</div>
+          <div><div class="apc-name">Revenue Reporter</div><div class="apc-category">Analytics &middot; POS + Shopify</div></div>
+        </div>
+        <div class="apc-desc">Generates weekly revenue reports with location-level breakdowns, anomaly detection, and trend analysis.</div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>76</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+      </div>
+      <div class="agent-preview-card">
+        <div class="apc-top">
+          <div class="apc-icon" style="background:linear-gradient(135deg,#dc2626,#f87171);">📦</div>
+          <div><div class="apc-name">Inventory Sync</div><div class="apc-category">Operations &middot; Multi-platform</div></div>
+        </div>
+        <div class="apc-desc">Keeps inventory counts synchronized across Shopify, POS, and warehouse systems. Flags discrepancies before oversells.</div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>118</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+      </div>
+      <div class="agent-preview-card">
+        <div class="apc-top">
+          <div class="apc-icon" style="background:linear-gradient(135deg,#6b7280,#9ca3af);">💬</div>
+          <div><div class="apc-name">Customer Feedback</div><div class="apc-category">Support &middot; Reviews + Surveys</div></div>
+        </div>
+        <div class="apc-desc">Aggregates reviews from Google, Yelp, and surveys. Extracts themes, sentiment shifts, and urgent issues.</div>
+        <div class="apc-footer"><span class="apc-stat">Deployed <strong>64</strong> times</span><span class="apc-deploy" onclick="window.open('S-02-interactive-demo.html','_self')">Try demo →</span></div>
+      </div>
+    </div>
+    <div class="marketplace-cta">
+      <button class="marketplace-cta-btn" onclick="window.location.href='S-04-signup-checkout.html'">Explore all agents →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Metrics band -->
+<div class="metrics-band">
+  <div class="metrics-inner">
+    <div><div class="metric-value">47</div><div class="metric-label">Agencies building with PranaOS</div></div>
+    <div><div class="metric-value">340+</div><div class="metric-label">Client workspaces live</div></div>
+    <div><div class="metric-value">$2.1M</div><div class="metric-label">Revenue managed for clients</div></div>
+    <div><div class="metric-value">12k</div><div class="metric-label">AI decisions made this month</div></div>
+  </div>
+</div>
+
+<!-- Social proof -->
+<div class="proof-section">
+  <div class="section-label">From our partners</div>
+  <div class="section-title">We make you look brilliant to your clients</div>
+  <div class="section-sub" style="margin-bottom:32px;">Agencies, consultants, and MSPs use PranaOS to deliver AI — without hiring AI engineers.</div>
+
+  <div class="logos-strip">
+    <div class="logo-item"><div class="logo-item-icon" style="background:linear-gradient(135deg,#c41e3a,#e94560);">AMC</div> AMC Theatres</div>
+    <div class="logo-item"><div class="logo-item-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">SIP</div> Sip Coffee & Beer</div>
+    <div class="logo-item"><div class="logo-item-icon" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">DB</div> Dutch Bros</div>
+    <div class="logo-item"><div class="logo-item-icon" style="background:linear-gradient(135deg,#059669,#34d399);">SBX</div> Starbucks Metro</div>
+    <div class="logo-item"><div class="logo-item-icon" style="background:linear-gradient(135deg,#d97706,#fbbf24);">UP</div> Urban Plates</div>
+  </div>
+
+  <div class="testimonials">
+    <div class="testimonial">
+      <div class="testimonial-stars">★★★★★</div>
+      <div class="testimonial-text">"We went from zero AI offerings to managing 6 agents across 4 clients in a weekend. Our clients think we hired an entire AI team. The margins are a bonus."</div>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:linear-gradient(135deg,#18856a,#2dd4a0);">RK</div>
+        <div><div class="testimonial-name">Rishabh K.</div><div class="testimonial-role">CEO, Prana IQ</div></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="testimonial-stars">★★★★★</div>
+      <div class="testimonial-text">"The decision inbox is a game-changer. My clients don't need to understand AI — they just approve or reject. It's like giving them a team of analysts for the price of a software seat."</div>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">JM</div>
+        <div><div class="testimonial-name">Jessica M.</div><div class="testimonial-role">Director, F&B Consulting Group</div></div>
+      </div>
+    </div>
+    <div class="testimonial">
+      <div class="testimonial-stars">★★★★★</div>
+      <div class="testimonial-text">"We used to build custom AI tools for each client from scratch. PranaOS lets us deploy the same agents everywhere, tailor them per client, and actually charge what they're worth."</div>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">DT</div>
+        <div><div class="testimonial-name">David T.</div><div class="testimonial-role">Founder, Revel Ops</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Final CTA -->
+<div class="final-cta">
+  <div class="final-cta-title">Ready to superpower your clients?</div>
+  <div class="final-cta-sub">Start free. Deploy your first agent today. Your clients will think you hired an AI team.</div>
+  <div class="final-cta-btns">
+    <button class="cta-primary" onclick="window.location.href='S-03-pricing.html'">Get started free →</button>
+    <button class="cta-secondary" onclick="alert('Calendly booking page')">Talk to sales</button>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo"><svg viewBox="0 0 32 32" fill="none" width="20" height="20"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg> Prana<span>OS</span></div>
+    <div class="footer-links">
+      <a class="footer-link" onclick="document.querySelector('.marketplace-section').scrollIntoView({behavior:'smooth'})">Agents</a>
+      <a class="footer-link" onclick="window.location.href='S-03-pricing.html'">Pricing</a>
+      <a class="footer-link">Docs</a>
+      <a class="footer-link">Blog</a>
+      <a class="footer-link">Privacy</a>
+      <a class="footer-link">Terms</a>
+    </div>
+    <div class="footer-copy">&copy; 2026 Backbar Solutions Inc.</div>
+  </div>
+</div>
+
+</body>
+</html>

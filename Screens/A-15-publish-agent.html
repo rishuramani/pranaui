@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Publish Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08);
+    --error: #c25a5a;
+    --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.06);
+    --bg-elevated: var(--bg-warm);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; margin-bottom: 8px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-org { padding: 0 24px; margin-bottom: 28px; }
+  .sb-org-name { font-size: 12px; color: var(--text-muted); font-weight: 500; padding: 6px 12px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background 0.2s; }
+  .sb-org-name:hover { background: var(--border-subtle); }
+  .sb-org-dot { width: 7px; height: 7px; background: var(--accent-bright); border-radius: 50%; }
+  .sb-section { margin-bottom: 24px; }
+  .sb-section-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; padding: 0 24px; margin-bottom: 6px; }
+  .sb-nav { list-style: none; }
+  .sb-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; position: relative; }
+  .sb-nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+  .sb-nav-item.active { color: var(--accent); font-weight: 600; background: var(--accent-bg); }
+  .sb-nav-item.active::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--accent); border-radius: 0 2px 2px 0; }
+  .sb-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sb-nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; color: #fff; background: var(--error); min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .sb-nav-badge.warn { background: var(--warn); }
+  .sb-footer { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .sb-user { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 0; }
+  .sb-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+  .sb-user-info { flex: 1; min-width: 0; }
+  .sb-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); font-weight: 300; }
+
+  .main { padding: 28px 32px; max-width: 900px; }
+  .breadcrumb { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; cursor: pointer; }
+  .page-header { margin-bottom: 24px; }
+  .page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .page-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-top: 4px; }
+
+  /* Progress stepper */
+  .stepper { display: flex; align-items: center; gap: 0; margin-bottom: 28px; }
+  .step { display: flex; align-items: center; gap: 8px; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; border: 2px solid var(--border); color: var(--text-dim); }
+  .step.done .step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .step.active .step-num { border-color: var(--accent); color: var(--accent); }
+  .step-label { font-size: 11px; font-weight: 600; color: var(--text-dim); }
+  .step.active .step-label { color: var(--text); }
+  .step.done .step-label { color: var(--accent); }
+  .step-line { flex: 0 0 40px; height: 2px; background: var(--border); margin: 0 4px; }
+  .step-line.done { background: var(--accent); }
+
+  /* Form sections */
+  .form-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; box-shadow: var(--shadow-sm); }
+  .fs-title { font-size: 14px; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .fs-desc { font-size: 11px; color: var(--text-dim); margin-bottom: 16px; }
+  .fs-title .req { font-size: 9px; color: var(--accent); font-weight: 700; }
+
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; }
+  .field-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg-card); outline: none; }
+  .field-input:focus { border-color: var(--accent); }
+  textarea.field-input { height: 80px; resize: vertical; line-height: 1.6; }
+  .field-hint { font-size: 10px; color: var(--text-dim); margin-top: 3px; }
+
+  /* Agent identity card */
+  .agent-identity { display: flex; align-items: center; gap: 14px; padding: 16px; background: var(--bg); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-bottom: 16px; }
+  .ai-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+  .ai-info { flex: 1; }
+  .ai-name { font-size: 16px; font-weight: 800; }
+  .ai-meta { font-size: 11px; color: var(--text-dim); }
+  .ai-version { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: var(--accent-bg); color: var(--accent); }
+
+  /* Tags */
+  .tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border); color: var(--text-muted); background: var(--bg-card); }
+  .tag:hover { border-color: var(--accent-border); color: var(--accent); }
+  .tag.selected { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+  .tag-section-label { font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px; margin-top: 10px; }
+  .tag-section-label:first-child { margin-top: 0; }
+
+  /* Screenshots */
+  .screenshots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .screenshot-slot { aspect-ratio: 16/10; border: 2px dashed var(--border); border-radius: var(--radius-sm); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; transition: all 0.15s; }
+  .screenshot-slot:hover { border-color: var(--accent); background: var(--accent-bg); }
+  .screenshot-slot .ss-icon { font-size: 20px; color: var(--text-dim); }
+  .screenshot-slot .ss-text { font-size: 10px; font-weight: 600; color: var(--text-dim); }
+  .screenshot-slot.filled { border-style: solid; border-color: var(--border); background: var(--bg); overflow: hidden; position: relative; }
+  .screenshot-slot.filled .ss-preview { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 8px; }
+  .ss-mock { width: 100%; height: 100%; background: var(--bg-card); border-radius: 6px; border: 1px solid var(--border-subtle); display: flex; flex-direction: column; padding: 6px; }
+  .ss-mock-bar { height: 4px; background: var(--border); border-radius: 2px; width: 60%; margin-bottom: 4px; }
+  .ss-mock-row { display: flex; gap: 4px; margin-bottom: 3px; }
+  .ss-mock-box { height: 14px; border-radius: 3px; background: var(--bg-warm); }
+  .ss-mock-chart { flex: 1; display: flex; align-items: flex-end; gap: 2px; padding-top: 4px; }
+  .ss-mock-cbar { width: 8px; border-radius: 2px 2px 0 0; background: var(--accent); opacity: 0.5; }
+  .ss-badge { position: absolute; top: 6px; left: 6px; font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 3px; background: var(--accent); color: #fff; }
+
+  /* Review checklist */
+  .checklist { display: flex; flex-direction: column; gap: 8px; }
+  .check-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg); border-radius: var(--radius-xs); }
+  .check-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; flex-shrink: 0; }
+  .check-icon.pass { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+  .check-icon.warn { background: var(--warn-bg); color: var(--warn); border: 1px solid rgba(196,132,45,0.15); }
+  .check-text { flex: 1; font-size: 12px; }
+  .check-status { font-size: 10px; font-weight: 700; }
+  .check-status.pass { color: var(--accent); }
+  .check-status.warn { color: var(--warn); }
+
+  /* Submit bar */
+  .submit-bar { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 24px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-sm); }
+  .sb-info { flex: 1; }
+  .sb-title { font-size: 13px; font-weight: 700; }
+  .sb-desc { font-size: 11px; color: var(--text-dim); }
+  .sb-btn { padding: 12px 28px; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer; border: none; transition: all 0.15s; }
+  .sb-btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 12px rgba(24,133,106,0.25); }
+  .sb-btn-primary:hover { filter: brightness(0.92); }
+  .sb-btn-outline { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 12px 20px; }
+
+  /* Success overlay */
+  .success-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,31,16,0.5); backdrop-filter: blur(6px); align-items: center; justify-content: center; }
+  .success-overlay.show { display: flex; }
+  .success-card { background: #fff; border-radius: 20px; padding: 40px; text-align: center; max-width: 440px; width: calc(100vw - 40px); box-shadow: 0 20px 60px rgba(42,31,16,0.25); animation: popIn 0.35s ease; }
+  @keyframes popIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+  .success-icon { font-size: 56px; margin-bottom: 12px; }
+  .success-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .success-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; line-height: 1.6; margin-bottom: 20px; }
+  .success-status { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--warn-bg); border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--warn); margin-bottom: 20px; }
+  .success-btn { padding: 12px 28px; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; border: none; background: var(--accent); color: #fff; }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="screen-id"><strong>A-15</strong> Publish Agent</div>
+
+<div class="success-overlay" id="success" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="success-card">
+    <div class="success-icon">🚀</div>
+    <div class="success-title">Submitted for Review!</div>
+    <div class="success-desc">Your agent has been submitted to the PranaOS Marketplace. Our team will review it within 48 hours.</div>
+    <div class="success-status">⏳ Pending Review — ~48 hours</div><br><br>
+    <button class="success-btn" onclick="window.location.href='A-04-agent-marketplace.html'">Back to Agent Library</button>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 512 512" fill="none" width="28" height="28">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="sb-logo-text">Prana<span>OS</span></span>
+    </div>
+    <div class="sb-org">
+      <div class="sb-org-name"><span class="sb-org-dot"></span> Prana IQ</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Main</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('dashboard')"><span class="sb-nav-icon">📊</span> Command Center</li>
+        <li class="sb-nav-item" onclick="navTo('clients')"><span class="sb-nav-icon">🏢</span> Clients <span class="sb-nav-badge warn">5</span></li>
+        <li class="sb-nav-item" onclick="navTo('decisions')"><span class="sb-nav-icon">📥</span> Decision Inbox <span class="sb-nav-badge">12</span></li>
+        <li class="sb-nav-item" onclick="navTo('marketplace')"><span class="sb-nav-icon">🤖</span> Agent Marketplace</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Manage</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item active" onclick="navTo('builder')"><span class="sb-nav-icon">⚡</span> Builder</li>
+        <li class="sb-nav-item" onclick="navTo('analytics')"><span class="sb-nav-icon">📈</span> Analytics</li>
+        <li class="sb-nav-item" onclick="navTo('billing')"><span class="sb-nav-icon">💳</span> Billing</li>
+        <li class="sb-nav-item" onclick="navTo('team')"><span class="sb-nav-icon">👥</span> Team</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">System</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('settings')"><span class="sb-nav-icon">⚙️</span> Settings</li>
+      </ul>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">RK</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Rishabh K.</div>
+          <div class="sb-user-role">Owner · Growth plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+<div class="main">
+  <div class="breadcrumb"><a href="A-13-agent-builder.html">Agent Library</a> → <a href="A-13-agent-builder.html">Inventory Clearance Agent</a> → Publish</div>
+  <div class="page-header">
+    <div class="page-title">Publish to Marketplace</div>
+    <div class="page-desc">Make your agent available for other agencies to install and customize.</div>
+  </div>
+
+  <!-- Stepper -->
+  <div class="stepper">
+    <div class="step done"><div class="step-num">✓</div><div class="step-label">Build</div></div>
+    <div class="step-line done"></div>
+    <div class="step done"><div class="step-num">✓</div><div class="step-label">Test</div></div>
+    <div class="step-line done"></div>
+    <div class="step active"><div class="step-num">3</div><div class="step-label">Publish</div></div>
+    <div class="step-line"></div>
+    <div class="step"><div class="step-num">4</div><div class="step-label">Review</div></div>
+  </div>
+
+  <!-- Agent identity -->
+  <div class="agent-identity">
+    <div class="ai-icon" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);">🏷️</div>
+    <div class="ai-info">
+      <div class="ai-name">Inventory Clearance Agent</div>
+      <div class="ai-meta">Built by your agency &middot; Last updated 2 hours ago &middot; Deployed to 3 clients</div>
+    </div>
+    <div class="ai-version">v1.2</div>
+  </div>
+
+  <!-- Listing details -->
+  <div class="form-section">
+    <div class="fs-title">Listing Details <span class="req">Required</span></div>
+    <div class="fs-desc">How your agent appears in the marketplace.</div>
+    <div class="field">
+      <div class="field-label">Display Name</div>
+      <input type="text" class="field-input" value="Inventory Clearance Agent">
+    </div>
+    <div class="field">
+      <div class="field-label">Short Description</div>
+      <input type="text" class="field-input" value="Scans Shopify inventory, flags slow movers, and suggests markdowns with estimated recovery.">
+      <div class="field-hint">Max 140 characters. Shown in search results and cards.</div>
+    </div>
+    <div class="field">
+      <div class="field-label">Full Description</div>
+      <textarea class="field-input">The Inventory Clearance Agent connects to your client's Shopify store and runs daily scans of their product catalog. It identifies items that have been in stock beyond a configurable threshold (default: 90 days), calculates optimal markdown percentages, and presents decisions with estimated recovery amounts.
+
+Features:
+• Dashboard with real-time KPIs and category breakdowns
+• Decision cards with one-click approve/dismiss
+• Approval workflow with scheduled price rule execution
+• Configurable thresholds and scan frequency</textarea>
+    </div>
+  </div>
+
+  <!-- Tags -->
+  <div class="form-section">
+    <div class="fs-title">Tags & Categories <span class="req">Required</span></div>
+    <div class="fs-desc">Help agencies find your agent. Select at least one from each category.</div>
+    <div class="tag-section-label">Industry</div>
+    <div class="tags-row" style="margin-bottom:8px;">
+      <span class="tag selected" onclick="this.classList.toggle('selected')">🛒 Retail</span>
+      <span class="tag selected" onclick="this.classList.toggle('selected')">🍽️ F&B</span>
+      <span class="tag" onclick="this.classList.toggle('selected')">🏨 Hospitality</span>
+      <span class="tag" onclick="this.classList.toggle('selected')">🏥 Healthcare</span>
+      <span class="tag" onclick="this.classList.toggle('selected')">🏗️ Real Estate</span>
+      <span class="tag" onclick="this.classList.toggle('selected')">💼 Professional Services</span>
+    </div>
+    <div class="tag-section-label">Use Case</div>
+    <div class="tags-row" style="margin-bottom:8px;">
+      <span class="tag selected" onclick="this.classList.toggle('selected')">📦 Inventory</span>
+      <span class="tag selected" onclick="this.classList.toggle('selected')">💰 Revenue Recovery</span>
+      <span class="tag" onclick="this.classList.toggle('selected')">📊 Analytics</span>
+      <span class="tag" onclick="this.classList.toggle('selected')">🤝 CRM</span>
+      <span class="tag" onclick="this.classList.toggle('selected')">🔧 Operations</span>
+      <span class="tag" onclick="this.classList.toggle('selected')">📋 Compliance</span>
+    </div>
+    <div class="tag-section-label">Integrations</div>
+    <div class="tags-row">
+      <span class="tag selected" onclick="this.classList.toggle('selected')">🛍️ Shopify</span>
+      <span class="tag" onclick="this.classList.toggle('selected')">📱 Square</span>
+      <span class="tag" onclick="this.classList.toggle('selected')">💬 Slack</span>
+      <span class="tag" onclick="this.classList.toggle('selected')">📧 Email</span>
+    </div>
+  </div>
+
+  <!-- Screenshots -->
+  <div class="form-section">
+    <div class="fs-title">Screenshots <span class="req">Required (min 2)</span></div>
+    <div class="fs-desc">Show what your agent looks like. Auto-captured from your last test run, or upload your own.</div>
+    <div class="screenshots">
+      <div class="screenshot-slot filled">
+        <div class="ss-preview">
+          <div class="ss-mock">
+            <div class="ss-mock-bar"></div>
+            <div class="ss-mock-row"><div class="ss-mock-box" style="flex:1;background:var(--accent-bg);"></div><div class="ss-mock-box" style="flex:1;background:var(--warn-bg);"></div><div class="ss-mock-box" style="flex:1;background:var(--accent-bg);"></div></div>
+            <div class="ss-mock-row"><div class="ss-mock-box" style="flex:2;height:24px;"></div><div class="ss-mock-box" style="flex:1;height:24px;"></div></div>
+            <div class="ss-mock-chart"><div class="ss-mock-cbar" style="height:60%;"></div><div class="ss-mock-cbar" style="height:80%;"></div><div class="ss-mock-cbar" style="height:45%;"></div><div class="ss-mock-cbar" style="height:90%;"></div></div>
+          </div>
+        </div>
+        <span class="ss-badge">Dashboard</span>
+      </div>
+      <div class="screenshot-slot filled">
+        <div class="ss-preview">
+          <div class="ss-mock">
+            <div class="ss-mock-bar" style="width:40%;"></div>
+            <div style="display:flex;flex-direction:column;gap:3px;flex:1;">
+              <div class="ss-mock-box" style="height:10px;width:80%;border-radius:8px;"></div>
+              <div class="ss-mock-box" style="height:10px;width:60%;border-radius:8px;background:var(--accent-bg);"></div>
+              <div class="ss-mock-box" style="height:10px;width:90%;border-radius:8px;"></div>
+              <div class="ss-mock-box" style="height:10px;width:70%;border-radius:8px;background:var(--accent-bg);"></div>
+            </div>
+            <div class="ss-mock-box" style="height:16px;width:50%;border-radius:4px;background:var(--accent);margin-top:auto;"></div>
+          </div>
+        </div>
+        <span class="ss-badge">Chat</span>
+      </div>
+      <div class="screenshot-slot" onclick="alert('Upload screenshot')">
+        <span class="ss-icon">📸</span>
+        <span class="ss-text">Add screenshot</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review checklist -->
+  <div class="form-section">
+    <div class="fs-title">Pre-submission Checklist</div>
+    <div class="fs-desc">Automated checks before submitting for review.</div>
+    <div class="checklist">
+      <div class="check-item"><div class="check-icon pass">✓</div><div class="check-text">Agent tested successfully with sample data</div><div class="check-status pass">Passed</div></div>
+      <div class="check-item"><div class="check-icon pass">✓</div><div class="check-text">At least 2 screenshots uploaded</div><div class="check-status pass">Passed</div></div>
+      <div class="check-item"><div class="check-icon pass">✓</div><div class="check-text">Description meets minimum length (100+ chars)</div><div class="check-status pass">Passed</div></div>
+      <div class="check-item"><div class="check-icon pass">✓</div><div class="check-text">Industry and use case tags selected</div><div class="check-status pass">Passed</div></div>
+      <div class="check-item"><div class="check-icon warn">!</div><div class="check-text">No sensitive data in system prompt or config</div><div class="check-status warn">Review manually</div></div>
+      <div class="check-item"><div class="check-icon pass">✓</div><div class="check-text">Integration permissions are read-only or scoped</div><div class="check-status pass">Passed</div></div>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div class="submit-bar">
+    <div class="sb-info">
+      <div class="sb-title">Ready to publish?</div>
+      <div class="sb-desc">PranaOS reviews all marketplace submissions within 48 hours. You'll be notified when approved.</div>
+    </div>
+    <button class="sb-btn sb-btn-outline">Save Draft</button>
+    <button class="sb-btn sb-btn-primary" onclick="document.getElementById('success').classList.add('show')">Submit for Review →</button>
+  </div>
+
+</div>
+</div>
+<script>
+function navTo(target) {
+  const routes = {
+    'dashboard': 'A-03-command-center.html',
+    'clients': 'A-10-client-management.html',
+    'decisions': 'A-11-decision-inbox-agency.html',
+    'marketplace': 'A-04-agent-marketplace.html',
+    'builder': 'A-13-agent-builder.html',
+    'analytics': 'A-16-analytics.html',
+    'billing': 'A-12-billing-management.html',
+    'team': 'A-17-team-management.html',
+    'settings': 'A-18-audit-log.html'
+  };
+  if (routes[target]) {
+    window.location.href = routes[target];
+  } else {
+    alert('\u2192 ' + target + ' (screen not yet built)');
+  }
+}
+</script>
+</body>
+</html>

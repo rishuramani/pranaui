@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Decision Inbox (Agency)</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-card: #fffdf9; --bg-elevated: #f0e8dc;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-secondary: #4a3d2a; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08); --warn-border: rgba(196,132,45,0.18);
+    --red: #c25a5a; --red-bg: rgba(194,90,90,0.08); --red-border: rgba(194,90,90,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 14px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* Shell grid */
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; margin-bottom: 8px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-org { padding: 0 24px; margin-bottom: 28px; }
+  .sb-org-name { font-size: 12px; color: var(--text-muted); font-weight: 500; padding: 6px 12px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background 0.2s; }
+  .sb-org-name:hover { background: var(--border-subtle); }
+  .sb-org-dot { width: 7px; height: 7px; background: var(--accent-bright); border-radius: 50%; }
+  .sb-section { margin-bottom: 24px; }
+  .sb-section-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; padding: 0 24px; margin-bottom: 6px; }
+  .sb-nav { list-style: none; }
+  .sb-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; position: relative; }
+  .sb-nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+  .sb-nav-item.active { color: var(--accent); font-weight: 600; background: var(--accent-bg); }
+  .sb-nav-item.active::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--accent); border-radius: 0 2px 2px 0; }
+  .sb-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sb-nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; color: #fff; background: var(--error); min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .sb-nav-badge.warn { background: var(--warn); }
+  .sb-footer { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .sb-user { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 0; }
+  .sb-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+  .sb-user-info { flex: 1; min-width: 0; }
+  .sb-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); font-weight: 300; }
+
+  .main { padding: 28px 36px 80px; max-width: 900px; }
+
+  .page-header { margin-bottom: 20px; }
+  .page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .page-subtitle { font-size: 12px; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
+
+  /* Summary strip */
+  .summary-strip { display: flex; gap: 10px; margin-bottom: 18px; }
+  .summary-pill { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xs); padding: 12px 18px; display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow-sm); }
+  .summary-pill-value { font-size: 22px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
+  .summary-pill-label { font-size: 11px; color: var(--text-dim); }
+  .summary-pill-value.warn { color: var(--warn); }
+  .summary-pill-value.green { color: var(--accent); }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; margin-bottom: 14px; }
+  .tab { padding: 8px 16px; border-radius: var(--radius-xs); font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+  .tab:hover { background: var(--bg-elevated); }
+  .tab.active { background: var(--accent-bg); color: var(--accent); font-weight: 600; }
+  .tab-count { font-size: 11px; font-weight: 700; margin-left: 4px; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-select { padding: 8px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg-card); cursor: pointer; outline: none; }
+  .filter-select:focus { border-color: var(--accent); }
+  .filter-search { flex: 1; min-width: 180px; padding: 8px 14px 8px 34px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a89880' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 12px center no-repeat; outline: none; }
+  .filter-search:focus { border-color: var(--accent); }
+
+  /* Bulk action bar */
+  .bulk-bar { display: none; align-items: center; gap: 12px; padding: 10px 16px; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: var(--radius-xs); margin-bottom: 14px; animation: slideDown 0.2s ease; }
+  .bulk-bar.show { display: flex; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+  .bulk-count { font-size: 13px; font-weight: 700; color: var(--accent); }
+  .bulk-spacer { flex: 1; }
+  .bulk-btn { padding: 7px 16px; border-radius: 6px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+  .bulk-btn.approve { background: var(--accent); color: #fff; }
+  .bulk-btn.approve:hover { filter: brightness(0.9); }
+  .bulk-btn.reject { background: none; border: 1px solid var(--border); color: var(--text-muted); }
+  .bulk-btn.reject:hover { background: var(--bg-elevated); }
+  .bulk-btn.clear { background: none; border: none; color: var(--text-dim); font-weight: 500; text-decoration: underline; }
+
+  /* Decision cards */
+  .decision-list { display: flex; flex-direction: column; gap: 10px; }
+  .decision-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow-sm); transition: all 0.15s; }
+  .decision-card:hover { box-shadow: var(--shadow-md); }
+  .decision-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-bg); }
+  .decision-card.resolved { opacity: 0.5; }
+
+  .dc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .dc-checkbox { width: 18px; height: 18px; border-radius: 5px; border: 2px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+  .dc-checkbox.checked { background: var(--accent); border-color: var(--accent); }
+  .dc-checkbox.checked::after { content: '✓'; color: #fff; font-size: 11px; font-weight: 700; }
+  .dc-client-logo { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .dc-client-name { font-size: 11px; font-weight: 600; color: var(--text-dim); }
+  .dc-agent-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: var(--bg-elevated); color: var(--text-dim); }
+  .dc-urgency { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-left: auto; }
+  .dc-urgency.high { background: var(--red-bg); color: var(--red); }
+  .dc-urgency.med { background: var(--warn-bg); color: var(--warn); }
+  .dc-urgency.low { background: var(--accent-bg); color: var(--accent); }
+  .dc-time { font-size: 10px; color: var(--text-dim); }
+
+  .dc-body { padding-left: 28px; margin-bottom: 12px; }
+  .dc-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .dc-desc { font-size: 12px; color: var(--text-muted); font-weight: 300; line-height: 1.5; }
+  .dc-impact { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: var(--accent); margin-top: 6px; background: var(--accent-bg); padding: 3px 10px; border-radius: 4px; }
+
+  .dc-footer { display: flex; align-items: center; gap: 8px; padding-left: 28px; }
+  .dc-btn { padding: 7px 18px; border-radius: 6px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+  .dc-btn.approve { background: var(--accent); color: #fff; box-shadow: 0 1px 4px rgba(24,133,106,0.2); }
+  .dc-btn.approve:hover { filter: brightness(0.9); }
+  .dc-btn.reject { background: none; border: 1px solid var(--border); color: var(--text-muted); }
+  .dc-btn.reject:hover { background: var(--bg-elevated); }
+  .dc-btn.context { background: none; border: none; color: var(--text-dim); font-weight: 500; margin-left: auto; font-size: 11px; text-decoration: underline; cursor: pointer; }
+  .dc-btn.context:hover { color: var(--accent); }
+
+  .dc-resolved-badge { font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+  .dc-resolved-badge.approved { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+  .dc-resolved-badge.rejected { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>A-11</strong> Decision Inbox (Agency)</div>
+
+<div class="shell">
+
+  <nav class="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 512 512" fill="none" width="28" height="28">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="sb-logo-text">Prana<span>OS</span></span>
+    </div>
+    <div class="sb-org">
+      <div class="sb-org-name"><span class="sb-org-dot"></span> Prana IQ</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Main</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('dashboard')"><span class="sb-nav-icon">📊</span> Command Center</li>
+        <li class="sb-nav-item" onclick="navTo('clients')"><span class="sb-nav-icon">🏢</span> Clients <span class="sb-nav-badge warn">5</span></li>
+        <li class="sb-nav-item active" onclick="navTo('decisions')"><span class="sb-nav-icon">📥</span> Decision Inbox <span class="sb-nav-badge">12</span></li>
+        <li class="sb-nav-item" onclick="navTo('marketplace')"><span class="sb-nav-icon">🤖</span> Agent Marketplace</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Manage</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('builder')"><span class="sb-nav-icon">⚡</span> Builder</li>
+        <li class="sb-nav-item" onclick="navTo('analytics')"><span class="sb-nav-icon">📈</span> Analytics</li>
+        <li class="sb-nav-item" onclick="navTo('billing')"><span class="sb-nav-icon">💳</span> Billing</li>
+        <li class="sb-nav-item" onclick="navTo('team')"><span class="sb-nav-icon">👥</span> Team</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">System</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('settings')"><span class="sb-nav-icon">⚙️</span> Settings</li>
+      </ul>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">RK</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Rishabh K.</div>
+          <div class="sb-user-role">Owner · Growth plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+<div class="main">
+
+  <div class="page-header">
+    <div class="page-title">Decision Inbox</div>
+    <div class="page-subtitle">Review and approve AI agent recommendations across all clients</div>
+  </div>
+
+  <div class="summary-strip">
+    <div class="summary-pill">
+      <div><div class="summary-pill-value warn">23</div><div class="summary-pill-label">Pending</div></div>
+    </div>
+    <div class="summary-pill">
+      <div><div class="summary-pill-value">5</div><div class="summary-pill-label">High urgency</div></div>
+    </div>
+    <div class="summary-pill">
+      <div><div class="summary-pill-value">5</div><div class="summary-pill-label">Clients</div></div>
+    </div>
+    <div class="summary-pill">
+      <div><div class="summary-pill-value green">$12.4k</div><div class="summary-pill-label">If all approved</div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="filterTab('pending',this)">Pending <span class="tab-count">23</span></div>
+    <div class="tab" onclick="filterTab('approved',this)">Approved <span class="tab-count">47</span></div>
+    <div class="tab" onclick="filterTab('rejected',this)">Rejected <span class="tab-count">8</span></div>
+    <div class="tab" onclick="filterTab('all',this)">All <span class="tab-count">78</span></div>
+  </div>
+
+  <div class="filter-bar">
+    <select class="filter-select" id="client-filter" onchange="applyFilters()">
+      <option value="all">All clients</option>
+      <option value="amc">AMC Theatres</option>
+      <option value="sip">Sip Coffee & Beer</option>
+      <option value="dutch">Dutch Bros Region 14</option>
+      <option value="sbx">Starbucks Metro</option>
+      <option value="bb">Board & Brew</option>
+    </select>
+    <select class="filter-select" id="agent-filter" onchange="applyFilters()">
+      <option value="all">All agents</option>
+      <option>Final Sale Agent</option>
+      <option>Paid Ads Manager</option>
+      <option>Email Drafter</option>
+      <option>Revenue Reporter</option>
+      <option>Inventory Sync</option>
+    </select>
+    <select class="filter-select" id="urgency-filter" onchange="applyFilters()">
+      <option value="all">All urgency</option>
+      <option value="high">High</option>
+      <option value="med">Medium</option>
+      <option value="low">Low</option>
+    </select>
+    <input type="text" class="filter-search" placeholder="Search decisions&hellip;">
+  </div>
+
+  <!-- Bulk bar -->
+  <div class="bulk-bar" id="bulk-bar">
+    <span class="bulk-count" id="bulk-count">0 selected</span>
+    <div class="bulk-spacer"></div>
+    <button class="bulk-btn approve" onclick="bulkAction('approved')">Approve Selected</button>
+    <button class="bulk-btn reject" onclick="bulkAction('rejected')">Reject Selected</button>
+    <button class="bulk-btn clear" onclick="clearSelection()">Clear</button>
+  </div>
+
+  <!-- Decision cards -->
+  <div class="decision-list" id="decision-list">
+
+    <!-- AMC — Paid Ads — High -->
+    <div class="decision-card" data-client="amc" data-status="pending" data-urgency="high" id="dc-1">
+      <div class="dc-top">
+        <div class="dc-checkbox" onclick="event.stopPropagation();toggleCheck(this,1)"></div>
+        <div class="dc-client-logo" style="background:linear-gradient(135deg,#c41e3a,#e94560);">AMC</div>
+        <span class="dc-client-name">AMC Theatres</span>
+        <span class="dc-agent-tag">📣 Paid Ads Manager</span>
+        <span class="dc-urgency high">High</span>
+        <span class="dc-time">12 min ago</span>
+      </div>
+      <div class="dc-body">
+        <div class="dc-title">Pause "Summer Blockbuster" campaign — ROAS dropped below 1.0</div>
+        <div class="dc-desc">Return on ad spend fell to 0.72x over the past 3 days. Burning $840/day. Recommend pausing immediately and reallocating to "Family Matinee" which has 3.2x ROAS.</div>
+        <div class="dc-impact">💰 Saves ~$2,520 over 3 days</div>
+      </div>
+      <div class="dc-footer">
+        <button class="dc-btn approve" onclick="resolve(1,'approved')">Approve</button>
+        <button class="dc-btn reject" onclick="resolve(1,'rejected')">Reject</button>
+        <button class="dc-btn context" onclick="alert('Opens A-08 for AMC → Paid Ads Manager')">View in context →</button>
+      </div>
+    </div>
+
+    <!-- Sip — Final Sale — High -->
+    <div class="decision-card" data-client="sip" data-status="pending" data-urgency="high" id="dc-2">
+      <div class="dc-top">
+        <div class="dc-checkbox" onclick="event.stopPropagation();toggleCheck(this,2)"></div>
+        <div class="dc-client-logo" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">SIP</div>
+        <span class="dc-client-name">Sip Coffee & Beer</span>
+        <span class="dc-agent-tag">🏷️ Final Sale Agent</span>
+        <span class="dc-urgency high">High</span>
+        <span class="dc-time">28 min ago</span>
+      </div>
+      <div class="dc-body">
+        <div class="dc-title">Mark down Seasonal Cold Brew Kit — 142 days in stock</div>
+        <div class="dc-desc">48 units sitting since October. Suggest 30% off ($34.99 → $24.49). Similar SKUs moved 85% faster after markdown at competitor locations.</div>
+        <div class="dc-impact">💰 Est. recovery $1,176</div>
+      </div>
+      <div class="dc-footer">
+        <button class="dc-btn approve" onclick="resolve(2,'approved')">Approve</button>
+        <button class="dc-btn reject" onclick="resolve(2,'rejected')">Reject</button>
+        <button class="dc-btn context" onclick="alert('Opens A-08 for Sip → Final Sale Agent')">View in context →</button>
+      </div>
+    </div>
+
+    <!-- Board & Brew — Inventory Sync — High -->
+    <div class="decision-card" data-client="bb" data-status="pending" data-urgency="high" id="dc-3">
+      <div class="dc-top">
+        <div class="dc-checkbox" onclick="event.stopPropagation();toggleCheck(this,3)"></div>
+        <div class="dc-client-logo" style="background:linear-gradient(135deg,#dc2626,#f87171);">BB</div>
+        <span class="dc-client-name">Board & Brew</span>
+        <span class="dc-agent-tag">📦 Inventory Sync</span>
+        <span class="dc-urgency high">High</span>
+        <span class="dc-time">1 hr ago</span>
+      </div>
+      <div class="dc-body">
+        <div class="dc-title">Resolve stock mismatch — POS shows 0, Shopify shows 24 units of "House Blend 12oz"</div>
+        <div class="dc-desc">Detected a discrepancy during sync. Likely cause: POS sale not pushed. Recommend setting Shopify to 0 to prevent oversell. Manual recount suggested.</div>
+        <div class="dc-impact">⚠️ Prevents overselling</div>
+      </div>
+      <div class="dc-footer">
+        <button class="dc-btn approve" onclick="resolve(3,'approved')">Approve Sync</button>
+        <button class="dc-btn reject" onclick="resolve(3,'rejected')">Reject</button>
+        <button class="dc-btn context" onclick="alert('Opens A-08 for Board & Brew → Inventory Sync')">View in context →</button>
+      </div>
+    </div>
+
+    <!-- AMC — Final Sale — Medium -->
+    <div class="decision-card" data-client="amc" data-status="pending" data-urgency="med" id="dc-4">
+      <div class="dc-top">
+        <div class="dc-checkbox" onclick="event.stopPropagation();toggleCheck(this,4)"></div>
+        <div class="dc-client-logo" style="background:linear-gradient(135deg,#c41e3a,#e94560);">AMC</div>
+        <span class="dc-client-name">AMC Theatres</span>
+        <span class="dc-agent-tag">🏷️ Final Sale Agent</span>
+        <span class="dc-urgency med">Medium</span>
+        <span class="dc-time">2 hrs ago</span>
+      </div>
+      <div class="dc-body">
+        <div class="dc-title">Jumbo Popcorn Bucket — 127 days, suggest 25% markdown</div>
+        <div class="dc-desc">340 units across 12 locations. Moving at 2.3 units/week (target: 8/week). 25% off projected to increase velocity 3x.</div>
+        <div class="dc-impact">💰 Est. recovery $890</div>
+      </div>
+      <div class="dc-footer">
+        <button class="dc-btn approve" onclick="resolve(4,'approved')">Approve</button>
+        <button class="dc-btn reject" onclick="resolve(4,'rejected')">Reject</button>
+        <button class="dc-btn context" onclick="alert('Opens A-08 for AMC → Final Sale Agent')">View in context →</button>
+      </div>
+    </div>
+
+    <!-- Dutch Bros — Revenue Reporter — Medium -->
+    <div class="decision-card" data-client="dutch" data-status="pending" data-urgency="med" id="dc-5">
+      <div class="dc-top">
+        <div class="dc-checkbox" onclick="event.stopPropagation();toggleCheck(this,5)"></div>
+        <div class="dc-client-logo" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">DB</div>
+        <span class="dc-client-name">Dutch Bros Region 14</span>
+        <span class="dc-agent-tag">📊 Revenue Reporter</span>
+        <span class="dc-urgency med">Medium</span>
+        <span class="dc-time">3 hrs ago</span>
+      </div>
+      <div class="dc-body">
+        <div class="dc-title">Revenue anomaly detected — Location #7 down 34% WoW</div>
+        <div class="dc-desc">Store 4812 (Mill Ave) revenue dropped from $18.2k to $12.0k this week. No holiday or weather event found. Possible staffing or local competition issue. Flagging for review.</div>
+        <div class="dc-impact">📉 -$6,200 vs expected</div>
+      </div>
+      <div class="dc-footer">
+        <button class="dc-btn approve" onclick="resolve(5,'approved')">Acknowledge</button>
+        <button class="dc-btn reject" onclick="resolve(5,'rejected')">Dismiss</button>
+        <button class="dc-btn context" onclick="alert('Opens A-08 for Dutch Bros → Revenue Reporter')">View in context →</button>
+      </div>
+    </div>
+
+    <!-- Sip — Email Drafter — Low -->
+    <div class="decision-card" data-client="sip" data-status="pending" data-urgency="low" id="dc-6">
+      <div class="dc-top">
+        <div class="dc-checkbox" onclick="event.stopPropagation();toggleCheck(this,6)"></div>
+        <div class="dc-client-logo" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">SIP</div>
+        <span class="dc-client-name">Sip Coffee & Beer</span>
+        <span class="dc-agent-tag">✉️ Email Drafter</span>
+        <span class="dc-urgency low">Low</span>
+        <span class="dc-time">5 hrs ago</span>
+      </div>
+      <div class="dc-body">
+        <div class="dc-title">Draft ready: "Re-engagement" email to 847 lapsed subscribers</div>
+        <div class="dc-desc">Drafted a "We miss you" campaign for subscribers inactive 90+ days. Personalized subject lines, 15% off coupon code. Preview ready for review.</div>
+        <div class="dc-impact">📧 847 recipients</div>
+      </div>
+      <div class="dc-footer">
+        <button class="dc-btn approve" onclick="resolve(6,'approved')">Approve &amp; Send</button>
+        <button class="dc-btn reject" onclick="resolve(6,'rejected')">Reject</button>
+        <button class="dc-btn context" onclick="alert('Opens A-08 for Sip → Email Drafter')">View in context →</button>
+      </div>
+    </div>
+
+    <!-- Starbucks — Paid Ads — Low -->
+    <div class="decision-card" data-client="sbx" data-status="pending" data-urgency="low" id="dc-7">
+      <div class="dc-top">
+        <div class="dc-checkbox" onclick="event.stopPropagation();toggleCheck(this,7)"></div>
+        <div class="dc-client-logo" style="background:linear-gradient(135deg,#059669,#34d399);">SBX</div>
+        <span class="dc-client-name">Starbucks Metro</span>
+        <span class="dc-agent-tag">📣 Paid Ads Manager</span>
+        <span class="dc-urgency low">Low</span>
+        <span class="dc-time">6 hrs ago</span>
+      </div>
+      <div class="dc-body">
+        <div class="dc-title">Increase "Morning Rush" budget by 20% — consistently hitting daily cap by 9am</div>
+        <div class="dc-desc">Campaign exhausts $500/day budget by 9:14am on average. 4.1x ROAS. Recommend $600/day to capture additional morning traffic through 10am.</div>
+        <div class="dc-impact">💰 +$400/day est. revenue</div>
+      </div>
+      <div class="dc-footer">
+        <button class="dc-btn approve" onclick="resolve(7,'approved')">Approve</button>
+        <button class="dc-btn reject" onclick="resolve(7,'rejected')">Reject</button>
+        <button class="dc-btn context" onclick="alert('Opens A-08 for Starbucks → Paid Ads Manager')">View in context →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /shell -->
+
+<script>
+function navTo(target) {
+  const routes = {
+    'dashboard': 'A-03-command-center.html',
+    'clients': 'A-10-client-management.html',
+    'decisions': 'A-11-decision-inbox-agency.html',
+    'marketplace': 'A-04-agent-marketplace.html',
+    'builder': 'A-13-agent-builder.html',
+    'analytics': 'A-16-analytics.html',
+    'billing': 'A-12-billing-management.html',
+    'team': 'A-17-team-management.html',
+    'settings': 'A-18-audit-log.html'
+  };
+  if (routes[target]) {
+    window.location.href = routes[target];
+  } else {
+    alert('→ ' + target + ' (screen not yet built)');
+  }
+}
+
+var selected = {};
+var currentTab = 'pending';
+
+function toggleCheck(el, id) {
+  if (el.classList.contains('checked')) {
+    el.classList.remove('checked');
+    delete selected[id];
+    document.getElementById('dc-'+id).classList.remove('selected');
+  } else {
+    el.classList.add('checked');
+    selected[id] = true;
+    document.getElementById('dc-'+id).classList.add('selected');
+  }
+  updateBulkBar();
+}
+
+function updateBulkBar() {
+  var count = Object.keys(selected).length;
+  var bar = document.getElementById('bulk-bar');
+  if (count > 0) {
+    bar.classList.add('show');
+    document.getElementById('bulk-count').textContent = count + ' selected';
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+function clearSelection() {
+  selected = {};
+  document.querySelectorAll('.dc-checkbox.checked').forEach(function(el) { el.classList.remove('checked'); });
+  document.querySelectorAll('.decision-card.selected').forEach(function(el) { el.classList.remove('selected'); });
+  updateBulkBar();
+}
+
+function resolve(id, action) {
+  var card = document.getElementById('dc-' + id);
+  var footer = card.querySelector('.dc-footer');
+  card.classList.add('resolved');
+  card.setAttribute('data-status', action);
+  var label = action === 'approved' ? '✓ Approved' : '✗ Rejected';
+  var cls = action === 'approved' ? 'approved' : 'rejected';
+  footer.innerHTML = '<span class="dc-resolved-badge ' + cls + '">' + label + '</span><button class="dc-btn context" style="margin-left:auto;" onclick="alert(\'Opens A-08\')">View in context →</button>';
+  delete selected[id];
+  card.classList.remove('selected');
+  updateBulkBar();
+}
+
+function bulkAction(action) {
+  Object.keys(selected).forEach(function(id) { resolve(parseInt(id), action); });
+}
+
+function filterTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  var client = document.getElementById('client-filter').value;
+  var cards = document.querySelectorAll('.decision-card');
+  cards.forEach(function(card) {
+    var matchTab = currentTab === 'all' || card.getAttribute('data-status') === currentTab;
+    var matchClient = client === 'all' || card.getAttribute('data-client') === client;
+    card.style.display = (matchTab && matchClient) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

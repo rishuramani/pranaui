@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Billing Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08);
+    --red: #c25a5a; --red-bg: rgba(194,90,90,0.08);
+    --error: #c25a5a;
+    --bg-elevated: var(--bg-warm);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; margin-bottom: 8px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-org { padding: 0 24px; margin-bottom: 28px; }
+  .sb-org-name { font-size: 12px; color: var(--text-muted); font-weight: 500; padding: 6px 12px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background 0.2s; }
+  .sb-org-name:hover { background: var(--border-subtle); }
+  .sb-org-dot { width: 7px; height: 7px; background: var(--accent-bright); border-radius: 50%; }
+  .sb-section { margin-bottom: 24px; }
+  .sb-section-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; padding: 0 24px; margin-bottom: 6px; }
+  .sb-nav { list-style: none; }
+  .sb-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; position: relative; }
+  .sb-nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+  .sb-nav-item.active { color: var(--accent); font-weight: 600; background: var(--accent-bg); }
+  .sb-nav-item.active::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--accent); border-radius: 0 2px 2px 0; }
+  .sb-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sb-nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; color: #fff; background: var(--error); min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .sb-nav-badge.warn { background: var(--warn); }
+  .sb-footer { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .sb-user { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 0; }
+  .sb-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+  .sb-user-info { flex: 1; min-width: 0; }
+  .sb-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); font-weight: 300; }
+
+  .main { padding: 28px 32px; overflow-y: auto; }
+  .breadcrumb { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; cursor: pointer; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .header-actions { display: flex; gap: 8px; }
+  .btn { padding: 9px 18px; border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #fff; border: none; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .btn-outline { background: none; border: 1px solid var(--border); color: var(--text-muted); }
+
+  /* Summary */
+  .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .summary-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 18px; box-shadow: var(--shadow-sm); }
+  .sc-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-dim); margin-bottom: 4px; }
+  .sc-value { font-size: 22px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
+  .sc-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .sc-sub .up { color: var(--accent); font-weight: 700; }
+  .sc-sub .red { color: var(--red); font-weight: 700; }
+
+  /* Stripe connect banner */
+  .stripe-banner { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--bg-card); border: 1px solid var(--accent-border); border-radius: var(--radius-sm); margin-bottom: 20px; }
+  .stripe-icon { width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, #635bff, #7a73ff); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; }
+  .stripe-info { flex: 1; }
+  .stripe-title { font-size: 13px; font-weight: 700; }
+  .stripe-desc { font-size: 11px; color: var(--text-dim); }
+  .stripe-status { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--accent); }
+  .stripe-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-bright); }
+
+  /* Filters */
+  .filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .filter-bar .search { padding: 7px 14px 7px 32px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a89880' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 10px center no-repeat; min-width: 200px; outline: none; }
+  .filter-select { padding: 7px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg-card); cursor: pointer; }
+  .filter-spacer { flex: 1; }
+
+  /* Subscriptions table */
+  .sub-table { width: 100%; border-collapse: collapse; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+  .sub-table th { text-align: left; padding: 12px 16px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-dim); background: var(--bg); border-bottom: 1px solid var(--border); }
+  .sub-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 13px; vertical-align: middle; }
+  .sub-table tr:last-child td { border-bottom: none; }
+  .sub-table tr:hover { background: rgba(250,246,240,0.5); }
+  .sub-table .mono { font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+
+  .client-cell { display: flex; align-items: center; gap: 10px; }
+  .client-logo { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .client-name { font-weight: 700; font-size: 13px; }
+  .client-meta { font-size: 10px; color: var(--text-dim); }
+
+  .sub-badge { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 6px; display: inline-block; }
+  .sub-badge.active { background: var(--accent-bg); color: var(--accent); }
+  .sub-badge.past-due { background: var(--red-bg); color: var(--red); }
+  .sub-badge.paused { background: var(--bg-warm); color: var(--text-dim); }
+
+  .payment-info { display: flex; align-items: center; gap: 6px; }
+  .card-icon { font-size: 14px; }
+  .card-num { font-size: 11px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+
+  .next-charge { font-size: 12px; }
+  .next-charge .date { font-weight: 600; }
+  .next-charge .amount { font-family: 'IBM Plex Mono', monospace; font-weight: 700; color: var(--accent); }
+
+  .usage-bar { display: flex; align-items: center; gap: 6px; }
+  .usage-track { width: 50px; height: 5px; background: var(--bg-warm); border-radius: 3px; overflow: hidden; }
+  .usage-fill { height: 100%; border-radius: 3px; background: var(--accent); }
+  .usage-val { font-size: 11px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+
+  .row-actions { display: flex; gap: 4px; }
+  .row-action { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 10px; font-weight: 600; color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+  .row-action:hover { background: var(--bg-warm); color: var(--text); }
+
+  /* Usage panel */
+  .usage-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow-sm); margin-bottom: 24px; }
+  .up-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .up-title { font-size: 14px; font-weight: 700; }
+  .up-period { font-size: 11px; color: var(--text-dim); }
+  .up-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .up-meter { background: var(--bg); border: 1px solid var(--border-subtle); border-radius: var(--radius-xs); padding: 14px; }
+  .up-meter-label { font-size: 10px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; margin-bottom: 6px; }
+  .up-meter-value { font-size: 18px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
+  .up-meter-bar { height: 4px; background: var(--bg-warm); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .up-meter-fill { height: 100%; border-radius: 2px; }
+  .up-meter-sub { font-size: 9px; color: var(--text-dim); margin-top: 4px; }
+
+  /* Payment history */
+  .history-table { width: 100%; border-collapse: collapse; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .history-table th { text-align: left; padding: 10px 16px; font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); background: var(--bg); border-bottom: 1px solid var(--border); }
+  .history-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12px; }
+  .history-table tr:last-child td { border-bottom: none; }
+
+  .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="screen-id"><strong>A-12</strong> Billing Management</div>
+<div class="shell">
+
+  <nav class="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 512 512" fill="none" width="28" height="28">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="sb-logo-text">Prana<span>OS</span></span>
+    </div>
+    <div class="sb-org">
+      <div class="sb-org-name"><span class="sb-org-dot"></span> Prana IQ</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Main</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('dashboard')"><span class="sb-nav-icon">📊</span> Command Center</li>
+        <li class="sb-nav-item" onclick="navTo('clients')"><span class="sb-nav-icon">🏢</span> Clients <span class="sb-nav-badge warn">5</span></li>
+        <li class="sb-nav-item" onclick="navTo('decisions')"><span class="sb-nav-icon">📥</span> Decision Inbox <span class="sb-nav-badge">12</span></li>
+        <li class="sb-nav-item" onclick="navTo('marketplace')"><span class="sb-nav-icon">🤖</span> Agent Marketplace</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Manage</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('builder')"><span class="sb-nav-icon">⚡</span> Builder</li>
+        <li class="sb-nav-item" onclick="navTo('analytics')"><span class="sb-nav-icon">📈</span> Analytics</li>
+        <li class="sb-nav-item active" onclick="navTo('billing')"><span class="sb-nav-icon">💳</span> Billing</li>
+        <li class="sb-nav-item" onclick="navTo('team')"><span class="sb-nav-icon">👥</span> Team</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">System</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('settings')"><span class="sb-nav-icon">⚙️</span> Settings</li>
+      </ul>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">RK</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Rishabh K.</div>
+          <div class="sb-user-role">Owner · Growth plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+<div class="main">
+  <div class="breadcrumb"><a>Dashboard</a> → Billing</div>
+  <div class="page-header">
+    <div class="page-title">Billing & Subscriptions</div>
+    <div class="header-actions">
+      <button class="btn btn-outline">📥 Export</button>
+      <button class="btn btn-primary" onclick="alert('A-09: Add new client subscription')">+ New Subscription</button>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary-row">
+    <div class="summary-card">
+      <div class="sc-label">Monthly Recurring Revenue</div>
+      <div class="sc-value">$28,412</div>
+      <div class="sc-sub"><span class="up">↑ 18%</span> vs last month</div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-label">Platform Cost</div>
+      <div class="sc-value" style="color:var(--warn);">$7,235</div>
+      <div class="sc-sub">Seats + partitions + usage</div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-label">Your Margin</div>
+      <div class="sc-value" style="color:var(--accent);">$21,177</div>
+      <div class="sc-sub"><span class="up">74.5%</span> margin rate</div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-label">Past Due</div>
+      <div class="sc-value" style="color:var(--red);">$4,130</div>
+      <div class="sc-sub"><span class="red">2 failed charges</span></div>
+    </div>
+  </div>
+
+  <!-- Stripe Connect -->
+  <div class="stripe-banner">
+    <div class="stripe-icon">S</div>
+    <div class="stripe-info">
+      <div class="stripe-title">Stripe Connect — Auto-billing enabled</div>
+      <div class="stripe-desc">Subscriptions are charged automatically on the 1st of each month. Usage is metered and billed at cycle end.</div>
+    </div>
+    <div class="stripe-status"><span class="stripe-dot"></span> Connected</div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <input type="text" class="search" placeholder="Search clients…">
+    <select class="filter-select">
+      <option>All Statuses</option>
+      <option>Active</option>
+      <option>Past Due</option>
+      <option>Paused</option>
+    </select>
+    <div class="filter-spacer"></div>
+    <span style="font-size:11px;color:var(--text-dim);">7 subscriptions &middot; Next billing: Apr 1</span>
+  </div>
+
+  <!-- Subscriptions -->
+  <table class="sub-table">
+    <thead><tr><th>Client</th><th>Base / mo</th><th>Usage (MTD)</th><th>Status</th><th>Payment</th><th>Next Charge</th><th>Actions</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#c41e3a,#e94560);">AMC</div><div><div class="client-name">AMC Theatres</div><div class="client-meta">3 depts &middot; 8 users &middot; Since Jan 2026</div></div></div></td>
+        <td class="mono">$5,982</td>
+        <td><div class="usage-bar"><div class="usage-track"><div class="usage-fill" style="width:68%;"></div></div><span class="usage-val">$312</span></div></td>
+        <td><span class="sub-badge active">Active</span></td>
+        <td><div class="payment-info"><span class="card-icon">💳</span><span class="card-num">•••• 4242</span></div></td>
+        <td><div class="next-charge"><span class="date">Apr 1</span> &middot; <span class="amount">~$6,856</span></div></td>
+        <td><div class="row-actions"><button class="row-action" onclick="alert('A-09: Edit billing')">Edit</button><button class="row-action" onclick="alert('Payment history')">History</button></div></td>
+      </tr>
+      <tr>
+        <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#059669,#34d399);">SBX</div><div><div class="client-name">Starbucks Metro</div><div class="client-meta">4 depts &middot; 12 users &middot; Since Dec 2025</div></div></div></td>
+        <td class="mono">$7,976</td>
+        <td><div class="usage-bar"><div class="usage-track"><div class="usage-fill" style="width:82%;"></div></div><span class="usage-val">$480</span></div></td>
+        <td><span class="sub-badge active">Active</span></td>
+        <td><div class="payment-info"><span class="card-icon">💳</span><span class="card-num">•••• 8910</span></div></td>
+        <td><div class="next-charge"><span class="date">Apr 1</span> &middot; <span class="amount">~$8,940</span></div></td>
+        <td><div class="row-actions"><button class="row-action">Edit</button><button class="row-action">History</button></div></td>
+      </tr>
+      <tr>
+        <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">SIP</div><div><div class="client-name">Sip Coffee & Beer</div><div class="client-meta">2 depts &middot; 3 users &middot; Since Feb 2026</div></div></div></td>
+        <td class="mono">$2,991</td>
+        <td><div class="usage-bar"><div class="usage-track"><div class="usage-fill" style="width:40%;"></div></div><span class="usage-val">$145</span></div></td>
+        <td><span class="sub-badge active">Active</span></td>
+        <td><div class="payment-info"><span class="card-icon">💳</span><span class="card-num">•••• 5567</span></div></td>
+        <td><div class="next-charge"><span class="date">Apr 1</span> &middot; <span class="amount">~$3,241</span></div></td>
+        <td><div class="row-actions"><button class="row-action">Edit</button><button class="row-action">History</button></div></td>
+      </tr>
+      <tr>
+        <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">DB</div><div><div class="client-name">Dutch Bros</div><div class="client-meta">2 depts &middot; 5 users &middot; Since Jan 2026</div></div></div></td>
+        <td class="mono">$2,991</td>
+        <td><div class="usage-bar"><div class="usage-track"><div class="usage-fill" style="width:25%;"></div></div><span class="usage-val">$89</span></div></td>
+        <td><span class="sub-badge past-due">Past Due</span></td>
+        <td><div class="payment-info"><span class="card-icon">⚠️</span><span class="card-num">•••• 3301 — declined</span></div></td>
+        <td><div class="next-charge"><span class="date" style="color:var(--red);">Retry Mar 3</span></div></td>
+        <td><div class="row-actions"><button class="row-action" style="border-color:var(--red);color:var(--red);" onclick="alert('Notify client to update payment method')">Notify</button><button class="row-action">Edit</button></div></td>
+      </tr>
+      <tr>
+        <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#d97706,#fbbf24);">UP</div><div><div class="client-name">Urban Plates</div><div class="client-meta">2 depts &middot; 4 users &middot; Since Feb 2026</div></div></div></td>
+        <td class="mono">$2,991</td>
+        <td><div class="usage-bar"><div class="usage-track"><div class="usage-fill" style="width:55%;"></div></div><span class="usage-val">$210</span></div></td>
+        <td><span class="sub-badge active">Active</span></td>
+        <td><div class="payment-info"><span class="card-icon">💳</span><span class="card-num">•••• 7788</span></div></td>
+        <td><div class="next-charge"><span class="date">Apr 1</span> &middot; <span class="amount">~$3,293</span></div></td>
+        <td><div class="row-actions"><button class="row-action">Edit</button><button class="row-action">History</button></div></td>
+      </tr>
+      <tr>
+        <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#dc2626,#f87171);">BB</div><div><div class="client-name">Board & Brew</div><div class="client-meta">4 depts &middot; 2 users &middot; Since Feb 2026</div></div></div></td>
+        <td class="mono">$997</td>
+        <td><div class="usage-bar"><div class="usage-track"><div class="usage-fill" style="width:35%;"></div></div><span class="usage-val">$76</span></div></td>
+        <td><span class="sub-badge past-due">Past Due</span></td>
+        <td><div class="payment-info"><span class="card-icon">⚠️</span><span class="card-num">•••• 1122 — expired</span></div></td>
+        <td><div class="next-charge"><span class="date" style="color:var(--red);">Retry Mar 5</span></div></td>
+        <td><div class="row-actions"><button class="row-action" style="border-color:var(--red);color:var(--red);">Notify</button><button class="row-action">Edit</button></div></td>
+      </tr>
+      <tr style="opacity:0.5;">
+        <td><div class="client-cell"><div class="client-logo" style="background:linear-gradient(135deg,#6b7280,#9ca3af);">CL</div><div><div class="client-name">Café Luna</div><div class="client-meta">1 dept &middot; 1 user &middot; Suspended</div></div></div></td>
+        <td class="mono">$997</td>
+        <td><div class="usage-bar"><div class="usage-track"><div class="usage-fill" style="width:0%;"></div></div><span class="usage-val">$0</span></div></td>
+        <td><span class="sub-badge paused">Paused</span></td>
+        <td><div class="payment-info"><span class="card-icon">—</span><span class="card-num">No card on file</span></div></td>
+        <td><div class="next-charge" style="color:var(--text-dim);">—</div></td>
+        <td><div class="row-actions"><button class="row-action" onclick="alert('Reactivate subscription')">Reactivate</button></div></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Usage metering -->
+  <div class="usage-panel">
+    <div class="up-header">
+      <div class="up-title">Platform Usage — March 2026 (running)</div>
+      <div class="up-period">Metered at cycle end &middot; 18 days remaining</div>
+    </div>
+    <div class="up-grid">
+      <div class="up-meter"><div class="up-meter-label">LLM Messages</div><div class="up-meter-value">24,812</div><div class="up-meter-bar"><div class="up-meter-fill" style="width:62%;background:var(--accent);"></div></div><div class="up-meter-sub">62% of projected &middot; $892 accrued</div></div>
+      <div class="up-meter"><div class="up-meter-label">Agent Actions</div><div class="up-meter-value">3,456</div><div class="up-meter-bar"><div class="up-meter-fill" style="width:48%;background:var(--accent);"></div></div><div class="up-meter-sub">48% of projected &middot; $215 accrued</div></div>
+      <div class="up-meter"><div class="up-meter-label">API Calls</div><div class="up-meter-value">8,901</div><div class="up-meter-bar"><div class="up-meter-fill" style="width:74%;background:var(--warn);"></div></div><div class="up-meter-sub">74% of projected &middot; $178 accrued</div></div>
+      <div class="up-meter"><div class="up-meter-label">Storage</div><div class="up-meter-value">4.2 GB</div><div class="up-meter-bar"><div class="up-meter-fill" style="width:21%;background:var(--accent-bright);"></div></div><div class="up-meter-sub">21% of 20 GB included &middot; $0 overage</div></div>
+    </div>
+  </div>
+
+  <!-- Recent payments -->
+  <div class="section-title">Recent Payments</div>
+  <table class="history-table">
+    <thead><tr><th>Date</th><th>Client</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td class="mono" style="font-size:11px;">Mar 1, 2026</td><td>AMC Theatres</td><td>March subscription + Feb usage</td><td class="mono" style="color:var(--accent);">$6,856</td><td><span class="sub-badge active">Paid</span></td></tr>
+      <tr><td class="mono" style="font-size:11px;">Mar 1, 2026</td><td>Sip Coffee & Beer</td><td>March subscription + Feb usage</td><td class="mono" style="color:var(--accent);">$3,241</td><td><span class="sub-badge active">Paid</span></td></tr>
+      <tr><td class="mono" style="font-size:11px;">Mar 1, 2026</td><td>Starbucks Metro</td><td>March subscription + Feb usage</td><td class="mono" style="color:var(--accent);">$8,940</td><td><span class="sub-badge active">Paid</span></td></tr>
+      <tr><td class="mono" style="font-size:11px;">Mar 1, 2026</td><td>Urban Plates</td><td>March subscription + Feb usage</td><td class="mono" style="color:var(--accent);">$3,293</td><td><span class="sub-badge active">Paid</span></td></tr>
+      <tr><td class="mono" style="font-size:11px;">Mar 1, 2026</td><td>Dutch Bros</td><td>March subscription + Feb usage</td><td class="mono" style="color:var(--red);">$3,148</td><td><span class="sub-badge past-due">Failed</span></td></tr>
+      <tr><td class="mono" style="font-size:11px;">Mar 1, 2026</td><td>Board & Brew</td><td>March subscription + Feb usage</td><td class="mono" style="color:var(--red);">$1,138</td><td><span class="sub-badge past-due">Failed</span></td></tr>
+      <tr><td class="mono" style="font-size:11px;">Feb 1, 2026</td><td>AMC Theatres</td><td>February subscription + Jan usage</td><td class="mono" style="color:var(--accent);">$6,412</td><td><span class="sub-badge active">Paid</span></td></tr>
+    </tbody>
+  </table>
+
+</div>
+</div>
+<script>
+function navTo(target) {
+  const routes = {
+    'dashboard': 'A-03-command-center.html',
+    'clients': 'A-10-client-management.html',
+    'decisions': 'A-11-decision-inbox-agency.html',
+    'marketplace': 'A-04-agent-marketplace.html',
+    'builder': 'A-13-agent-builder.html',
+    'analytics': 'A-16-analytics.html',
+    'billing': 'A-12-billing-management.html',
+    'team': 'A-17-team-management.html',
+    'settings': 'A-18-audit-log.html'
+  };
+  if (routes[target]) {
+    window.location.href = routes[target];
+  } else {
+    alert('\u2192 ' + target + ' (screen not yet built)');
+  }
+}
+</script>
+</body>
+</html>

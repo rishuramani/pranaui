@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Clone Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08);
+    --red: #c25a5a;
+    --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.06);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+  .topbar { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 0 16px; height: 52px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .tb-back { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .tb-back:hover { background: var(--bg-warm); }
+  .tb-logo { font-size: 14px; font-weight: 800; }
+  .tb-logo span { color: var(--accent); }
+  .tb-divider { width: 1px; height: 20px; background: var(--border); }
+  .tb-name { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .tb-name input { background: none; border: none; color: var(--text); font-family: inherit; font-size: 13px; font-weight: 600; outline: none; width: 220px; }
+  .tb-clone-badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 4px; background: var(--purple-bg); color: var(--purple); border: 1px solid rgba(124,58,237,0.15); display: flex; align-items: center; gap: 4px; }
+  .tb-spacer { flex: 1; }
+  .tb-status { font-size: 10px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 5px; }
+  .tb-status-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-bright); }
+  .tb-btn { padding: 8px 16px; border-radius: var(--radius-xs); font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .tb-btn-outline { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); }
+  .tb-btn-outline:hover { background: var(--bg-warm); }
+  .tb-btn-primary { background: var(--accent); border: none; color: #fff; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+
+  .clone-banner { background: var(--purple-bg); border-bottom: 1px solid rgba(124,58,237,0.12); padding: 8px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .clone-banner-text { font-size: 11px; color: var(--text-muted); flex: 1; }
+  .clone-banner-text strong { color: var(--purple); font-weight: 700; }
+  .clone-banner-link { font-size: 10px; color: var(--purple); font-weight: 600; cursor: pointer; text-decoration: underline; }
+
+  .ide { flex: 1; display: grid; grid-template-columns: 380px 1fr; min-height: 0; }
+  .left-panel { display: flex; flex-direction: column; border-right: 1px solid var(--border); background: var(--bg-card); min-height: 0; overflow: hidden; }
+  .lp-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .lp-tab { flex: 1; padding: 10px 0; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; }
+  .lp-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .chat-panel { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .chat-panel.hidden { display: none; }
+  .chat-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .chat-msg { max-width: 92%; animation: msgIn 0.25s ease; }
+  @keyframes msgIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; } }
+  .chat-msg.ai { align-self: flex-start; }
+  .chat-msg.user { align-self: flex-end; }
+  .chat-msg-label { font-size: 9px; font-weight: 600; color: var(--text-dim); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chat-msg.user .chat-msg-label { text-align: right; }
+  .chat-bubble { padding: 12px 16px; border-radius: 14px; font-size: 12px; line-height: 1.65; }
+  .chat-msg.ai .chat-bubble { background: var(--bg); border: 1px solid var(--border-subtle); border-bottom-left-radius: 4px; }
+  .chat-msg.user .chat-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .chat-bubble code { background: rgba(42,31,16,0.06); padding: 2px 6px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+
+  .chat-changes { background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
+  .chat-changes-title { font-size: 9px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .chat-change { font-size: 11px; color: var(--text-muted); padding: 3px 0; display: flex; align-items: center; gap: 6px; }
+  .chat-change::before { content: '+'; color: var(--accent); font-family: 'IBM Plex Mono', monospace; font-weight: 700; }
+
+  .lineage-card { background: var(--purple-bg); border: 1px solid rgba(124,58,237,0.12); border-radius: 10px; padding: 12px 14px; margin-top: 8px; }
+  .lineage-title { font-size: 9px; font-weight: 700; color: var(--purple); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .lineage-row { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-muted); }
+  .lineage-arrow { color: var(--text-dim); font-size: 10px; }
+  .lineage-current { background: rgba(124,58,237,0.1); padding: 2px 8px; border-radius: 4px; font-weight: 700; color: var(--purple); }
+
+  .chat-suggestions { display: flex; gap: 6px; flex-wrap: wrap; padding: 4px 0; }
+  .chat-suggest { padding: 6px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; font-family: inherit; font-size: 10px; color: var(--text-muted); cursor: pointer; }
+  .chat-suggest:hover { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+
+  .builder-typing { display: flex; gap: 4px; align-items: center; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border-subtle); border-radius: 14px; border-bottom-left-radius: 4px; align-self: flex-start; }
+  .builder-typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-dim); animation: btB 1.2s infinite; }
+  .builder-typing-dot:nth-child(2) { animation-delay: 0.15s; }
+  .builder-typing-dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes btB { 0%,60%,100% { transform:translateY(0);opacity:0.3; } 30% { transform:translateY(-4px);opacity:1; } }
+
+  .chat-input { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-shrink: 0; }
+  .chat-input input { flex: 1; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 12px; color: var(--text); outline: none; }
+  .chat-input input::placeholder { color: var(--text-dim); }
+  .chat-input input:focus { border-color: var(--accent); }
+  .chat-input button { width: 36px; height: 36px; border-radius: 8px; background: var(--accent); border: none; color: #fff; font-size: 14px; cursor: pointer; }
+
+  .code-panel { flex: 1; display: none; flex-direction: column; min-height: 0; overflow: hidden; }
+  .code-panel.visible { display: flex; }
+  .code-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .code-file-tab { padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; cursor: pointer; color: var(--text-dim); }
+  .code-file-tab.active { background: var(--bg-warm); color: var(--text); }
+  .code-area { flex: 1; overflow: auto; padding: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.9; color: var(--text-muted); white-space: pre; background: var(--bg); }
+  .code-area .key { color: #7c3aed; }
+  .code-area .str { color: var(--accent); }
+  .code-area .num { color: #c4842d; }
+  .code-area .comment { color: var(--text-dim); opacity: 0.5; }
+  .code-area .new-line { background: var(--accent-bg); border-left: 2px solid var(--accent); padding-left: 8px; margin-left: -10px; }
+
+  /* Tags panel */
+  .tags-panel { flex: 1; display: none; flex-direction: column; min-height: 0; overflow: hidden; }
+  .tags-panel.visible { display: flex; }
+  .tags-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+  .tag-section-label { font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 8px; }
+  .tag-search { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 11px; color: var(--text); background: var(--bg); outline: none; width: 100%; margin-bottom: 8px; }
+  .tag-search:focus { border-color: var(--accent); }
+  .tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); color: var(--text-muted); background: var(--bg-card); }
+  .tag:hover { border-color: var(--accent-border); color: var(--accent); }
+  .tag.selected { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+  .tag-add { padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px dashed var(--border); color: var(--text-dim); background: none; font-family: inherit; }
+  .tag-add:hover { border-color: var(--accent); color: var(--accent); }
+  .selected-tags { display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 0; border-top: 1px solid var(--border-subtle); margin-top: 8px; }
+  .selected-tag { display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 12px; font-size: 10px; font-weight: 600; color: var(--accent); }
+  .selected-tag .remove { cursor: pointer; opacity: 0.6; font-size: 9px; }
+
+  /* Right: Preview */
+  .right-panel { display: flex; flex-direction: column; background: var(--bg-warm); min-height: 0; overflow: hidden; }
+  .rp-header { padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .rp-title { font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .rp-preview { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 24px; }
+  .preview-frame { background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-md); width: 100%; max-width: 520px; overflow: hidden; }
+  .pf-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .pf-logo { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .pf-info { flex: 1; }
+  .pf-name { font-size: 14px; font-weight: 800; }
+  .pf-sub { font-size: 10px; color: var(--text-dim); }
+  .pf-dashboard { padding: 16px; }
+  .pf-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .pf-kpi { background: var(--bg); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; }
+  .pf-kpi-label { font-size: 8px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); }
+  .pf-kpi-val { font-size: 16px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
+  .pf-decision { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .pf-dec-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .pf-dec-name { font-size: 12px; font-weight: 700; flex: 1; }
+  .pf-dec-urgency { font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 3px; }
+  .pf-dec-btns { display: flex; gap: 4px; margin-top: 8px; }
+  .pf-dec-btn { padding: 6px 12px; border-radius: 6px; font-family: inherit; font-size: 10px; font-weight: 700; cursor: pointer; border: none; }
+  .pf-dec-btn.approve { background: var(--accent); color: #fff; }
+  .pf-dec-btn.dismiss { background: var(--bg); border: 1px solid var(--border); color: var(--text-dim); }
+  .pf-new { position: relative; }
+  .pf-new::before { content: 'NEW'; position: absolute; top: -8px; right: 12px; font-size: 8px; font-weight: 800; color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-border); padding: 1px 6px; border-radius: 3px; }
+  .pf-expiry { background: var(--bg); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 14px; }
+  .pf-expiry-title { font-size: 10px; font-weight: 700; margin-bottom: 8px; }
+  .pf-expiry-rows { display: flex; flex-direction: column; gap: 6px; }
+  .pf-exp-row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+  .pf-exp-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .pf-exp-name { flex: 1; }
+  .pf-exp-date { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 600; color: var(--text-dim); }
+
+  /* Submit overlay */
+  .submit-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,31,16,0.5); backdrop-filter: blur(6px); align-items: center; justify-content: center; }
+  .submit-overlay.show { display: flex; }
+  .submit-card { background: #fff; border-radius: 20px; padding: 40px; text-align: center; max-width: 440px; box-shadow: 0 20px 60px rgba(42,31,16,0.25); animation: popIn 0.35s ease; }
+  @keyframes popIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+  .submit-icon { font-size: 56px; margin-bottom: 12px; }
+  .submit-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .submit-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; line-height: 1.6; margin-bottom: 20px; }
+  .submit-status { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--warn-bg); border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--warn); margin-bottom: 20px; }
+  .submit-btn { padding: 12px 28px; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; border: none; background: var(--accent); color: #fff; }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 100; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="screen-id"><strong>A-14</strong> Agent Clone + Edit</div>
+
+<div class="submit-overlay" id="submit-overlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="submit-card">
+    <div class="submit-icon">🚀</div>
+    <div class="submit-title">Submitted for Review!</div>
+    <div class="submit-desc">Your cloned agent has been submitted to the PranaOS Marketplace. Our team will review it within 48 hours.</div>
+    <div class="submit-status">⏳ Pending Review — ~48 hours</div><br><br>
+    <button class="submit-btn" onclick="window.location.href='A-15-publish-agent.html'">Back to Agent Library</button>
+  </div>
+</div>
+
+<div class="topbar">
+  <button class="tb-back" onclick="window.location.href='A-03-command-center.html'">←</button>
+  <div class="tb-logo">Prana<span>OS</span></div>
+  <div class="tb-divider"></div>
+  <div class="tb-name">🥡 <input value="Perishable Tracker (Sip Coffee)"></div>
+  <div class="tb-clone-badge">🔀 Cloned from Final Sale Agent</div>
+  <div class="tb-spacer"></div>
+  <div class="tb-status"><span class="tb-status-dot"></span> Auto-saved</div>
+  <button class="tb-btn tb-btn-outline">▶ Test</button>
+  <button class="tb-btn tb-btn-primary" onclick="window.location.href='A-15-publish-agent.html'">Submit for Review →</button>
+</div>
+
+<div class="clone-banner">
+  <span>🔀</span>
+  <span class="clone-banner-text">Cloned from <strong>Final Sale Agent v1.2</strong> — all config pre-loaded. Edit anything below to customize.</span>
+  <span class="clone-banner-link" onclick="window.location.href='A-13-agent-builder.html'">View original →</span>
+</div>
+
+<div class="ide">
+  <div class="left-panel">
+    <div class="lp-tabs">
+      <div class="lp-tab active" id="tab-chat" onclick="showTab('chat')">💬 Chat</div>
+      <div class="lp-tab" id="tab-code" onclick="showTab('code')">{ } Code</div>
+      <div class="lp-tab" id="tab-tags" onclick="showTab('tags')">🏷 Tags</div>
+    </div>
+
+    <div class="chat-panel" id="panel-chat">
+      <div class="chat-area">
+        <div class="chat-msg ai">
+          <div class="chat-msg-label">PranaOS Builder</div>
+          <div class="chat-bubble">I've loaded a clone of <strong>Final Sale Agent</strong>. All the original config is here — KPIs, decision cards, Shopify integration, and the approval workflow.<br><br>What do you want to change for this client?</div>
+          <div class="lineage-card">
+            <div class="lineage-title">Agent Lineage</div>
+            <div class="lineage-row"><span>🏷️</span> Final Sale Agent v1.2 <span class="lineage-arrow">→</span> <span class="lineage-current">🥡 Perishable Tracker</span></div>
+          </div>
+        </div>
+        <div class="chat-msg user"><div class="chat-msg-label">You</div><div class="chat-bubble">This is for Sip Coffee & Beer. Change it from general inventory to perishable tracking — focus on expiry dates instead of days in stock. Flag items within 7 days of expiration.</div></div>
+        <div class="chat-msg ai">
+          <div class="chat-msg-label">PranaOS Builder</div>
+          <div class="chat-bubble">Done! I've adapted the agent for <strong>perishable inventory</strong>. The core approval workflow stays the same, but flagging now tracks expiry dates.</div>
+          <div class="chat-changes">
+            <div class="chat-changes-title">Changes Applied</div>
+            <div class="chat-change">Renamed: "Perishable Tracker" with food icon</div>
+            <div class="chat-change">Swapped: days_in_stock → days_to_expiry</div>
+            <div class="chat-change">Threshold: flag if ≤ 7 days to expiration</div>
+            <div class="chat-change">KPIs: "Expiring Soon" replaces "Flagged"</div>
+            <div class="chat-change">New metric: waste cost (items expired unsold)</div>
+            <div class="chat-change">Actions: "Mark down" or "Pull from shelf"</div>
+          </div>
+        </div>
+        <div class="chat-msg user"><div class="chat-msg-label">You</div><div class="chat-bubble">Add an expiry timeline — show what's expiring this week sorted by date.</div></div>
+        <div class="chat-msg ai">
+          <div class="chat-msg-label">PranaOS Builder</div>
+          <div class="chat-bubble">Added! <strong>Expiry Timeline</strong> below the decision cards — items sorted by expiration date with red (≤ 3 days) and amber (4–7 days) urgency.</div>
+          <div class="chat-changes">
+            <div class="chat-changes-title">Changes Applied</div>
+            <div class="chat-change">New section: expiry_timeline in gui_config</div>
+            <div class="chat-change">Sorted list with date, name, quantity, urgency dot</div>
+            <div class="chat-change">Preview updated →</div>
+          </div>
+        </div>
+        <div class="chat-suggestions" id="builder-suggestions">
+          <button class="chat-suggest" onclick="builderSend('Add FIFO rotation suggestions')">Add FIFO rotation suggestions</button>
+          <button class="chat-suggest" onclick="builderSend('Connect to their POS')">Connect to their POS</button>
+          <button class="chat-suggest" onclick="builderSend('Add waste reduction tracker')">Add waste reduction tracker</button>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="builder-input" placeholder="Describe a change…" onkeydown="if(event.key==='Enter')builderSend()">
+        <button onclick="builderSend()">→</button>
+      </div>
+    </div>
+
+    <div class="code-panel" id="panel-code">
+      <div class="code-toolbar">
+        <div class="code-file-tab active">gui_config.json</div>
+        <div class="code-file-tab">system_prompt.md</div>
+        <div class="code-file-tab">integrations.json</div>
+      </div>
+      <div class="code-area">{
+  <span class="key">"name"</span>: <span class="str">"Perishable Tracker"</span>,
+  <span class="key">"cloned_from"</span>: <span class="str">"final-sale-agent-v1.2"</span>,
+  <span class="key">"icon"</span>: <span class="str">"🥡"</span>,
+  <span class="key">"color"</span>: <span class="str">"#059669"</span>,
+
+  <span class="comment">// Adapted for perishable tracking</span>
+  <span class="key">"gui_config"</span>: {
+    <span class="key">"sections"</span>: [
+      {
+        <span class="key">"type"</span>: <span class="str">"kpi_row"</span>,
+        <span class="key">"metrics"</span>: [
+          { <span class="key">"key"</span>: <span class="str">"items_tracked"</span> },
+<span class="new-line">          { <span class="key">"key"</span>: <span class="str">"expiring_soon"</span> },</span>
+<span class="new-line">          { <span class="key">"key"</span>: <span class="str">"waste_cost"</span>, <span class="key">"format"</span>: <span class="str">"currency"</span> }</span>
+        ]
+      },
+      {
+        <span class="key">"type"</span>: <span class="str">"decision_cards"</span>,
+<span class="new-line">        <span class="key">"actions"</span>: [<span class="str">"mark_down"</span>, <span class="str">"pull_from_shelf"</span>],</span>
+<span class="new-line">        <span class="key">"urgency_field"</span>: <span class="str">"days_to_expiry"</span>,</span>
+<span class="new-line">        <span class="key">"thresholds"</span>: { <span class="key">"high"</span>: <span class="num">3</span>, <span class="key">"med"</span>: <span class="num">7</span> }</span>
+      },
+<span class="new-line">      {</span>
+<span class="new-line">        <span class="key">"type"</span>: <span class="str">"expiry_timeline"</span>,</span>
+<span class="new-line">        <span class="key">"sort"</span>: <span class="str">"expiry_date_asc"</span></span>
+<span class="new-line">      }</span>
+    ]
+  }
+}</div>
+    </div>
+
+    <div class="tags-panel" id="panel-tags">
+      <div class="tags-body">
+        <div>
+          <div class="tag-section-label">Industry</div>
+          <input type="text" class="tag-search" placeholder="Search or add industry…" id="industry-search" oninput="filterTags('industry')">
+          <div class="tags-row" id="industry-tags">
+            <span class="tag" onclick="this.classList.toggle('selected')">🛒 Retail</span>
+            <span class="tag selected" onclick="this.classList.toggle('selected')">🍽️ F&B</span>
+            <span class="tag selected" onclick="this.classList.toggle('selected')">☕ Coffee</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🏨 Hospitality</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🏥 Healthcare</span>
+            <button class="tag-add" onclick="addCustomTag('industry')">+ Custom</button>
+          </div>
+        </div>
+        <div>
+          <div class="tag-section-label">Use Case</div>
+          <input type="text" class="tag-search" placeholder="Search or add use case…" id="usecase-search" oninput="filterTags('usecase')">
+          <div class="tags-row" id="usecase-tags">
+            <span class="tag selected" onclick="this.classList.toggle('selected')">📦 Inventory</span>
+            <span class="tag selected" onclick="this.classList.toggle('selected')">🥡 Perishable Tracking</span>
+            <span class="tag selected" onclick="this.classList.toggle('selected')">♻️ Waste Reduction</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">💰 Revenue Recovery</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🔧 Operations</span>
+            <button class="tag-add" onclick="addCustomTag('usecase')">+ Custom</button>
+          </div>
+        </div>
+        <div>
+          <div class="tag-section-label">Integrations</div>
+          <input type="text" class="tag-search" placeholder="Search integrations…" id="integrations-search" oninput="filterTags('integrations')">
+          <div class="tags-row" id="integrations-tags">
+            <span class="tag selected" onclick="this.classList.toggle('selected')">🛍️ Shopify</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">📱 Square</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">💬 Slack</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">📧 SendGrid</span>
+            <button class="tag-add" onclick="addCustomTag('integrations')">+ Custom</button>
+          </div>
+        </div>
+        <div class="selected-tags">
+          <span class="selected-tag">🍽️ F&B <span class="remove" onclick="this.parentElement.remove()">✕</span></span>
+          <span class="selected-tag">☕ Coffee <span class="remove" onclick="this.parentElement.remove()">✕</span></span>
+          <span class="selected-tag">📦 Inventory <span class="remove" onclick="this.parentElement.remove()">✕</span></span>
+          <span class="selected-tag">🥡 Perishable Tracking <span class="remove" onclick="this.parentElement.remove()">✕</span></span>
+          <span class="selected-tag">♻️ Waste Reduction <span class="remove" onclick="this.parentElement.remove()">✕</span></span>
+          <span class="selected-tag">🛍️ Shopify <span class="remove" onclick="this.parentElement.remove()">✕</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview -->
+  <div class="right-panel">
+    <div class="rp-header">
+      <div class="rp-title">Live Preview</div>
+      <div style="flex:1;"></div>
+      <div style="font-size:10px;color:var(--text-dim);">Updated 2s ago</div>
+    </div>
+    <div class="rp-preview">
+      <div class="preview-frame">
+        <div class="pf-header">
+          <div class="pf-logo" style="background:linear-gradient(135deg,#059669,#34d399);">🥡</div>
+          <div class="pf-info"><div class="pf-name">Perishable Tracker</div><div class="pf-sub">Sip Coffee & Beer</div></div>
+        </div>
+        <div class="pf-dashboard">
+          <div class="pf-kpis">
+            <div class="pf-kpi"><div class="pf-kpi-label">Tracked</div><div class="pf-kpi-val">342</div></div>
+            <div class="pf-kpi"><div class="pf-kpi-label">Expiring Soon</div><div class="pf-kpi-val" style="color:var(--warn);">18</div></div>
+            <div class="pf-kpi"><div class="pf-kpi-label">Waste Cost</div><div class="pf-kpi-val" style="color:var(--red);">$245</div></div>
+          </div>
+          <div class="pf-decision">
+            <div class="pf-dec-top"><span>🚨</span><span class="pf-dec-name">Oat Milk (6-pack)</span><span class="pf-dec-urgency" style="background:rgba(194,90,90,0.08);color:#c25a5a;">2 days left</span></div>
+            <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;">24 units &middot; Exp: Mar 3 &middot; Cost: $86</div>
+            <div class="pf-dec-btns"><button class="pf-dec-btn approve">50% Markdown</button><button class="pf-dec-btn dismiss">Pull from Shelf</button></div>
+          </div>
+          <div class="pf-decision">
+            <div class="pf-dec-top"><span>⚠️</span><span class="pf-dec-name">Croissants (Frozen, 12ct)</span><span class="pf-dec-urgency" style="background:var(--warn-bg);color:var(--warn);">5 days left</span></div>
+            <div style="font-size:10px;color:var(--text-dim);margin-bottom:8px;">8 bags &middot; Exp: Mar 6 &middot; Cost: $52</div>
+            <div class="pf-dec-btns"><button class="pf-dec-btn approve">30% Markdown</button><button class="pf-dec-btn dismiss">Pull from Shelf</button></div>
+          </div>
+          <div class="pf-expiry pf-new">
+            <div class="pf-expiry-title">Expiring This Week</div>
+            <div class="pf-expiry-rows">
+              <div class="pf-exp-row"><span class="pf-exp-dot" style="background:#c25a5a;"></span><span class="pf-exp-name">Oat Milk (6-pack)</span><span class="pf-exp-date">Mar 3</span></div>
+              <div class="pf-exp-row"><span class="pf-exp-dot" style="background:#c25a5a;"></span><span class="pf-exp-name">Fresh Orange Juice (1L)</span><span class="pf-exp-date">Mar 4</span></div>
+              <div class="pf-exp-row"><span class="pf-exp-dot" style="background:var(--warn);"></span><span class="pf-exp-name">Avocado Toast Bread</span><span class="pf-exp-date">Mar 5</span></div>
+              <div class="pf-exp-row"><span class="pf-exp-dot" style="background:var(--warn);"></span><span class="pf-exp-name">Croissants (Frozen, 12ct)</span><span class="pf-exp-date">Mar 6</span></div>
+              <div class="pf-exp-row"><span class="pf-exp-dot" style="background:var(--warn);"></span><span class="pf-exp-name">Greek Yogurt (Case)</span><span class="pf-exp-date">Mar 7</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(tab) {
+  document.querySelectorAll('.lp-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-chat').style.display = tab === 'chat' ? 'flex' : 'none';
+  document.getElementById('panel-code').classList.toggle('visible', tab === 'code');
+  document.getElementById('panel-tags').classList.toggle('visible', tab === 'tags');
+}
+function filterTags(section) {
+  var search = document.getElementById(section + '-search').value.toLowerCase();
+  document.getElementById(section + '-tags').querySelectorAll('.tag').forEach(function(t) { t.style.display = t.textContent.toLowerCase().includes(search) ? '' : 'none'; });
+}
+function addCustomTag(section) {
+  var search = document.getElementById(section + '-search');
+  var val = search.value.trim() || prompt('Enter custom tag:');
+  if (!val) return;
+  var row = document.getElementById(section + '-tags');
+  var tag = document.createElement('span');
+  tag.className = 'tag selected'; tag.textContent = val;
+  tag.onclick = function() { this.classList.toggle('selected'); };
+  row.insertBefore(tag, row.querySelector('.tag-add'));
+  search.value = '';
+}
+var builderResponses = {
+  'Add FIFO rotation suggestions': { text: 'Added! The agent now flags items that should be moved to the front with <strong>FIFO rotation cards</strong>.', changes: ['FIFO analysis engine added', 'New decision type: rotation_suggestion', 'Staff action: "Move to front display"'] },
+  'Connect to their POS': { text: 'Added a <strong>Square POS</strong> integration. It pulls real-time sales velocity to predict which items will expire unsold.', changes: ['Square POS integration', 'Real-time velocity from sales data', 'Predictive expiry alerts'] },
+  'Add waste reduction tracker': { text: 'Done! <strong>Waste Reduction Goal</strong> widget tracks waste vs. monthly target with a trend sparkline.', changes: ['Goal tracker widget', 'Monthly waste target (configurable)', 'Trend sparkline: last 6 months'] }
+};
+var fallbacks = [{ text: 'Updated! Check the preview.', changes: ['Configuration updated', 'Preview refreshed'] }];
+var fIdx = 0;
+function builderSend(text) {
+  var input = document.getElementById('builder-input');
+  var msg = text || input.value.trim(); if (!msg) return; input.value = '';
+  var sug = document.getElementById('builder-suggestions'); if (sug) sug.remove();
+  var area = document.querySelector('.chat-area');
+  var u = document.createElement('div'); u.className = 'chat-msg user';
+  u.innerHTML = '<div class="chat-msg-label">You</div><div class="chat-bubble">' + msg + '</div>';
+  area.appendChild(u); area.scrollTop = area.scrollHeight;
+  var t = document.createElement('div'); t.className = 'builder-typing';
+  t.innerHTML = '<div class="builder-typing-dot"></div><div class="builder-typing-dot"></div><div class="builder-typing-dot"></div>';
+  area.appendChild(t); area.scrollTop = area.scrollHeight;
+  var resp = builderResponses[msg] || fallbacks[fIdx++ % fallbacks.length];
+  setTimeout(function() {
+    t.remove();
+    var ai = document.createElement('div'); ai.className = 'chat-msg ai';
+    var ch = '<div class="chat-changes"><div class="chat-changes-title">Changes Applied</div>';
+    resp.changes.forEach(function(c) { ch += '<div class="chat-change">' + c + '</div>'; }); ch += '</div>';
+    ai.innerHTML = '<div class="chat-msg-label">PranaOS Builder</div><div class="chat-bubble">' + resp.text + '</div>' + ch;
+    area.appendChild(ai); area.scrollTop = area.scrollHeight;
+  }, 1200);
+}
+</script>
+</body>
+</html>

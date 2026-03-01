@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Implementation Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-dark: #2a1f10; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --gold: #c4842d; --gold-light: rgba(196,132,45,0.1);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08); --shadow-lg: 0 12px 40px rgba(42,31,16,0.12);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* Nav */
+  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 16px 40px; display: flex; align-items: center; background: rgba(250,246,240,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(226,213,196,0.5); }
+  .nav-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .nav-logo svg { width: 32px; height: 32px; }
+  .nav-logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+  .nav-logo-text span { color: var(--accent); }
+  .nav-links { display: flex; gap: 32px; margin-left: 60px; }
+  .nav-link { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: color 0.15s; }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--accent); font-weight: 600; }
+  .nav-spacer { flex: 1; }
+  .nav-cta { padding: 9px 22px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .nav-cta:hover { filter: brightness(0.92); }
+  .nav-login { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-right: 16px; cursor: pointer; text-decoration: none; }
+
+  /* Hero */
+  .page-hero { padding: 130px 40px 60px; text-align: center; position: relative; }
+  .page-hero::before { content: ''; position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; background: radial-gradient(circle, var(--accent-bg) 0%, transparent 70%); pointer-events: none; }
+  .hero-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 14px; }
+  .hero-title { font-size: clamp(30px, 4.5vw, 48px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 14px; }
+  .hero-title .hl { background: linear-gradient(135deg, var(--accent), var(--accent-bright)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-sub { font-size: 16px; font-weight: 300; color: var(--text-muted); max-width: 540px; margin: 0 auto; line-height: 1.7; }
+
+  /* Content */
+  .content { max-width: 1080px; margin: 0 auto; padding: 0 40px 80px; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; padding: 16px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+  .filter-label { font-size: 11px; font-weight: 600; color: var(--text-dim); white-space: nowrap; }
+  .filter-search { flex: 1; min-width: 180px; padding: 9px 14px 9px 36px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a89880' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 12px center no-repeat; outline: none; }
+  .filter-search:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .filter-select { padding: 9px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg); cursor: pointer; outline: none; }
+  .filter-select:focus { border-color: var(--accent); }
+  .filter-count { font-size: 12px; color: var(--text-dim); margin-left: auto; }
+  .filter-count strong { color: var(--accent); font-weight: 700; }
+
+  /* Partner grid */
+  .partner-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+  .partner-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-sm); transition: all 0.2s; display: flex; flex-direction: column; }
+  .partner-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+  .pc-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+  .pc-logo { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .pc-name { font-size: 17px; font-weight: 800; letter-spacing: -0.3px; }
+  .pc-location { font-size: 12px; color: var(--text-dim); margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+  .pc-tier { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-left: auto; flex-shrink: 0; }
+  .pc-tier.gold { background: var(--gold-light); color: var(--gold); }
+  .pc-tier.silver { background: var(--bg-warm); color: var(--text-dim); }
+  .pc-tier.platinum { background: var(--accent-bg); color: var(--accent); }
+
+  .pc-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; line-height: 1.6; margin-bottom: 14px; flex: 1; }
+
+  .pc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .pc-tag { font-size: 10px; font-weight: 600; padding: 4px 10px; border-radius: 6px; background: var(--bg-warm); color: var(--text-dim); }
+  .pc-tag.industry { background: var(--accent-bg); color: var(--accent); }
+
+  .pc-stats { display: flex; gap: 16px; padding-top: 14px; border-top: 1px solid var(--border-subtle); margin-bottom: 16px; }
+  .pc-stat { font-size: 11px; color: var(--text-dim); }
+  .pc-stat strong { color: var(--text); font-weight: 700; font-size: 14px; display: block; margin-bottom: 1px; font-family: 'IBM Plex Mono', monospace; }
+
+  .pc-actions { display: flex; gap: 8px; }
+  .pc-btn { padding: 10px 20px; border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; flex: 1; text-align: center; }
+  .pc-btn-primary { background: var(--accent); color: #fff; border: none; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .pc-btn-primary:hover { filter: brightness(0.92); }
+  .pc-btn-secondary { background: none; border: 1px solid var(--border); color: var(--text-muted); }
+  .pc-btn-secondary:hover { background: var(--bg-warm); color: var(--text); }
+
+  /* Contact modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,31,16,0.5); backdrop-filter: blur(6px); align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: #fff; border-radius: 20px; width: min(520px, calc(100vw - 40px)); box-shadow: 0 20px 60px rgba(42,31,16,0.25); overflow: hidden; animation: modalIn 0.3s ease; }
+  @keyframes modalIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .modal-header { padding: 24px 28px 0; display: flex; align-items: flex-start; gap: 14px; }
+  .modal-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text-dim); margin-left: auto; transition: all 0.15s; flex-shrink: 0; }
+  .modal-close:hover { background: var(--bg-warm); color: var(--text); }
+  .modal-agency-logo { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; }
+  .modal-agency-name { font-size: 18px; font-weight: 800; }
+  .modal-agency-loc { font-size: 12px; color: var(--text-dim); }
+  .modal-body { padding: 20px 28px 28px; }
+  .modal-intro { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-bottom: 20px; line-height: 1.6; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+  .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); outline: none; resize: vertical; }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .form-row { display: flex; gap: 12px; }
+  .form-row .form-group { flex: 1; }
+  .modal-submit { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-xs); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 12px rgba(24,133,106,0.25); margin-top: 6px; transition: all 0.15s; }
+  .modal-submit:hover { filter: brightness(0.92); }
+  .modal-footer-note { font-size: 10px; color: var(--text-dim); text-align: center; margin-top: 12px; }
+
+  /* Success state */
+  .modal-success { display: none; text-align: center; padding: 40px 28px; }
+  .modal-success.show { display: block; }
+  .modal-success-icon { font-size: 48px; margin-bottom: 12px; }
+  .modal-success-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .modal-success-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-bottom: 20px; }
+  .modal-success-btn { padding: 12px 28px; background: var(--bg-warm); border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+
+  /* Become a partner CTA */
+  .become-partner { text-align: center; padding: 48px 40px; margin-top: 32px; background: var(--bg-warm); border-radius: var(--radius); border: 1px solid var(--border); }
+  .bp-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .bp-sub { font-size: 14px; color: var(--text-muted); font-weight: 300; margin-bottom: 20px; }
+  .bp-btn { padding: 14px 32px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(24,133,106,0.25); }
+  .bp-btn:hover { filter: brightness(0.92); }
+
+  /* Footer */
+  .footer { border-top: 1px solid var(--border); padding: 40px; margin-top: 0; }
+  .footer-inner { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+  .footer-logo { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
+  .footer-logo span { color: var(--accent); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-link { font-size: 12px; color: var(--text-dim); text-decoration: none; cursor: pointer; }
+  .footer-copy { font-size: 11px; color: var(--text-dim); }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .partner-grid { grid-template-columns: 1fr; }
+    .content { padding: 0 20px 60px; }
+    .page-hero { padding: 120px 20px 48px; }
+    .form-row { flex-direction: column; gap: 0; }
+    .footer-inner { flex-direction: column; gap: 16px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>S-01b</strong> Implementation Partners</div>
+
+<!-- Nav -->
+<div class="nav">
+  <div class="nav-logo" onclick="window.open('S-01-marketing-site.html','_self')">
+    <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg>
+    <div class="nav-logo-text">Prana<span>OS</span></div>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" onclick="window.open('S-01-marketing-site.html','_self')">Agents</a>
+    <a class="nav-link active">Partners</a>
+    <a class="nav-link" onclick="window.location.href='S-03-pricing.html'">Pricing</a>
+    <a class="nav-link" onclick="window.location.href='S-02-interactive-demo.html'">Try Demo</a>
+    <a class="nav-link">Docs</a>
+  </div>
+  <div class="nav-spacer"></div>
+  <a class="nav-login" onclick="window.location.href='S-05-login.html'">Log in</a>
+  <button class="nav-cta" onclick="window.location.href='S-04-signup-checkout.html'">Get Started Free</button>
+</div>
+
+<!-- Hero -->
+<div class="page-hero">
+  <div class="hero-label">Implementation Partners</div>
+  <h1 class="hero-title">Find the right team to <span class="hl">superpower your business</span></h1>
+  <p class="hero-sub">Our certified partners deploy AI agents tailored to your industry. Pick a partner, tell them what you need, and let them handle the rest.</p>
+</div>
+
+<!-- Content -->
+<div class="content">
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <input type="text" class="filter-search" id="search" placeholder="Search by name or specialty…" oninput="filterPartners()">
+    <select class="filter-select" id="location-filter" onchange="filterPartners()">
+      <option value="all">All Locations</option>
+      <option value="san-diego">San Diego, CA</option>
+      <option value="los-angeles">Los Angeles, CA</option>
+      <option value="new-york">New York, NY</option>
+      <option value="austin">Austin, TX</option>
+      <option value="chicago">Chicago, IL</option>
+      <option value="miami">Miami, FL</option>
+      <option value="london">London, UK</option>
+      <option value="remote">Remote / Nationwide</option>
+    </select>
+    <select class="filter-select" id="industry-filter" onchange="filterPartners()">
+      <option value="all">All Industries</option>
+      <option value="food-bev">Food & Beverage</option>
+      <option value="retail">Retail & E-Commerce</option>
+      <option value="hospitality">Hospitality</option>
+      <option value="healthcare">Healthcare</option>
+      <option value="real-estate">Real Estate</option>
+      <option value="professional">Professional Services</option>
+      <option value="saas">SaaS & Technology</option>
+    </select>
+    <span class="filter-count"><strong id="result-count">8</strong> partners</span>
+  </div>
+
+  <!-- Partner grid -->
+  <div class="partner-grid" id="partner-grid">
+
+    <!-- Prana IQ -->
+    <div class="partner-card" data-name="prana iq" data-location="san-diego" data-industries="food-bev,retail,hospitality">
+      <div class="pc-header">
+        <div class="pc-logo" style="background:linear-gradient(135deg,#18856a,#2dd4a0);">PQ</div>
+        <div>
+          <div class="pc-name">Prana IQ</div>
+          <div class="pc-location">📍 San Diego, CA</div>
+        </div>
+        <span class="pc-tier platinum">Platinum</span>
+      </div>
+      <div class="pc-desc">AI implementation agency specializing in agentic operating systems for non-technical businesses. Deep expertise in food & beverage, retail automation, and operational AI.</div>
+      <div class="pc-tags">
+        <span class="pc-tag industry">Food & Beverage</span>
+        <span class="pc-tag industry">Retail</span>
+        <span class="pc-tag industry">Hospitality</span>
+        <span class="pc-tag">Inventory AI</span>
+        <span class="pc-tag">Revenue Ops</span>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><strong>12</strong> Clients deployed</div>
+        <div class="pc-stat"><strong>48</strong> Agents live</div>
+        <div class="pc-stat"><strong>4.9★</strong> Client rating</div>
+      </div>
+      <div class="pc-actions">
+        <button class="pc-btn pc-btn-primary" onclick="openContact('Prana IQ','San Diego, CA','#18856a','#2dd4a0','PQ')">Get in touch</button>
+        <button class="pc-btn pc-btn-secondary">View profile</button>
+      </div>
+    </div>
+
+    <!-- Revel Ops -->
+    <div class="partner-card" data-name="revel ops" data-location="austin" data-industries="retail,saas">
+      <div class="pc-header">
+        <div class="pc-logo" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">RO</div>
+        <div>
+          <div class="pc-name">Revel Ops</div>
+          <div class="pc-location">📍 Austin, TX</div>
+        </div>
+        <span class="pc-tier gold">Gold</span>
+      </div>
+      <div class="pc-desc">Operations-first AI consultancy. Specializes in connecting e-commerce systems, automating ad spend, and building data pipelines that power smart agents.</div>
+      <div class="pc-tags">
+        <span class="pc-tag industry">Retail & E-Commerce</span>
+        <span class="pc-tag industry">SaaS</span>
+        <span class="pc-tag">Paid Ads</span>
+        <span class="pc-tag">Data Pipelines</span>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><strong>8</strong> Clients deployed</div>
+        <div class="pc-stat"><strong>31</strong> Agents live</div>
+        <div class="pc-stat"><strong>4.8★</strong> Client rating</div>
+      </div>
+      <div class="pc-actions">
+        <button class="pc-btn pc-btn-primary" onclick="openContact('Revel Ops','Austin, TX','#2563eb','#60a5fa','RO')">Get in touch</button>
+        <button class="pc-btn pc-btn-secondary">View profile</button>
+      </div>
+    </div>
+
+    <!-- Meridian Consulting -->
+    <div class="partner-card" data-name="meridian consulting" data-location="new-york" data-industries="professional,healthcare">
+      <div class="pc-header">
+        <div class="pc-logo" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">MC</div>
+        <div>
+          <div class="pc-name">Meridian Consulting</div>
+          <div class="pc-location">📍 New York, NY</div>
+        </div>
+        <span class="pc-tier gold">Gold</span>
+      </div>
+      <div class="pc-desc">Enterprise AI strategy and implementation. Brings PranaOS to mid-size professional services firms and healthcare organizations with compliance-first deployment.</div>
+      <div class="pc-tags">
+        <span class="pc-tag industry">Professional Services</span>
+        <span class="pc-tag industry">Healthcare</span>
+        <span class="pc-tag">Compliance</span>
+        <span class="pc-tag">Workflow Automation</span>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><strong>6</strong> Clients deployed</div>
+        <div class="pc-stat"><strong>24</strong> Agents live</div>
+        <div class="pc-stat"><strong>4.7★</strong> Client rating</div>
+      </div>
+      <div class="pc-actions">
+        <button class="pc-btn pc-btn-primary" onclick="openContact('Meridian Consulting','New York, NY','#8b5cf6','#a78bfa','MC')">Get in touch</button>
+        <button class="pc-btn pc-btn-secondary">View profile</button>
+      </div>
+    </div>
+
+    <!-- Suncoast Digital -->
+    <div class="partner-card" data-name="suncoast digital" data-location="miami" data-industries="hospitality,food-bev">
+      <div class="pc-header">
+        <div class="pc-logo" style="background:linear-gradient(135deg,#d97706,#fbbf24);">SD</div>
+        <div>
+          <div class="pc-name">Suncoast Digital</div>
+          <div class="pc-location">📍 Miami, FL</div>
+        </div>
+        <span class="pc-tier silver">Silver</span>
+      </div>
+      <div class="pc-desc">Hospitality-focused agency that deploys AI concierge, feedback analysis, and revenue management agents for hotel groups and restaurant chains.</div>
+      <div class="pc-tags">
+        <span class="pc-tag industry">Hospitality</span>
+        <span class="pc-tag industry">Food & Beverage</span>
+        <span class="pc-tag">Revenue Mgmt</span>
+        <span class="pc-tag">Guest Experience</span>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><strong>5</strong> Clients deployed</div>
+        <div class="pc-stat"><strong>18</strong> Agents live</div>
+        <div class="pc-stat"><strong>4.9★</strong> Client rating</div>
+      </div>
+      <div class="pc-actions">
+        <button class="pc-btn pc-btn-primary" onclick="openContact('Suncoast Digital','Miami, FL','#d97706','#fbbf24','SD')">Get in touch</button>
+        <button class="pc-btn pc-btn-secondary">View profile</button>
+      </div>
+    </div>
+
+    <!-- Lakeshore AI -->
+    <div class="partner-card" data-name="lakeshore ai" data-location="chicago" data-industries="retail,real-estate">
+      <div class="pc-header">
+        <div class="pc-logo" style="background:linear-gradient(135deg,#059669,#34d399);">LA</div>
+        <div>
+          <div class="pc-name">Lakeshore AI</div>
+          <div class="pc-location">📍 Chicago, IL</div>
+        </div>
+        <span class="pc-tier gold">Gold</span>
+      </div>
+      <div class="pc-desc">Midwest powerhouse specializing in retail chain automation and commercial real estate operations. Known for fast deployments and hands-on client training.</div>
+      <div class="pc-tags">
+        <span class="pc-tag industry">Retail & E-Commerce</span>
+        <span class="pc-tag industry">Real Estate</span>
+        <span class="pc-tag">Multi-location</span>
+        <span class="pc-tag">Training</span>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><strong>9</strong> Clients deployed</div>
+        <div class="pc-stat"><strong>36</strong> Agents live</div>
+        <div class="pc-stat"><strong>4.8★</strong> Client rating</div>
+      </div>
+      <div class="pc-actions">
+        <button class="pc-btn pc-btn-primary" onclick="openContact('Lakeshore AI','Chicago, IL','#059669','#34d399','LA')">Get in touch</button>
+        <button class="pc-btn pc-btn-secondary">View profile</button>
+      </div>
+    </div>
+
+    <!-- Westward Group -->
+    <div class="partner-card" data-name="westward group" data-location="los-angeles" data-industries="food-bev,retail,hospitality">
+      <div class="pc-header">
+        <div class="pc-logo" style="background:linear-gradient(135deg,#dc2626,#f87171);">WG</div>
+        <div>
+          <div class="pc-name">Westward Group</div>
+          <div class="pc-location">📍 Los Angeles, CA</div>
+        </div>
+        <span class="pc-tier silver">Silver</span>
+      </div>
+      <div class="pc-desc">Full-service digital agency adding AI capabilities for restaurant groups, entertainment venues, and lifestyle brands across Southern California.</div>
+      <div class="pc-tags">
+        <span class="pc-tag industry">Food & Beverage</span>
+        <span class="pc-tag industry">Retail</span>
+        <span class="pc-tag industry">Hospitality</span>
+        <span class="pc-tag">Entertainment</span>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><strong>4</strong> Clients deployed</div>
+        <div class="pc-stat"><strong>14</strong> Agents live</div>
+        <div class="pc-stat"><strong>5.0★</strong> Client rating</div>
+      </div>
+      <div class="pc-actions">
+        <button class="pc-btn pc-btn-primary" onclick="openContact('Westward Group','Los Angeles, CA','#dc2626','#f87171','WG')">Get in touch</button>
+        <button class="pc-btn pc-btn-secondary">View profile</button>
+      </div>
+    </div>
+
+    <!-- Beacon Strategy -->
+    <div class="partner-card" data-name="beacon strategy" data-location="london" data-industries="saas,professional">
+      <div class="pc-header">
+        <div class="pc-logo" style="background:linear-gradient(135deg,#0d9488,#5eead4);">BS</div>
+        <div>
+          <div class="pc-name">Beacon Strategy</div>
+          <div class="pc-location">📍 London, UK</div>
+        </div>
+        <span class="pc-tier silver">Silver</span>
+      </div>
+      <div class="pc-desc">UK-based consultancy helping SaaS companies and professional services firms integrate AI agents into their client-facing workflows.</div>
+      <div class="pc-tags">
+        <span class="pc-tag industry">SaaS & Technology</span>
+        <span class="pc-tag industry">Professional Services</span>
+        <span class="pc-tag">Client Portals</span>
+        <span class="pc-tag">Reporting</span>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><strong>7</strong> Clients deployed</div>
+        <div class="pc-stat"><strong>22</strong> Agents live</div>
+        <div class="pc-stat"><strong>4.6★</strong> Client rating</div>
+      </div>
+      <div class="pc-actions">
+        <button class="pc-btn pc-btn-primary" onclick="openContact('Beacon Strategy','London, UK','#0d9488','#5eead4','BS')">Get in touch</button>
+        <button class="pc-btn pc-btn-secondary">View profile</button>
+      </div>
+    </div>
+
+    <!-- Nomad Labs -->
+    <div class="partner-card" data-name="nomad labs" data-location="remote" data-industries="saas,retail,healthcare">
+      <div class="pc-header">
+        <div class="pc-logo" style="background:linear-gradient(135deg,#6366f1,#a5b4fc);">NL</div>
+        <div>
+          <div class="pc-name">Nomad Labs</div>
+          <div class="pc-location">📍 Remote / Nationwide</div>
+        </div>
+        <span class="pc-tier gold">Gold</span>
+      </div>
+      <div class="pc-desc">Fully remote AI implementation team. Works asynchronously across time zones, known for deep technical builds and custom agent development.</div>
+      <div class="pc-tags">
+        <span class="pc-tag industry">SaaS & Technology</span>
+        <span class="pc-tag industry">Retail</span>
+        <span class="pc-tag industry">Healthcare</span>
+        <span class="pc-tag">Custom Agents</span>
+      </div>
+      <div class="pc-stats">
+        <div class="pc-stat"><strong>11</strong> Clients deployed</div>
+        <div class="pc-stat"><strong>42</strong> Agents live</div>
+        <div class="pc-stat"><strong>4.8★</strong> Client rating</div>
+      </div>
+      <div class="pc-actions">
+        <button class="pc-btn pc-btn-primary" onclick="openContact('Nomad Labs','Remote / Nationwide','#6366f1','#a5b4fc','NL')">Get in touch</button>
+        <button class="pc-btn pc-btn-secondary">View profile</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Become a partner -->
+  <div class="become-partner">
+    <div class="bp-title">Are you an agency? Become a partner.</div>
+    <div class="bp-sub">Join the PranaOS partner network, get certified, and start deploying AI agents to your own clients.</div>
+    <button class="bp-btn" onclick="window.location.href='S-04-signup-checkout.html'">Apply to become a partner →</button>
+  </div>
+
+</div>
+
+<!-- Contact Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal">
+    <div class="modal-header" id="modal-header"></div>
+    <div class="modal-body" id="modal-form-body">
+      <div class="modal-intro">Tell them a bit about your business and what you're looking for. They'll typically respond within 24 hours.</div>
+      <div class="form-row">
+        <div class="form-group"><label>Your name</label><input type="text" placeholder="Jane Smith"></div>
+        <div class="form-group"><label>Company</label><input type="text" placeholder="Acme Corp"></div>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" placeholder="jane@acme.com"></div>
+      <div class="form-group"><label>Industry</label>
+        <select>
+          <option value="">Select your industry</option>
+          <option>Food & Beverage</option>
+          <option>Retail & E-Commerce</option>
+          <option>Hospitality</option>
+          <option>Healthcare</option>
+          <option>Real Estate</option>
+          <option>Professional Services</option>
+          <option>SaaS & Technology</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>What are you looking to automate?</label><textarea rows="3" placeholder="e.g., We run 8 coffee shop locations and want to automate inventory management and ad spend optimization…"></textarea></div>
+      <button class="modal-submit" onclick="submitContact()">Send request</button>
+      <div class="modal-footer-note">Your info will be shared directly with this partner. PranaOS does not sell your data.</div>
+    </div>
+    <div class="modal-success" id="modal-success">
+      <div class="modal-success-icon">✉️</div>
+      <div class="modal-success-title">Request sent!</div>
+      <div class="modal-success-desc" id="success-desc">We've notified the partner. Expect a response within 24 hours.</div>
+      <button class="modal-success-btn" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo"><svg viewBox="0 0 32 32" fill="none" width="20" height="20"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg> Prana<span>OS</span></div>
+    <div class="footer-links">
+      <a class="footer-link" onclick="window.location.href='S-01-marketing-site.html'">Agents</a>
+      <a class="footer-link">Partners</a>
+      <a class="footer-link" onclick="window.location.href='S-03-pricing.html'">Pricing</a>
+      <a class="footer-link">Docs</a>
+      <a class="footer-link">Privacy</a>
+      <a class="footer-link">Terms</a>
+    </div>
+    <div class="footer-copy">&copy; 2026 Backbar Solutions Inc.</div>
+  </div>
+</div>
+
+<script>
+function filterPartners() {
+  var search = document.getElementById('search').value.toLowerCase();
+  var loc = document.getElementById('location-filter').value;
+  var ind = document.getElementById('industry-filter').value;
+  var cards = document.querySelectorAll('.partner-card');
+  var visible = 0;
+
+  cards.forEach(function(card) {
+    var name = card.getAttribute('data-name');
+    var cardLoc = card.getAttribute('data-location');
+    var cardInd = card.getAttribute('data-industries');
+
+    var matchSearch = !search || name.indexOf(search) !== -1 || cardInd.indexOf(search) !== -1;
+    var matchLoc = loc === 'all' || cardLoc === loc;
+    var matchInd = ind === 'all' || cardInd.indexOf(ind) !== -1;
+
+    if (matchSearch && matchLoc && matchInd) {
+      card.style.display = '';
+      visible++;
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  document.getElementById('result-count').textContent = visible;
+}
+
+var currentPartner = '';
+
+function openContact(name, loc, c1, c2, initials) {
+  currentPartner = name;
+  var header = document.getElementById('modal-header');
+  header.innerHTML =
+    '<div class="modal-agency-logo" style="background:linear-gradient(135deg,'+c1+','+c2+');">'+initials+'</div>' +
+    '<div><div class="modal-agency-name">Contact '+name+'</div><div class="modal-agency-loc">'+loc+'</div></div>' +
+    '<div class="modal-close" onclick="closeModal()">&times;</div>';
+
+  document.getElementById('modal-form-body').style.display = '';
+  document.getElementById('modal-success').classList.remove('show');
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+function submitContact() {
+  document.getElementById('modal-form-body').style.display = 'none';
+  document.getElementById('success-desc').textContent = "We've notified " + currentPartner + ". Expect a response within 24 hours.";
+  document.getElementById('modal-success').classList.add('show');
+}
+</script>
+</body>
+</html>

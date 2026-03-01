@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Audit Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-secondary: #4a3d2a; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08); --warn-border: rgba(196,132,45,0.18);
+    --error: #c25a5a; --red: #c25a5a; --red-bg: rgba(194,90,90,0.08); --red-border: rgba(194,90,90,0.18);
+    --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.08);
+    --blue: #2563eb; --blue-bg: rgba(37,99,235,0.08);
+    --bg-elevated: #f0e8dc;
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* Shell grid */
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; margin-bottom: 8px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-org { padding: 0 24px; margin-bottom: 28px; }
+  .sb-org-name { font-size: 12px; color: var(--text-muted); font-weight: 500; padding: 6px 12px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background 0.2s; }
+  .sb-org-name:hover { background: var(--border-subtle); }
+  .sb-org-dot { width: 7px; height: 7px; background: var(--accent-bright); border-radius: 50%; }
+  .sb-section { margin-bottom: 24px; }
+  .sb-section-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; padding: 0 24px; margin-bottom: 6px; }
+  .sb-nav { list-style: none; }
+  .sb-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; position: relative; }
+  .sb-nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+  .sb-nav-item.active { color: var(--accent); font-weight: 600; background: var(--accent-bg); }
+  .sb-nav-item.active::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--accent); border-radius: 0 2px 2px 0; }
+  .sb-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sb-nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; color: #fff; background: var(--error); min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .sb-nav-badge.warn { background: var(--warn); }
+  .sb-footer { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .sb-user { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 0; }
+  .sb-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+  .sb-user-info { flex: 1; min-width: 0; }
+  .sb-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); font-weight: 300; }
+
+  /* Main content */
+  .main { padding: 28px 36px 80px; overflow-x: auto; }
+
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .btn-secondary { padding: 8px 18px; border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-secondary:hover { background: var(--bg-elevated); color: var(--text); }
+  .btn-secondary svg { width: 14px; height: 14px; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-select { padding: 8px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg-card); cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23a89880' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+  .filter-select:focus { border-color: var(--accent); }
+  .filter-search { flex: 1; min-width: 180px; padding: 8px 14px 8px 34px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg-card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a89880' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 12px center no-repeat; outline: none; }
+  .filter-search:focus { border-color: var(--accent); }
+
+  /* Audit table */
+  .audit-table-wrap { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .audit-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .audit-table thead { background: var(--bg-elevated); }
+  .audit-table th { padding: 12px 16px; text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .audit-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
+  .audit-table tbody tr { transition: background 0.1s; }
+  .audit-table tbody tr:hover { background: rgba(24,133,106,0.02); }
+  .audit-table tbody tr:last-child td { border-bottom: none; }
+
+  /* Timestamp column */
+  .ts { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+  /* Actor */
+  .actor { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .actor-avatar { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .actor-avatar.human { background: linear-gradient(135deg, var(--accent), var(--accent-bright)); }
+  .actor-avatar.system { background: linear-gradient(135deg, #64748b, #94a3b8); }
+  .actor-name { font-weight: 600; font-size: 12px; }
+
+  /* Action badges */
+  .action-badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 5px; white-space: nowrap; }
+  .action-badge.created { background: var(--accent-bg); color: var(--accent); }
+  .action-badge.updated { background: var(--blue-bg); color: var(--blue); }
+  .action-badge.deleted { background: var(--red-bg); color: var(--red); }
+  .action-badge.deployed { background: var(--purple-bg); color: var(--purple); }
+  .action-badge.invited { background: var(--blue-bg); color: var(--blue); }
+  .action-badge.approved { background: var(--accent-bg); color: var(--accent); }
+  .action-badge.rejected { background: var(--red-bg); color: var(--red); }
+  .action-badge.alert { background: var(--warn-bg); color: var(--warn); }
+  .action-badge.synced { background: var(--bg-elevated); color: var(--text-dim); }
+
+  /* Target & details */
+  .target { font-weight: 600; font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
+  .details { font-size: 12px; color: var(--text-muted); font-weight: 400; max-width: 280px; line-height: 1.4; }
+
+  /* Pagination */
+  .pagination { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-top: 1px solid var(--border); background: var(--bg-card); border-radius: 0 0 var(--radius) var(--radius); }
+  .pagination-info { font-size: 12px; color: var(--text-dim); }
+  .pagination-btns { display: flex; gap: 4px; }
+  .pagination-btn { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .pagination-btn:hover { background: var(--bg-elevated); color: var(--text); }
+  .pagination-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .pagination-btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* Screen ID badge */
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>A-18</strong> Audit Log</div>
+
+<div class="shell">
+
+  <nav class="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 512 512" fill="none" width="28" height="28">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="sb-logo-text">Prana<span>OS</span></span>
+    </div>
+    <div class="sb-org">
+      <div class="sb-org-name"><span class="sb-org-dot"></span> Prana IQ</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Main</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('dashboard')"><span class="sb-nav-icon">&#x1F4CA;</span> Command Center</li>
+        <li class="sb-nav-item" onclick="navTo('clients')"><span class="sb-nav-icon">&#x1F3E2;</span> Clients <span class="sb-nav-badge warn">5</span></li>
+        <li class="sb-nav-item" onclick="navTo('decisions')"><span class="sb-nav-icon">&#x1F4E5;</span> Decision Inbox <span class="sb-nav-badge">12</span></li>
+        <li class="sb-nav-item" onclick="navTo('marketplace')"><span class="sb-nav-icon">&#x1F916;</span> Agent Marketplace</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Manage</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('builder')"><span class="sb-nav-icon">&#x26A1;</span> Builder</li>
+        <li class="sb-nav-item" onclick="navTo('analytics')"><span class="sb-nav-icon">&#x1F4C8;</span> Analytics</li>
+        <li class="sb-nav-item" onclick="navTo('billing')"><span class="sb-nav-icon">&#x1F4B3;</span> Billing</li>
+        <li class="sb-nav-item" onclick="navTo('team')"><span class="sb-nav-icon">&#x1F465;</span> Team</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">System</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item active" onclick="navTo('settings')"><span class="sb-nav-icon">&#x2699;&#xFE0F;</span> Settings</li>
+      </ul>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">RK</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Rishabh K.</div>
+          <div class="sb-user-role">Owner &middot; Growth plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="main">
+
+    <div class="page-header">
+      <div class="page-title">Audit Log</div>
+      <button class="btn-secondary" onclick="alert('Exporting CSV...')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export CSV
+      </button>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <select class="filter-select" id="date-filter" onchange="applyFilters()">
+        <option value="all">All dates</option>
+        <option value="today">Today</option>
+        <option value="yesterday">Yesterday</option>
+        <option value="7d">Last 7 days</option>
+        <option value="30d">Last 30 days</option>
+      </select>
+      <select class="filter-select" id="actor-filter" onchange="applyFilters()">
+        <option value="all">All Users</option>
+        <option value="rishabh">Rishabh K.</option>
+        <option value="system">System</option>
+      </select>
+      <select class="filter-select" id="action-filter" onchange="applyFilters()">
+        <option value="all">All Actions</option>
+        <option value="created">Created</option>
+        <option value="updated">Updated</option>
+        <option value="deleted">Deleted</option>
+        <option value="deployed">Deployed</option>
+        <option value="invited">Invited</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+        <option value="alert">Alert</option>
+        <option value="synced">Synced</option>
+      </select>
+      <input type="text" class="filter-search" id="search-input" placeholder="Search audit log&hellip;" oninput="applyFilters()">
+    </div>
+
+    <!-- Audit table -->
+    <div class="audit-table-wrap">
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Actor</th>
+            <th>Action</th>
+            <th>Target</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody id="audit-tbody">
+        </tbody>
+      </table>
+      <div class="pagination">
+        <div class="pagination-info" id="pagination-info">Showing 1&ndash;20 of 20 entries</div>
+        <div class="pagination-btns">
+          <button class="pagination-btn" disabled>&laquo;</button>
+          <button class="pagination-btn active">1</button>
+          <button class="pagination-btn" disabled>&raquo;</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /shell -->
+
+<script>
+function navTo(target) {
+  var routes = {
+    'dashboard': 'A-03-command-center.html',
+    'clients': 'A-10-client-management.html',
+    'decisions': 'A-11-decision-inbox-agency.html',
+    'marketplace': 'A-04-agent-marketplace.html',
+    'builder': 'A-13-agent-builder.html',
+    'analytics': 'A-16-analytics.html',
+    'billing': 'A-12-billing-management.html',
+    'team': 'A-17-team-management.html',
+    'settings': 'A-18-audit-log.html'
+  };
+  if (routes[target]) {
+    window.location.href = routes[target];
+  } else {
+    alert('\u2192 ' + target + ' (screen not yet built)');
+  }
+}
+
+var auditData = [
+  { ts: 'Mar 1, 2026 09:42', actor: 'Rishabh K.', actorType: 'human', action: 'approved', target: 'Decision #47', details: 'Final Sale Agent \u2014 AMC Theatres', date: 'today' },
+  { ts: 'Mar 1, 2026 09:38', actor: 'System', actorType: 'system', action: 'deployed', target: 'Final Sale Agent', details: 'To AMC Theatres, Dutch Bros', date: 'today' },
+  { ts: 'Mar 1, 2026 09:15', actor: 'Rishabh K.', actorType: 'human', action: 'updated', target: 'Agent Config', details: 'Paid Ads Manager \u2014 budget threshold', date: 'today' },
+  { ts: 'Mar 1, 2026 08:50', actor: 'System', actorType: 'system', action: 'created', target: 'Invoice #1042', details: 'AMC Theatres \u2014 $2,400', date: 'today' },
+  { ts: 'Feb 28, 2026 17:30', actor: 'Rishabh K.', actorType: 'human', action: 'invited', target: 'sarah.lee@amctheatres.com', details: 'Role: Member, Dept: Marketing', date: 'yesterday' },
+  { ts: 'Feb 28, 2026 16:45', actor: 'System', actorType: 'system', action: 'synced', target: 'Shopify Integration', details: 'AMC Theatres \u2014 847 products', date: 'yesterday' },
+  { ts: 'Feb 28, 2026 15:20', actor: 'Rishabh K.', actorType: 'human', action: 'created', target: 'Department: Marketing', details: 'AMC Theatres', date: 'yesterday' },
+  { ts: 'Feb 28, 2026 14:10', actor: 'System', actorType: 'system', action: 'rejected', target: 'Decision #43', details: 'Auto-rejected: below threshold', date: 'yesterday' },
+  { ts: 'Feb 28, 2026 13:00', actor: 'Rishabh K.', actorType: 'human', action: 'updated', target: 'Billing Plan', details: 'Growth \u2192 Growth (added seat)', date: 'yesterday' },
+  { ts: 'Feb 28, 2026 11:30', actor: 'System', actorType: 'system', action: 'alert', target: 'Integration Error', details: 'Dutch Bros \u2014 Shopify disconnected', date: 'yesterday' },
+  { ts: 'Feb 27, 2026 16:00', actor: 'Rishabh K.', actorType: 'human', action: 'deployed', target: 'Email Drafter', details: 'To Sip Coffee & Beer', date: '7d' },
+  { ts: 'Feb 27, 2026 14:30', actor: 'System', actorType: 'system', action: 'created', target: 'Invoice #1041', details: 'Dutch Bros \u2014 $1,800', date: '7d' },
+  { ts: 'Feb 27, 2026 12:00', actor: 'Rishabh K.', actorType: 'human', action: 'updated', target: 'Team Permissions', details: 'Kevin Park \u2014 added to Operations', date: '7d' },
+  { ts: 'Feb 27, 2026 10:15', actor: 'System', actorType: 'system', action: 'approved', target: 'Decision #38', details: 'Auto-approved: routine scan', date: '7d' },
+  { ts: 'Feb 27, 2026 09:00', actor: 'Rishabh K.', actorType: 'human', action: 'created', target: 'Client: Board & Brew', details: 'Plan: Growth, 1 seat', date: '7d' },
+  { ts: 'Feb 26, 2026 17:45', actor: 'System', actorType: 'system', action: 'synced', target: 'Google Analytics', details: 'AMC Theatres \u2014 daily sync', date: '7d' },
+  { ts: 'Feb 26, 2026 15:30', actor: 'Rishabh K.', actorType: 'human', action: 'updated', target: 'Agent Config', details: 'Revenue Reporter \u2014 anomaly threshold', date: '7d' },
+  { ts: 'Feb 26, 2026 13:00', actor: 'System', actorType: 'system', action: 'deployed', target: 'Churn Predictor', details: 'To Alexander Jane', date: '7d' },
+  { ts: 'Feb 26, 2026 11:00', actor: 'Rishabh K.', actorType: 'human', action: 'deleted', target: 'Draft Agent', details: 'Untitled Agent #3', date: '7d' },
+  { ts: 'Feb 26, 2026 09:30', actor: 'System', actorType: 'system', action: 'created', target: 'Weekly Report', details: 'Portfolio summary emailed', date: '7d' }
+];
+
+function getActorKey(actor) {
+  if (actor === 'System') return 'system';
+  return 'rishabh';
+}
+
+function renderTable(data) {
+  var tbody = document.getElementById('audit-tbody');
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-dim);font-size:13px;">No matching audit log entries found.</td></tr>';
+    document.getElementById('pagination-info').textContent = 'Showing 0 entries';
+    return;
+  }
+  var html = '';
+  for (var i = 0; i < data.length; i++) {
+    var row = data[i];
+    var avatarClass = row.actorType === 'system' ? 'system' : 'human';
+    var initials = row.actorType === 'system' ? 'SYS' : 'RK';
+    html += '<tr data-actor="' + getActorKey(row.actor) + '" data-action="' + row.action + '" data-date="' + row.date + '">';
+    html += '<td><span class="ts">' + row.ts + '</span></td>';
+    html += '<td><div class="actor"><div class="actor-avatar ' + avatarClass + '">' + initials + '</div><span class="actor-name">' + row.actor + '</span></div></td>';
+    html += '<td><span class="action-badge ' + row.action + '">' + row.action.charAt(0).toUpperCase() + row.action.slice(1) + '</span></td>';
+    html += '<td><span class="target">' + row.target + '</span></td>';
+    html += '<td><span class="details">' + row.details + '</span></td>';
+    html += '</tr>';
+  }
+  tbody.innerHTML = html;
+  document.getElementById('pagination-info').textContent = 'Showing 1\u2013' + data.length + ' of ' + data.length + ' entries';
+}
+
+function applyFilters() {
+  var dateVal = document.getElementById('date-filter').value;
+  var actorVal = document.getElementById('actor-filter').value;
+  var actionVal = document.getElementById('action-filter').value;
+  var searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+
+  var filtered = auditData.filter(function(row) {
+    // Date filter
+    if (dateVal === 'today' && row.date !== 'today') return false;
+    if (dateVal === 'yesterday' && row.date !== 'today' && row.date !== 'yesterday') return false;
+    if (dateVal === '7d') { /* show all within 7d, which is all our data */ }
+    if (dateVal === '30d') { /* show all within 30d, which is all our data */ }
+
+    // Actor filter
+    if (actorVal !== 'all' && getActorKey(row.actor) !== actorVal) return false;
+
+    // Action filter
+    if (actionVal !== 'all' && row.action !== actionVal) return false;
+
+    // Search
+    if (searchVal) {
+      var haystack = (row.ts + ' ' + row.actor + ' ' + row.action + ' ' + row.target + ' ' + row.details).toLowerCase();
+      if (haystack.indexOf(searchVal) === -1) return false;
+    }
+
+    return true;
+  });
+
+  renderTable(filtered);
+}
+
+// Initial render
+renderTable(auditData);
+</script>
+</body>
+</html>

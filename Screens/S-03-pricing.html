@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Pricing</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-dark: #2a1f10; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880; --text-on-dark: #f5ede0;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --gold: #c4842d; --gold-light: rgba(196,132,45,0.1);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08); --shadow-lg: 0 12px 40px rgba(42,31,16,0.12);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* Nav */
+  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 16px 40px; display: flex; align-items: center; background: rgba(250,246,240,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(226,213,196,0.5); }
+  .nav-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .nav-logo svg { width: 32px; height: 32px; }
+  .nav-logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+  .nav-logo-text span { color: var(--accent); }
+  .nav-links { display: flex; gap: 32px; margin-left: 60px; }
+  .nav-link { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: color 0.15s; }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--accent); font-weight: 600; }
+  .nav-spacer { flex: 1; }
+  .nav-cta { padding: 9px 22px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .nav-login { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-right: 16px; cursor: pointer; text-decoration: none; }
+
+  /* Hero */
+  .page-hero { padding: 130px 40px 50px; text-align: center; position: relative; }
+  .page-hero::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 500px; height: 400px; background: radial-gradient(circle, var(--accent-bg) 0%, transparent 70%); pointer-events: none; }
+  .hero-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 14px; position: relative; }
+  .hero-title { font-size: clamp(30px, 4.5vw, 48px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 14px; position: relative; }
+  .hero-title .hl { background: linear-gradient(135deg, var(--accent), var(--accent-bright)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero-sub { font-size: 16px; font-weight: 300; color: var(--text-muted); max-width: 520px; margin: 0 auto; line-height: 1.7; position: relative; }
+
+  /* Billing toggle */
+  .billing-toggle { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 32px auto 0; position: relative; }
+  .bt-label { font-size: 13px; font-weight: 500; color: var(--text-dim); cursor: pointer; }
+  .bt-label.active { color: var(--text); font-weight: 700; }
+  .bt-switch { width: 48px; height: 26px; border-radius: 13px; background: var(--border); position: relative; cursor: pointer; transition: background 0.2s; }
+  .bt-switch.on { background: var(--accent); }
+  .bt-switch-dot { width: 20px; height: 20px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 3px; transition: left 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+  .bt-switch.on .bt-switch-dot { left: 25px; }
+  .bt-save { font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-border); padding: 3px 10px; border-radius: 10px; }
+
+  /* Pricing cards */
+  .content { max-width: 1080px; margin: 0 auto; padding: 40px 40px 0; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 60px; }
+  .pricing-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 32px 28px; box-shadow: var(--shadow-sm); transition: all 0.2s; display: flex; flex-direction: column; position: relative; cursor: pointer; }
+  .pricing-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .pricing-card.selected { border: 2px solid var(--accent); box-shadow: var(--shadow-md); }
+  .pricing-card.selected::after { content: '✓ Selected'; position: absolute; top: 12px; right: 12px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 700; padding: 3px 10px; border-radius: 6px; }
+  .pricing-card.featured { border: 2px solid var(--accent); box-shadow: var(--shadow-md); }
+  .pricing-card.featured::before { content: 'Most Popular'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 4px 14px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .pricing-card.selected.featured { border-color: var(--accent); }
+  .pricing-card:not(.selected) { opacity: 0.75; }
+  .pricing-card:not(.selected):hover { opacity: 1; }
+  .pc-name { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .pc-desc { font-size: 12px; color: var(--text-dim); font-weight: 300; margin-bottom: 16px; }
+  .pc-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 4px; }
+  .pc-price-amount { font-size: 40px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; letter-spacing: -2px; }
+  .pc-price-unit { font-size: 13px; color: var(--text-dim); }
+  .pc-price-note { font-size: 11px; color: var(--text-dim); margin-bottom: 20px; }
+  .pc-cta { padding: 14px; border-radius: var(--radius-xs); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; margin-bottom: 20px; transition: all 0.15s; display: block; width: 100%; }
+  .pc-cta-primary { background: var(--accent); color: #fff; border: none; box-shadow: 0 2px 12px rgba(24,133,106,0.25); }
+  .pc-cta-primary:hover { filter: brightness(0.92); }
+  .pc-cta-secondary { background: none; border: 1px solid var(--border); color: var(--text-muted); }
+  .pc-cta-secondary:hover { background: var(--bg-warm); }
+  .pc-cta-enterprise { background: var(--bg-dark); color: #fff; border: none; }
+  .pc-features { list-style: none; flex: 1; }
+  .pc-features li { font-size: 12px; color: var(--text-muted); padding: 7px 0; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: flex-start; gap: 8px; }
+  .pc-features li:last-child { border-bottom: none; }
+  .pc-features li::before { content: '✓'; color: var(--accent); font-weight: 700; font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+  .pc-features li.disabled { color: var(--text-dim); opacity: 0.5; }
+  .pc-features li.disabled::before { content: '—'; color: var(--text-dim); }
+
+  /* Margin calculator */
+  .calc-section { padding: 60px 40px; background: var(--bg-warm); margin-bottom: 0; position: relative; }
+  .calc-plan-badge { text-align: center; margin-bottom: 20px; }
+  .calc-plan-badge span { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-border); padding: 6px 16px; border-radius: 20px; }
+  .calc-enterprise-overlay { display: none; position: absolute; inset: 0; z-index: 10; background: rgba(245,237,224,0.85); backdrop-filter: blur(4px); align-items: center; justify-content: center; flex-direction: column; gap: 12px; border-radius: 0; }
+  .calc-enterprise-overlay.show { display: flex; }
+  .calc-enterprise-overlay .ceo-title { font-size: 20px; font-weight: 800; }
+  .calc-enterprise-overlay .ceo-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; }
+  .calc-enterprise-overlay .ceo-btn { padding: 14px 32px; background: var(--bg-dark); color: #fff; border: none; border-radius: var(--radius-xs); font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .calc-inner { max-width: 1080px; margin: 0 auto; }
+  .section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 12px; text-align: center; }
+  .section-title { font-size: clamp(24px, 3vw, 36px); font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 8px; }
+  .section-sub { font-size: 14px; color: var(--text-muted); font-weight: 300; text-align: center; max-width: 480px; margin: 0 auto 36px; }
+
+  .calc-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .calc-inputs { display: flex; flex-direction: column; gap: 20px; }
+  .calc-input-group { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .cig-label { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  .cig-desc { font-size: 11px; color: var(--text-dim); margin-bottom: 12px; }
+  .cig-slider-row { display: flex; align-items: center; gap: 14px; }
+  .cig-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; background: var(--border); outline: none; }
+  .cig-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); cursor: pointer; box-shadow: 0 2px 8px rgba(24,133,106,0.3); }
+  .cig-value { font-size: 22px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; min-width: 60px; text-align: right; }
+
+  .calc-results { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-md); display: flex; flex-direction: column; }
+  .cr-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+  .cr-rows { flex: 1; display: flex; flex-direction: column; gap: 0; }
+  .cr-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); }
+  .cr-row:last-child { border-bottom: none; }
+  .cr-row-label { font-size: 13px; color: var(--text-muted); }
+  .cr-row-value { font-size: 16px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
+  .cr-row.highlight { padding: 16px; background: var(--accent-bg); border-radius: var(--radius-sm); border: 1px solid var(--accent-border); margin-top: 12px; }
+  .cr-row.highlight .cr-row-label { color: var(--accent); font-weight: 700; }
+  .cr-row.highlight .cr-row-value { color: var(--accent); font-size: 24px; }
+  .cr-row.margin-pct { padding: 14px; background: var(--bg); border-radius: var(--radius-xs); margin-top: 8px; text-align: center; }
+  .cr-margin-bar { height: 8px; background: var(--bg-warm); border-radius: 4px; margin-top: 12px; overflow: hidden; }
+  .cr-margin-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-bright)); border-radius: 4px; transition: width 0.4s ease; }
+
+  /* FAQ */
+  .faq-section { padding: 60px 40px 80px; max-width: 720px; margin: 0 auto; }
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-q { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; cursor: pointer; }
+  .faq-q-text { font-size: 14px; font-weight: 700; }
+  .faq-q-icon { font-size: 18px; color: var(--text-dim); transition: transform 0.2s; }
+  .faq-item.open .faq-q-icon { transform: rotate(45deg); color: var(--accent); }
+  .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease; }
+  .faq-item.open .faq-a { max-height: 300px; padding-bottom: 18px; }
+  .faq-a-text { font-size: 13px; color: var(--text-muted); font-weight: 300; line-height: 1.7; }
+
+  /* Bottom CTA */
+  .bottom-cta { text-align: center; padding: 60px 40px 80px; background: var(--bg-warm); }
+  .bottom-cta-title { font-size: 28px; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
+  .bottom-cta-sub { font-size: 14px; color: var(--text-muted); font-weight: 300; margin-bottom: 24px; }
+  .bottom-cta-btns { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .btn-primary { padding: 16px 36px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(24,133,106,0.3); }
+  .btn-secondary { padding: 16px 36px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 16px; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+
+  /* Footer */
+  .footer { border-top: 1px solid var(--border); padding: 40px; }
+  .footer-inner { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+  .footer-logo { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
+  .footer-logo span { color: var(--accent); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-link { font-size: 12px; color: var(--text-dim); text-decoration: none; cursor: pointer; }
+  .footer-copy { font-size: 11px; color: var(--text-dim); }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
+    .calc-layout { grid-template-columns: 1fr; }
+    .page-hero { padding: 120px 20px 40px; }
+    .content { padding: 30px 20px 0; }
+    .footer-inner { flex-direction: column; gap: 16px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>S-03</strong> Pricing + Calculator</div>
+
+<!-- Nav -->
+<div class="nav">
+  <div class="nav-logo" onclick="window.open('S-01-marketing-site.html','_self')">
+    <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg>
+    <div class="nav-logo-text">Prana<span>OS</span></div>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" onclick="window.open('S-01-marketing-site.html','_self')">Agents</a>
+    <a class="nav-link" onclick="window.open('S-01b-partners.html','_self')">Partners</a>
+    <a class="nav-link active">Pricing</a>
+    <a class="nav-link" onclick="window.open('S-02-interactive-demo.html','_self')">Try Demo</a>
+    <a class="nav-link">Docs</a>
+  </div>
+  <div class="nav-spacer"></div>
+  <a class="nav-login" onclick="window.location.href='S-05-login.html'">Log in</a>
+  <button class="nav-cta" onclick="window.location.href='S-04-signup-checkout.html'">Get Started Free</button>
+</div>
+
+<!-- Hero -->
+<div class="page-hero">
+  <div class="hero-label">Pricing</div>
+  <h1 class="hero-title">You set the price. <span class="hl">You keep the margin.</span></h1>
+  <p class="hero-sub">Transparent platform costs. You charge your clients per department, mark up usage, and keep the margin. No surprises.</p>
+  <div class="billing-toggle">
+    <span class="bt-label active" id="bt-monthly" onclick="setBilling(false)">Monthly</span>
+    <div class="bt-switch" id="bt-switch" onclick="toggleBilling()"><div class="bt-switch-dot"></div></div>
+    <span class="bt-label" id="bt-annual" onclick="setBilling(true)">Annual</span>
+    <span class="bt-save">Save 20%</span>
+  </div>
+</div>
+
+<!-- Pricing cards -->
+<div class="content">
+  <div class="pricing-grid">
+
+    <!-- Starter -->
+    <div class="pricing-card" id="card-starter" onclick="selectTier('starter')">
+      <div class="pc-name">Starter</div>
+      <div class="pc-desc">For agencies launching their first AI clients</div>
+      <div class="pc-price"><span class="pc-price-amount" id="price-starter">$497</span><span class="pc-price-unit">/ seat / mo</span></div>
+      <div class="pc-price-note">+ $50/partition + usage &middot; Up to 5 clients</div>
+      <button class="pc-cta pc-cta-secondary" onclick="window.location.href='S-04-signup-checkout.html'">Start free trial</button>
+      <ul class="pc-features">
+        <li>Up to 5 client workspaces</li>
+        <li>Full agent marketplace</li>
+        <li>Decision inbox per client</li>
+        <li>Agent dashboards + chat</li>
+        <li>Client billing tools</li>
+        <li>Email support</li>
+        <li class="disabled">Cross-client decision inbox</li>
+        <li class="disabled">Private custom agents</li>
+        <li class="disabled">Custom security policies</li>
+        <li class="disabled">Dedicated success manager</li>
+      </ul>
+    </div>
+
+    <!-- Growth -->
+    <div class="pricing-card featured selected" id="card-growth" onclick="selectTier('growth')">
+      <div class="pc-name">Growth</div>
+      <div class="pc-desc">For agencies scaling their AI practice</div>
+      <div class="pc-price"><span class="pc-price-amount" id="price-growth">$997</span><span class="pc-price-unit">/ seat / mo</span></div>
+      <div class="pc-price-note">+ $50/partition + usage &middot; Up to 15 clients</div>
+      <button class="pc-cta pc-cta-primary" onclick="window.location.href='S-04-signup-checkout.html'">Start building free →</button>
+      <ul class="pc-features">
+        <li>Up to 15 client workspaces</li>
+        <li>Full agent marketplace</li>
+        <li>Cross-client decision inbox</li>
+        <li>Agent dashboards + chat</li>
+        <li>Client billing management</li>
+        <li>Custom branding per client</li>
+        <li>API access</li>
+        <li>Priority support</li>
+        <li class="disabled">Private custom agents</li>
+        <li class="disabled">Custom security policies</li>
+      </ul>
+    </div>
+
+    <!-- Enterprise -->
+    <div class="pricing-card" id="card-enterprise" onclick="selectTier('enterprise')">
+      <div class="pc-name">Enterprise</div>
+      <div class="pc-desc">For agencies with complex or large-scale needs</div>
+      <div class="pc-price"><span class="pc-price-amount" id="price-enterprise">Custom</span></div>
+      <div class="pc-price-note">Volume discounts &middot; Unlimited clients</div>
+      <button class="pc-cta pc-cta-enterprise" onclick="alert('Calendly booking: Enterprise')">Talk to sales</button>
+      <ul class="pc-features">
+        <li>Unlimited client workspaces</li>
+        <li>Full marketplace + private agents</li>
+        <li>Cross-client decision inbox</li>
+        <li>White-label platform</li>
+        <li>Custom security policies</li>
+        <li>Advanced analytics & reporting</li>
+        <li>Custom integrations</li>
+        <li>API + webhook access</li>
+        <li>SLA guarantees</li>
+        <li>Dedicated success manager</li>
+      </ul>
+    </div>
+
+  </div>
+</div></div>
+</div>
+
+<!-- Margin Calculator -->
+<div class="calc-section">
+  <div class="calc-inner">
+    <div class="section-label">Margin Calculator</div>
+    <div class="section-title">See what you could earn</div>
+    <div class="section-sub">Adjust the sliders to model your revenue, costs, and margin. Most partners charge clients per department.</div>
+    <div class="calc-plan-badge"><span id="calc-plan-label">📊 Calculating with <strong>Growth</strong> plan — $997/seat</span></div>
+    <div class="calc-enterprise-overlay" id="calc-enterprise">
+      <div class="ceo-title">Enterprise pricing is custom</div>
+      <div class="ceo-desc">We'll build a plan around your specific needs — volume, security, integrations.</div>
+      <button class="ceo-btn" onclick="alert('Calendly booking: Enterprise')">Talk to sales →</button>
+    </div>
+    <div class="calc-layout">
+      <div class="calc-inputs">
+        <div class="calc-input-group">
+          <div class="cig-label">Number of clients</div>
+          <div class="cig-desc">How many client workspaces will you deploy?</div>
+          <div class="cig-slider-row">
+            <input type="range" class="cig-slider" id="slider-clients" min="1" max="15" value="5" oninput="calculate()">
+            <div class="cig-value" id="val-clients">5</div>
+          </div>
+        </div>
+        <div class="calc-input-group">
+          <div class="cig-label">Departments per client</div>
+          <div class="cig-desc">Each department is a partition with its own agents and users</div>
+          <div class="cig-slider-row">
+            <input type="range" class="cig-slider" id="slider-depts" min="1" max="8" value="3" oninput="calculate()">
+            <div class="cig-value" id="val-depts">3</div>
+          </div>
+        </div>
+        <div class="calc-input-group">
+          <div class="cig-label">What you charge per client</div>
+          <div class="cig-desc">Your monthly fee per client (avg across all clients)</div>
+          <div class="cig-slider-row">
+            <input type="range" class="cig-slider" id="slider-price" min="1000" max="15000" step="250" value="5000" oninput="calculate()">
+            <div class="cig-value" id="val-price">$5,000</div>
+          </div>
+        </div>
+        <div class="calc-input-group">
+          <div class="cig-label">Usage markup</div>
+          <div class="cig-desc">How much you mark up AI usage costs when billing clients</div>
+          <div class="cig-slider-row">
+            <input type="range" class="cig-slider" id="slider-markup" min="0" max="100" step="5" value="20" oninput="calculate()">
+            <div class="cig-value" id="val-markup">20%</div>
+          </div>
+        </div>
+      </div>
+      <div class="calc-results">
+        <div class="cr-title">Your monthly numbers</div>
+        <div class="cr-rows">
+          <div class="cr-row"><span class="cr-row-label">Total partitions</span><span class="cr-row-value" id="cr-partitions-count">15</span></div>
+          <div class="cr-row" style="border-bottom:none;padding-bottom:4px;"><span class="cr-row-label" style="font-weight:700;color:var(--text);">What you charge clients</span><span class="cr-row-value"></span></div>
+          <div class="cr-row" style="padding-top:0;"><span class="cr-row-label">&nbsp;&nbsp;Client fees (5 × $5,000)</span><span class="cr-row-value" id="cr-revenue">$25,000</span></div>
+          <div class="cr-row"><span class="cr-row-label">&nbsp;&nbsp;Usage pass-through + markup</span><span class="cr-row-value" id="cr-usage-rev">$1,800</span></div>
+          <div class="cr-row" style="border-bottom:none;padding-bottom:4px;"><span class="cr-row-label" style="font-weight:700;color:var(--text);">Your costs to PranaOS</span><span class="cr-row-value"></span></div>
+          <div class="cr-row" style="padding-top:0;"><span class="cr-row-label" id="cr-seat-label">&nbsp;&nbsp;Seat fees (Growth: $997/seat)</span><span class="cr-row-value" id="cr-seat-cost" style="color:var(--warn);">$4,985</span></div>
+          <div class="cr-row"><span class="cr-row-label">&nbsp;&nbsp;Partition fees (15 × $50)</span><span class="cr-row-value" id="cr-part-cost" style="color:var(--warn);">$750</span></div>
+          <div class="cr-row"><span class="cr-row-label">&nbsp;&nbsp;Usage costs (passthrough)</span><span class="cr-row-value" id="cr-usage-cost" style="color:var(--warn);">$1,500</span></div>
+          <div class="cr-row highlight">
+            <span class="cr-row-label">Your monthly margin</span>
+            <span class="cr-row-value" id="cr-margin">$19,565</span>
+          </div>
+        </div>
+        <div class="cr-margin-bar"><div class="cr-margin-fill" id="cr-margin-bar" style="width:73%;"></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+          <span style="font-size:10px;color:var(--text-dim);">Platform cost</span>
+          <span style="font-size:14px;font-weight:800;color:var(--accent);font-family:'IBM Plex Mono',monospace;" id="cr-margin-pct">73.0%</span>
+          <span style="font-size:10px;color:var(--text-dim);">margin</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section">
+  <div class="section-label">FAQ</div>
+  <div class="section-title" style="margin-bottom:28px;">Common questions</div>
+
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span class="faq-q-text">What's included in a "seat"?</span><span class="faq-q-icon">+</span></div>
+    <div class="faq-a"><div class="faq-a-text">A seat is one agency-level login. Each seat gives you access to manage client workspaces, deploy agents, and oversee decisions. Most agencies charge clients per department — each department gets its own partition with dedicated agents, users, and data isolation.</div></div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span class="faq-q-text">What are usage costs?</span><span class="faq-q-icon">+</span></div>
+    <div class="faq-a"><div class="faq-a-text">Usage costs cover AI inference (LLM calls) and third-party API usage that agents make on behalf of your clients. You see these costs transparently in your dashboard and pass them through to clients with a markup. Most partners apply a 20% markup on usage as a baseline, but you can set whatever works for your business.</div></div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span class="faq-q-text">Can I white-label PranaOS?</span><span class="faq-q-icon">+</span></div>
+    <div class="faq-a"><div class="faq-a-text">On Growth plans, you can customize branding per client (logos, colors). Full white-label — where PranaOS branding is completely removed and replaced with yours — is available on Enterprise plans. Your clients will never need to know what's under the hood.</div></div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span class="faq-q-text">What happens if I exceed my plan limits?</span><span class="faq-q-icon">+</span></div>
+    <div class="faq-a"><div class="faq-a-text">We'll give you a heads-up as you approach limits. Nothing breaks — we'll just ask you to upgrade or contact us. We never shut down your clients' access without warning.</div></div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span class="faq-q-text">Is there a free trial?</span><span class="faq-q-icon">+</span></div>
+    <div class="faq-a"><div class="faq-a-text">Yes! Every plan starts with a 14-day free trial. Deploy agents to a test client, explore the platform, and see your first decisions come in — no credit card required.</div></div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span class="faq-q-text">How does billing work for my clients?</span><span class="faq-q-icon">+</span></div>
+    <div class="faq-a"><div class="faq-a-text">PranaOS bills you directly for platform costs. You bill your clients whatever you want — we give you built-in billing tools (see the Client Billing screen) to set per-seat pricing, usage markup, custom line items, and generate invoices. Your margin is yours.</div></div>
+  </div>
+  <div class="faq-item" onclick="toggleFaq(this)">
+    <div class="faq-q"><span class="faq-q-text">Can I build custom agents?</span><span class="faq-q-icon">+</span></div>
+    <div class="faq-a"><div class="faq-a-text">On Growth and Enterprise plans, you can configure and customize marketplace agents extensively. Full custom agent development — building agents from scratch with custom logic, integrations, and GUIs — is available on Enterprise with our support team.</div></div>
+  </div>
+</div>
+
+<!-- Bottom CTA -->
+<div class="bottom-cta">
+  <div class="bottom-cta-title">Ready to superpower your clients?</div>
+  <div class="bottom-cta-sub">14-day free trial. No credit card required. Deploy your first agent today.</div>
+  <div class="bottom-cta-btns">
+    <button class="btn-primary" onclick="window.location.href='S-04-signup-checkout.html'">Start building free →</button>
+    <button class="btn-secondary" onclick="alert('Calendly booking page')">Talk to sales</button>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo"><svg viewBox="0 0 32 32" fill="none" width="20" height="20"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg> Prana<span>OS</span></div>
+    <div class="footer-links"><a class="footer-link" onclick="window.location.href='S-01-marketing-site.html'">Agents</a><a class="footer-link" onclick="window.location.href='S-01b-partners.html'">Partners</a><a class="footer-link">Pricing</a><a class="footer-link">Docs</a><a class="footer-link">Privacy</a><a class="footer-link">Terms</a></div>
+    <div class="footer-copy">&copy; 2026 Backbar Solutions Inc.</div>
+  </div>
+</div>
+
+<script>
+var annual = false;
+var selectedTier = 'growth';
+
+var tiers = {
+  starter: { monthly: 497, annual: 397, maxClients: 5, name: 'Starter' },
+  growth:  { monthly: 997, annual: 797, maxClients: 15, name: 'Growth' },
+  enterprise: { monthly: 0, annual: 0, maxClients: 0, name: 'Enterprise' }
+};
+
+function selectTier(tier) {
+  selectedTier = tier;
+  // Update card visuals
+  document.querySelectorAll('.pricing-card').forEach(function(c) { c.classList.remove('selected'); });
+  document.getElementById('card-' + tier).classList.add('selected');
+  // Enterprise overlay
+  document.getElementById('calc-enterprise').classList.toggle('show', tier === 'enterprise');
+  if (tier !== 'enterprise') {
+    // Update client slider max
+    var slider = document.getElementById('slider-clients');
+    var t = tiers[tier];
+    slider.min = 1;
+    slider.max = t.maxClients;
+    if (parseInt(slider.value) > t.maxClients) slider.value = t.maxClients;
+    // Update plan badge
+    var price = annual ? t.annual : t.monthly;
+    document.getElementById('calc-plan-label').innerHTML = '📊 Calculating with <strong>' + t.name + '</strong> plan — $' + price + '/seat';
+    calculate();
+  }
+}
+
+function toggleBilling() { setBilling(!annual); }
+function setBilling(isAnnual) {
+  annual = isAnnual;
+  document.getElementById('bt-switch').classList.toggle('on', annual);
+  document.getElementById('bt-monthly').classList.toggle('active', !annual);
+  document.getElementById('bt-annual').classList.toggle('active', annual);
+  document.getElementById('price-starter').textContent = annual ? '$397' : '$497';
+  document.getElementById('price-growth').textContent = annual ? '$797' : '$997';
+  if (selectedTier !== 'enterprise') {
+    var t = tiers[selectedTier];
+    var price = annual ? t.annual : t.monthly;
+    document.getElementById('calc-plan-label').innerHTML = '📊 Calculating with <strong>' + t.name + '</strong> plan — $' + price + '/seat';
+  }
+  calculate();
+}
+
+function calculate() {
+  var clients = parseInt(document.getElementById('slider-clients').value);
+  var depts = parseInt(document.getElementById('slider-depts').value);
+  var price = parseInt(document.getElementById('slider-price').value);
+  var markup = parseInt(document.getElementById('slider-markup').value);
+  var t = tiers[selectedTier];
+  var costPerSeat = annual ? t.annual : t.monthly;
+
+  var totalPartitions = clients * depts;
+  var totalSeats = clients;
+
+  document.getElementById('val-clients').textContent = clients;
+  document.getElementById('val-depts').textContent = depts;
+  document.getElementById('val-price').textContent = '$' + price.toLocaleString();
+  document.getElementById('val-markup').textContent = markup + '%';
+
+  // Revenue
+  var clientRevenue = clients * price;
+  var usageBase = totalPartitions * 100;
+  var usageMarkupRev = Math.round(usageBase * (markup / 100));
+  var totalRevenue = clientRevenue + usageBase + usageMarkupRev;
+
+  // Costs
+  var seatCost = totalSeats * costPerSeat;
+  var partitionCost = totalPartitions * 50;
+  var usageCost = usageBase;
+  var totalCost = seatCost + partitionCost + usageCost;
+
+  // Margin
+  var margin = totalRevenue - totalCost;
+  var marginPct = totalRevenue > 0 ? ((margin / totalRevenue) * 100) : 0;
+
+  document.getElementById('cr-partitions-count').textContent = totalPartitions;
+  document.getElementById('cr-revenue').textContent = '$' + clientRevenue.toLocaleString();
+  document.getElementById('cr-usage-rev').textContent = '$' + (usageBase + usageMarkupRev).toLocaleString();
+  document.getElementById('cr-seat-cost').textContent = '$' + seatCost.toLocaleString();
+  document.getElementById('cr-seat-label').innerHTML = '&nbsp;&nbsp;Seat fees (' + t.name + ': $' + costPerSeat + '/seat)';
+  document.getElementById('cr-part-cost').textContent = '$' + partitionCost.toLocaleString();
+  document.getElementById('cr-usage-cost').textContent = '$' + usageCost.toLocaleString();
+  document.getElementById('cr-margin').textContent = '$' + margin.toLocaleString();
+  document.getElementById('cr-margin-pct').textContent = marginPct.toFixed(1) + '%';
+  document.getElementById('cr-margin-bar').style.width = Math.max(0, Math.min(100, marginPct)) + '%';
+}
+
+function toggleFaq(el) { el.classList.toggle('open'); }
+
+selectTier('growth');
+</script>
+</body>
+</html>

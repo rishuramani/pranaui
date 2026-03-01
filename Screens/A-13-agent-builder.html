@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Agent Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08);
+    --purple: #7c3aed; --purple-bg: rgba(124,58,237,0.06);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+
+  /* Top bar */
+  .topbar { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 0 16px; height: 52px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .tb-back { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .tb-back:hover { background: var(--bg-warm); }
+  .tb-logo { font-size: 14px; font-weight: 800; }
+  .tb-logo span { color: var(--accent); }
+  .tb-divider { width: 1px; height: 20px; background: var(--border); }
+  .tb-name { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .tb-name input { background: none; border: none; color: var(--text); font-family: inherit; font-size: 13px; font-weight: 600; outline: none; width: 200px; }
+  .tb-name input::placeholder { color: var(--text-dim); }
+  .tb-spacer { flex: 1; }
+  .tb-status { font-size: 10px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 5px; }
+  .tb-status-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-bright); }
+  .tb-btn { padding: 8px 16px; border-radius: var(--radius-xs); font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .tb-btn-outline { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); }
+  .tb-btn-outline:hover { background: var(--bg-warm); color: var(--text); }
+  .tb-btn-primary { background: var(--accent); border: none; color: #fff; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .tb-btn-primary:hover { filter: brightness(0.92); }
+
+  /* IDE layout */
+  .ide { flex: 1; display: grid; grid-template-columns: 380px 1fr; min-height: 0; }
+
+  /* Left panel */
+  .left-panel { display: flex; flex-direction: column; border-right: 1px solid var(--border); background: var(--bg-card); min-height: 0; overflow: hidden; }
+  .lp-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .lp-tab { flex: 1; padding: 10px 0; text-align: center; font-size: 11px; font-weight: 700; color: var(--text-dim); cursor: pointer; transition: all 0.15s; border-bottom: 2px solid transparent; }
+  .lp-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .lp-tab:hover:not(.active) { color: var(--text-muted); }
+
+  /* Chat */
+  .chat-panel { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+  .chat-panel.hidden { display: none; }
+  .chat-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .chat-msg { max-width: 92%; animation: msgIn 0.25s ease; }
+  @keyframes msgIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; } }
+  .chat-msg.ai { align-self: flex-start; }
+  .chat-msg.user { align-self: flex-end; }
+  .chat-msg-label { font-size: 9px; font-weight: 600; color: var(--text-dim); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .chat-msg.user .chat-msg-label { text-align: right; }
+  .chat-bubble { padding: 12px 16px; border-radius: 14px; font-size: 12px; line-height: 1.65; }
+  .chat-msg.ai .chat-bubble { background: var(--bg); border: 1px solid var(--border-subtle); color: var(--text); border-bottom-left-radius: 4px; }
+  .chat-msg.user .chat-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .chat-bubble code { background: rgba(42,31,16,0.06); padding: 2px 6px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .chat-bubble strong { font-weight: 700; }
+
+  .chat-changes { background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
+  .chat-changes-title { font-size: 9px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .chat-change { font-size: 11px; color: var(--text-muted); padding: 3px 0; display: flex; align-items: center; gap: 6px; }
+  .chat-change::before { content: '+'; color: var(--accent); font-family: 'IBM Plex Mono', monospace; font-weight: 700; }
+
+  .chat-suggestions { display: flex; gap: 6px; flex-wrap: wrap; padding: 4px 0; }
+  .chat-suggest { padding: 6px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; font-family: inherit; font-size: 10px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+  .chat-suggest:hover { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+
+  .builder-typing { display: flex; gap: 4px; align-items: center; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border-subtle); border-radius: 14px; border-bottom-left-radius: 4px; align-self: flex-start; }
+  .builder-typing-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--text-dim); animation: btB 1.2s infinite; }
+  .builder-typing-dot:nth-child(2) { animation-delay: 0.15s; }
+  .builder-typing-dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes btB { 0%,60%,100% { transform:translateY(0);opacity:0.3; } 30% { transform:translateY(-4px);opacity:1; } }
+
+  .chat-input { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-shrink: 0; }
+  .chat-input input { flex: 1; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 12px; color: var(--text); outline: none; }
+  .chat-input input::placeholder { color: var(--text-dim); }
+  .chat-input input:focus { border-color: var(--accent); }
+  .chat-input button { width: 36px; height: 36px; border-radius: 8px; background: var(--accent); border: none; color: #fff; font-size: 14px; cursor: pointer; }
+
+  /* Code panel */
+  .code-panel { flex: 1; display: none; flex-direction: column; min-height: 0; overflow: hidden; }
+  .code-panel.visible { display: flex; }
+  .code-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .code-file-tab { padding: 5px 12px; border-radius: 4px; font-size: 10px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; cursor: pointer; color: var(--text-dim); }
+  .code-file-tab.active { background: var(--bg-warm); color: var(--text); }
+  .code-area { flex: 1; overflow: auto; padding: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; line-height: 1.9; color: var(--text-muted); white-space: pre; background: var(--bg); }
+  .code-area .key { color: #7c3aed; }
+  .code-area .str { color: var(--accent); }
+  .code-area .num { color: #c4842d; }
+  .code-area .comment { color: var(--text-dim); opacity: 0.5; }
+  .code-area .bool { color: #e0529c; }
+
+  /* Tags panel */
+  .tags-panel { flex: 1; display: none; flex-direction: column; min-height: 0; overflow: hidden; }
+  .tags-panel.visible { display: flex; }
+  .tags-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+  .tag-section { }
+  .tag-section-label { font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 8px; }
+  .tag-search { padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 11px; color: var(--text); background: var(--bg); outline: none; width: 100%; margin-bottom: 8px; }
+  .tag-search:focus { border-color: var(--accent); }
+  .tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border); color: var(--text-muted); background: var(--bg-card); }
+  .tag:hover { border-color: var(--accent-border); color: var(--accent); }
+  .tag.selected { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+  .tag-add { padding: 5px 12px; border-radius: 16px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px dashed var(--border); color: var(--text-dim); background: none; font-family: inherit; }
+  .tag-add:hover { border-color: var(--accent); color: var(--accent); }
+  .selected-tags { display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 0; border-top: 1px solid var(--border-subtle); margin-top: 8px; }
+  .selected-tag { display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 12px; font-size: 10px; font-weight: 600; color: var(--accent); }
+  .selected-tag .remove { cursor: pointer; opacity: 0.6; font-size: 9px; }
+  .selected-tag .remove:hover { opacity: 1; }
+
+  /* Config panel */
+  .config-panel { flex: 1; display: none; flex-direction: column; min-height: 0; overflow: hidden; }
+  .config-panel.visible { display: flex; }
+  .config-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+  .cfg-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; }
+  .cfg-input { width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg); outline: none; }
+  .cfg-input:focus { border-color: var(--accent); }
+  textarea.cfg-input { height: 60px; resize: vertical; }
+  .cfg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .cfg-icons { display: flex; gap: 6px; }
+  .cfg-icon-btn { padding: 6px 10px; background: var(--bg); border-radius: 6px; font-size: 18px; cursor: pointer; border: 2px solid transparent; }
+  .cfg-icon-btn.active { border-color: var(--accent); background: var(--accent-bg); }
+  .cfg-colors { display: flex; gap: 6px; }
+  .cfg-color { width: 28px; height: 28px; border-radius: 6px; cursor: pointer; border: 2px solid transparent; }
+  .cfg-color.active { border-color: var(--text); }
+  .cfg-integration { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 11px; font-weight: 600; }
+  .cfg-integration.connected { background: var(--accent-bg); border: 1px solid var(--accent-border); color: var(--accent); }
+  .cfg-integration.add { background: var(--bg); border: 1px dashed var(--border); color: var(--text-dim); cursor: pointer; }
+
+  /* Right: Preview */
+  .right-panel { display: flex; flex-direction: column; background: var(--bg-warm); min-height: 0; overflow: hidden; }
+  .rp-header { padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .rp-title { font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+  .rp-device-toggle { display: flex; background: var(--bg-warm); border-radius: 6px; padding: 2px; margin-left: auto; }
+  .rp-dt-btn { padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; color: var(--text-dim); border: none; background: none; cursor: pointer; }
+  .rp-dt-btn.active { background: var(--bg-card); color: var(--text); box-shadow: var(--shadow-sm); }
+  .rp-preview { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; padding: 24px; }
+  .preview-frame { background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-md); width: 100%; max-width: 520px; overflow: hidden; }
+  .pf-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .pf-logo { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .pf-info { flex: 1; }
+  .pf-name { font-size: 14px; font-weight: 800; }
+  .pf-sub { font-size: 10px; color: var(--text-dim); }
+  .pf-toggle { display: flex; background: var(--bg); border-radius: 6px; padding: 2px; border: 1px solid var(--border); }
+  .pf-toggle-btn { padding: 5px 10px; border-radius: 4px; font-size: 10px; font-weight: 600; border: none; background: none; color: var(--text-dim); cursor: pointer; }
+  .pf-toggle-btn.active { background: var(--bg-card); color: var(--accent); box-shadow: var(--shadow-sm); }
+  .pf-dashboard { padding: 16px; }
+  .pf-dashboard:not(.active) { display: none; }
+  .pf-dashboard.active { display: block; }
+  .pf-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .pf-kpi { background: var(--bg); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px; }
+  .pf-kpi-label { font-size: 8px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); }
+  .pf-kpi-val { font-size: 16px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
+  .pf-decision { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .pf-dec-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .pf-dec-name { font-size: 12px; font-weight: 700; flex: 1; }
+  .pf-dec-urgency { font-size: 8px; font-weight: 700; padding: 2px 6px; border-radius: 3px; background: var(--warn-bg); color: var(--warn); }
+  .pf-dec-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+  .pf-dec-m { text-align: center; padding: 6px; background: var(--bg); border-radius: 4px; }
+  .pf-dec-m-label { font-size: 7px; text-transform: uppercase; color: var(--text-dim); }
+  .pf-dec-m-val { font-size: 11px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
+  .pf-dec-btns { display: flex; gap: 4px; }
+  .pf-dec-btn { padding: 6px 12px; border-radius: 6px; font-family: inherit; font-size: 10px; font-weight: 700; cursor: pointer; border: none; }
+  .pf-dec-btn.approve { background: var(--accent); color: #fff; }
+  .pf-dec-btn.dismiss { background: var(--bg); border: 1px solid var(--border); color: var(--text-dim); }
+  .pf-chart { background: var(--bg); border: 1px solid var(--border-subtle); border-radius: 10px; padding: 14px; }
+  .pf-chart-title { font-size: 10px; font-weight: 700; margin-bottom: 10px; }
+  .pf-chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 60px; }
+  .pf-chart-bar { flex: 1; border-radius: 3px 3px 0 0; background: var(--accent); opacity: 0.7; }
+  .pf-chart-labels { display: flex; gap: 6px; margin-top: 4px; }
+  .pf-chart-labels span { flex: 1; text-align: center; font-size: 7px; color: var(--text-dim); }
+
+  /* Preview chat */
+  .pf-chat { display: none; flex-direction: column; height: 340px; }
+  .pf-chat.active { display: flex; }
+  .pf-chat-area { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .pf-msg { max-width: 88%; }
+  .pf-msg.agent { align-self: flex-start; }
+  .pf-msg.user { align-self: flex-end; }
+  .pf-msg-label { font-size: 8px; color: var(--text-dim); font-weight: 600; margin-bottom: 2px; }
+  .pf-msg.user .pf-msg-label { text-align: right; }
+  .pf-msg-bubble { padding: 10px 14px; border-radius: 12px; font-size: 11px; line-height: 1.6; }
+  .pf-msg.agent .pf-msg-bubble { background: var(--bg); border: 1px solid var(--border-subtle); border-bottom-left-radius: 3px; }
+  .pf-msg.user .pf-msg-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 3px; }
+  .pf-chat-input { padding: 10px 14px; border-top: 1px solid var(--border); display: flex; gap: 6px; }
+  .pf-chat-input input { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 11px; color: var(--text); background: var(--bg); outline: none; }
+  .pf-chat-input button { width: 30px; height: 30px; border-radius: 6px; background: var(--accent); border: none; color: #fff; font-size: 12px; cursor: pointer; }
+
+  /* Submit overlay */
+  .submit-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,31,16,0.5); backdrop-filter: blur(6px); align-items: center; justify-content: center; }
+  .submit-overlay.show { display: flex; }
+  .submit-card { background: #fff; border-radius: 20px; padding: 40px; text-align: center; max-width: 440px; width: calc(100vw - 40px); box-shadow: 0 20px 60px rgba(42,31,16,0.25); animation: popIn 0.35s ease; }
+  @keyframes popIn { from { opacity:0; transform:scale(0.9); } to { opacity:1; transform:scale(1); } }
+  .submit-icon { font-size: 56px; margin-bottom: 12px; }
+  .submit-title { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .submit-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; line-height: 1.6; margin-bottom: 20px; }
+  .submit-status { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: var(--warn-bg); border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--warn); margin-bottom: 20px; }
+  .submit-btn { padding: 12px 28px; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; border: none; background: var(--accent); color: #fff; }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 100; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="screen-id"><strong>A-13</strong> Agent Builder (IDE)</div>
+
+<div class="submit-overlay" id="submit-overlay" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="submit-card">
+    <div class="submit-icon">🚀</div>
+    <div class="submit-title">Submitted for Review!</div>
+    <div class="submit-desc">Your agent has been submitted to the PranaOS Marketplace. Our team will review it within 48 hours.</div>
+    <div class="submit-status">⏳ Pending Review — ~48 hours</div><br><br>
+    <button class="submit-btn" onclick="window.location.href='A-15-publish-agent.html'">Back to Agent Library</button>
+  </div>
+</div>
+
+<div class="topbar">
+  <button class="tb-back" onclick="window.location.href='A-03-command-center.html'">←</button>
+  <div class="tb-logo">Prana<span>OS</span></div>
+  <div class="tb-divider"></div>
+  <div class="tb-name">🏷️ <input value="Inventory Clearance Agent" placeholder="Untitled Agent…"></div>
+  <div class="tb-spacer"></div>
+  <div class="tb-status"><span class="tb-status-dot"></span> Auto-saved</div>
+  <button class="tb-btn tb-btn-outline" onclick="alert('Connect sample data and run agent in test mode')">▶ Test</button>
+  <button class="tb-btn tb-btn-primary" onclick="window.location.href='A-15-publish-agent.html'">Submit for Review →</button>
+</div>
+
+<div class="ide">
+  <div class="left-panel">
+    <div class="lp-tabs">
+      <div class="lp-tab active" id="tab-chat" onclick="showTab('chat')">💬 Chat</div>
+      <div class="lp-tab" id="tab-code" onclick="showTab('code')">{ } Code</div>
+      <div class="lp-tab" id="tab-tags" onclick="showTab('tags')">🏷 Tags</div>
+      <div class="lp-tab" id="tab-config" onclick="showTab('config')">⚙ Config</div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-panel" id="panel-chat">
+      <div class="chat-area">
+        <div class="chat-msg ai">
+          <div class="chat-msg-label">PranaOS Builder</div>
+          <div class="chat-bubble">Hey! I'm ready to help you build an agent. Describe what you need and I'll generate the GUI, logic, and integrations.<br><br>What should this agent do?</div>
+        </div>
+        <div class="chat-msg user">
+          <div class="chat-msg-label">You</div>
+          <div class="chat-bubble">Build me an inventory clearance agent for Shopify stores. It should scan products, flag slow movers over 90 days, and suggest markdowns with estimated recovery.</div>
+        </div>
+        <div class="chat-msg ai">
+          <div class="chat-msg-label">PranaOS Builder</div>
+          <div class="chat-bubble">Got it! I've generated an <strong>Inventory Clearance Agent</strong> with a dashboard and chat interface. Here's what I built:</div>
+          <div class="chat-changes">
+            <div class="chat-changes-title">Changes Applied</div>
+            <div class="chat-change">Dashboard GUI with 3 KPI cards + decision cards</div>
+            <div class="chat-change">Shopify integration for product catalog sync</div>
+            <div class="chat-change">Flagging logic: items &gt; 90 days, velocity &lt; 2/week</div>
+            <div class="chat-change">Markdown calculator with recovery estimates</div>
+            <div class="chat-change">Approval workflow with scheduled execution</div>
+          </div>
+        </div>
+        <div class="chat-msg user">
+          <div class="chat-msg-label">You</div>
+          <div class="chat-bubble">Nice. Add a chart showing inventory age distribution by category.</div>
+        </div>
+        <div class="chat-msg ai">
+          <div class="chat-msg-label">PranaOS Builder</div>
+          <div class="chat-bubble">Done! Added an <strong>Inventory Age by Category</strong> bar chart below the decision cards.</div>
+          <div class="chat-changes">
+            <div class="chat-changes-title">Changes Applied</div>
+            <div class="chat-change">Added category bar chart to <code>gui_config.sections</code></div>
+            <div class="chat-change">New data source: aggregated age buckets by category</div>
+          </div>
+        </div>
+        <div class="chat-suggestions" id="builder-suggestions">
+          <button class="chat-suggest" onclick="builderSend('Add email alerts for stale items')">Add email alerts for stale items</button>
+          <button class="chat-suggest" onclick="builderSend('Add a weekly summary report')">Add a weekly summary report</button>
+          <button class="chat-suggest" onclick="builderSend('Customize the color scheme')">Customize the color scheme</button>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="builder-input" placeholder="Describe a change…" onkeydown="if(event.key==='Enter')builderSend()">
+        <button onclick="builderSend()">→</button>
+      </div>
+    </div>
+
+    <!-- Code -->
+    <div class="code-panel" id="panel-code">
+      <div class="code-toolbar">
+        <div class="code-file-tab active">gui_config.json</div>
+        <div class="code-file-tab">system_prompt.md</div>
+        <div class="code-file-tab">integrations.json</div>
+      </div>
+      <div class="code-area">{
+  <span class="key">"name"</span>: <span class="str">"Inventory Clearance Agent"</span>,
+  <span class="key">"version"</span>: <span class="str">"1.0.0"</span>,
+  <span class="key">"icon"</span>: <span class="str">"🏷️"</span>,
+  <span class="key">"color"</span>: <span class="str">"#7c3aed"</span>,
+
+  <span class="comment">// Dashboard layout</span>
+  <span class="key">"gui_config"</span>: {
+    <span class="key">"sections"</span>: [
+      {
+        <span class="key">"type"</span>: <span class="str">"kpi_row"</span>,
+        <span class="key">"metrics"</span>: [
+          { <span class="key">"key"</span>: <span class="str">"items_scanned"</span>, <span class="key">"label"</span>: <span class="str">"Scanned"</span> },
+          { <span class="key">"key"</span>: <span class="str">"flagged_count"</span>, <span class="key">"label"</span>: <span class="str">"Flagged"</span> },
+          { <span class="key">"key"</span>: <span class="str">"est_recovery"</span>, <span class="key">"label"</span>: <span class="str">"Recovery"</span>, <span class="key">"format"</span>: <span class="str">"currency"</span> }
+        ]
+      },
+      {
+        <span class="key">"type"</span>: <span class="str">"decision_cards"</span>,
+        <span class="key">"source"</span>: <span class="str">"flagged_items"</span>,
+        <span class="key">"actions"</span>: [<span class="str">"approve"</span>, <span class="str">"dismiss"</span>]
+      },
+      {
+        <span class="key">"type"</span>: <span class="str">"bar_chart"</span>,
+        <span class="key">"title"</span>: <span class="str">"Inventory Age by Category"</span>,
+        <span class="key">"group_by"</span>: <span class="str">"category"</span>
+      }
+    ]
+  },
+
+  <span class="key">"integrations"</span>: [
+    { <span class="key">"type"</span>: <span class="str">"shopify"</span>, <span class="key">"scopes"</span>: [<span class="str">"read_products"</span>, <span class="str">"write_price_rules"</span>] }
+  ],
+
+  <span class="key">"schedule"</span>: <span class="str">"daily_6am"</span>,
+  <span class="key">"auto_execute"</span>: <span class="bool">false</span>
+}</div>
+    </div>
+
+    <!-- Tags -->
+    <div class="tags-panel" id="panel-tags">
+      <div class="tags-body">
+        <div class="tag-section">
+          <div class="tag-section-label">Industry</div>
+          <input type="text" class="tag-search" placeholder="Search or add industry…" id="industry-search" oninput="filterTags('industry')">
+          <div class="tags-row" id="industry-tags">
+            <span class="tag selected" onclick="this.classList.toggle('selected')">🛒 Retail</span>
+            <span class="tag selected" onclick="this.classList.toggle('selected')">🍽️ F&B</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🏨 Hospitality</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🏥 Healthcare</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🏗️ Real Estate</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">💼 Professional Services</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🎓 Education</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🏭 Manufacturing</span>
+            <button class="tag-add" onclick="addCustomTag('industry')">+ Custom</button>
+          </div>
+        </div>
+        <div class="tag-section">
+          <div class="tag-section-label">Use Case</div>
+          <input type="text" class="tag-search" placeholder="Search or add use case…" id="usecase-search" oninput="filterTags('usecase')">
+          <div class="tags-row" id="usecase-tags">
+            <span class="tag selected" onclick="this.classList.toggle('selected')">📦 Inventory</span>
+            <span class="tag selected" onclick="this.classList.toggle('selected')">💰 Revenue Recovery</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">📊 Analytics</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🤝 CRM</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🔧 Operations</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">📋 Compliance</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">📧 Marketing</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🛡️ Security</span>
+            <button class="tag-add" onclick="addCustomTag('usecase')">+ Custom</button>
+          </div>
+        </div>
+        <div class="tag-section">
+          <div class="tag-section-label">Integrations</div>
+          <input type="text" class="tag-search" placeholder="Search integrations…" id="integrations-search" oninput="filterTags('integrations')">
+          <div class="tags-row" id="integrations-tags">
+            <span class="tag selected" onclick="this.classList.toggle('selected')">🛍️ Shopify</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">📱 Square</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">💬 Slack</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">📧 SendGrid</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">📊 Google Sheets</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">🏠 AppFolio</span>
+            <span class="tag" onclick="this.classList.toggle('selected')">💳 Stripe</span>
+            <button class="tag-add" onclick="addCustomTag('integrations')">+ Custom</button>
+          </div>
+        </div>
+        <div class="selected-tags">
+          <span class="selected-tag">🛒 Retail <span class="remove" onclick="this.parentElement.remove()">✕</span></span>
+          <span class="selected-tag">🍽️ F&B <span class="remove" onclick="this.parentElement.remove()">✕</span></span>
+          <span class="selected-tag">📦 Inventory <span class="remove" onclick="this.parentElement.remove()">✕</span></span>
+          <span class="selected-tag">💰 Revenue Recovery <span class="remove" onclick="this.parentElement.remove()">✕</span></span>
+          <span class="selected-tag">🛍️ Shopify <span class="remove" onclick="this.parentElement.remove()">✕</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Config -->
+    <div class="config-panel" id="panel-config">
+      <div class="config-body">
+        <div><div class="cfg-label">Agent Name</div><input class="cfg-input" value="Inventory Clearance Agent"></div>
+        <div><div class="cfg-label">Description</div><textarea class="cfg-input">Scans Shopify inventory, flags slow-moving items over 90 days, and suggests markdowns with estimated recovery.</textarea></div>
+        <div class="cfg-row">
+          <div><div class="cfg-label">Icon</div><div class="cfg-icons"><span class="cfg-icon-btn active">🏷️</span><span class="cfg-icon-btn">📦</span><span class="cfg-icon-btn">🛒</span><span class="cfg-icon-btn">📊</span></div></div>
+          <div><div class="cfg-label">Color</div><div class="cfg-colors"><span class="cfg-color active" style="background:#7c3aed;"></span><span class="cfg-color" style="background:#18856a;"></span><span class="cfg-color" style="background:#2563eb;"></span><span class="cfg-color" style="background:#c4842d;"></span></div></div>
+        </div>
+        <div><div class="cfg-label">Schedule</div><select class="cfg-input" style="cursor:pointer;"><option>Daily at 6:00 AM</option><option>Every 12 hours</option><option>Every hour</option><option>Manual only</option></select></div>
+        <div><div class="cfg-label">Integrations</div><div style="display:flex;gap:8px;"><div class="cfg-integration connected">🛍️ Shopify <span style="font-size:9px;opacity:0.6;">Connected</span></div><div class="cfg-integration add" onclick="alert('Add integration')">+ Add</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Preview -->
+  <div class="right-panel">
+    <div class="rp-header">
+      <div class="rp-title">Live Preview</div>
+      <div class="rp-device-toggle">
+        <button class="rp-dt-btn active">Desktop</button>
+        <button class="rp-dt-btn">Mobile</button>
+      </div>
+    </div>
+    <div class="rp-preview">
+      <div class="preview-frame">
+        <div class="pf-header">
+          <div class="pf-logo" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);">🏷️</div>
+          <div class="pf-info"><div class="pf-name">Inventory Clearance Agent</div><div class="pf-sub">Sample Shopify Store</div></div>
+          <div class="pf-toggle">
+            <button class="pf-toggle-btn active" id="pf-tb-dash" onclick="previewView('dash')">📊</button>
+            <button class="pf-toggle-btn" id="pf-tb-chat" onclick="previewView('chat')">💬</button>
+          </div>
+        </div>
+        <div class="pf-dashboard active" id="pf-dash">
+          <div class="pf-kpis">
+            <div class="pf-kpi"><div class="pf-kpi-label">Scanned</div><div class="pf-kpi-val">1,247</div></div>
+            <div class="pf-kpi"><div class="pf-kpi-label">Flagged</div><div class="pf-kpi-val" style="color:var(--warn);">12</div></div>
+            <div class="pf-kpi"><div class="pf-kpi-label">Recovery</div><div class="pf-kpi-val" style="color:var(--accent);">$4,280</div></div>
+          </div>
+          <div class="pf-decision">
+            <div class="pf-dec-top"><span>⚡</span><span class="pf-dec-name">Jumbo Popcorn Bucket</span><span class="pf-dec-urgency">High</span></div>
+            <div class="pf-dec-metrics">
+              <div class="pf-dec-m"><div class="pf-dec-m-label">Days</div><div class="pf-dec-m-val" style="color:var(--warn);">127</div></div>
+              <div class="pf-dec-m"><div class="pf-dec-m-label">Markdown</div><div class="pf-dec-m-val">25%</div></div>
+              <div class="pf-dec-m"><div class="pf-dec-m-label">Recovery</div><div class="pf-dec-m-val" style="color:var(--accent);">$890</div></div>
+            </div>
+            <div class="pf-dec-btns"><button class="pf-dec-btn approve">✓ Approve</button><button class="pf-dec-btn dismiss">Dismiss</button></div>
+          </div>
+          <div class="pf-chart">
+            <div class="pf-chart-title">Inventory Age by Category</div>
+            <div class="pf-chart-bars">
+              <div class="pf-chart-bar" style="height:72%;background:var(--accent-bright);"></div>
+              <div class="pf-chart-bar" style="height:58%;background:var(--accent);"></div>
+              <div class="pf-chart-bar" style="height:91%;background:var(--accent-bright);"></div>
+              <div class="pf-chart-bar" style="height:45%;background:var(--warn);"></div>
+            </div>
+            <div class="pf-chart-labels"><span>Concessions</span><span>Merch</span><span>Tickets</span><span>Apparel</span></div>
+          </div>
+        </div>
+        <div class="pf-chat" id="pf-chat">
+          <div class="pf-chat-area">
+            <div class="pf-msg agent"><div class="pf-msg-label">🏷️ Inventory Clearance Agent</div><div class="pf-msg-bubble">Hey! I scanned <strong>1,247 items</strong>. Found <strong>12</strong> that need attention — 3 are high priority.<br><br>What would you like to know?</div></div>
+            <div class="pf-msg user"><div class="pf-msg-label">You</div><div class="pf-msg-bubble">What are my top 3 slowest items?</div></div>
+            <div class="pf-msg agent"><div class="pf-msg-label">🏷️ Inventory Clearance Agent</div><div class="pf-msg-bubble"><strong>1. Vintage Movie Poster Set</strong> — 184 days, 35% off ($540)<br><strong>2. Jumbo Popcorn Bucket</strong> — 127 days, 25% off ($890)<br><strong>3. Classic Cinema Scarf</strong> — 118 days, 20% off ($420)<br><br>Want me to queue markdowns?</div></div>
+          </div>
+          <div class="pf-chat-input"><input type="text" placeholder="Ask about inventory…"><button>→</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(tab) {
+  document.querySelectorAll('.lp-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-chat').style.display = tab === 'chat' ? 'flex' : 'none';
+  document.getElementById('panel-code').classList.toggle('visible', tab === 'code');
+  document.getElementById('panel-tags').classList.toggle('visible', tab === 'tags');
+  document.getElementById('panel-config').classList.toggle('visible', tab === 'config');
+}
+function previewView(v) {
+  document.getElementById('pf-dash').classList.toggle('active', v === 'dash');
+  document.getElementById('pf-chat').classList.toggle('active', v === 'chat');
+  document.getElementById('pf-tb-dash').classList.toggle('active', v === 'dash');
+  document.getElementById('pf-tb-chat').classList.toggle('active', v === 'chat');
+}
+function filterTags(section) {
+  var search = document.getElementById(section + '-search').value.toLowerCase();
+  var tags = document.getElementById(section + '-tags').querySelectorAll('.tag');
+  tags.forEach(function(t) { t.style.display = t.textContent.toLowerCase().includes(search) ? '' : 'none'; });
+}
+function addCustomTag(section) {
+  var search = document.getElementById(section + '-search');
+  var val = search.value.trim();
+  if (!val) { val = prompt('Enter custom tag:'); }
+  if (!val) return;
+  var row = document.getElementById(section + '-tags');
+  var btn = row.querySelector('.tag-add');
+  var tag = document.createElement('span');
+  tag.className = 'tag selected';
+  tag.textContent = val;
+  tag.onclick = function() { this.classList.toggle('selected'); };
+  row.insertBefore(tag, btn);
+  search.value = '';
+}
+
+/* Builder chat */
+var builderResponses = {
+  'Add email alerts for stale items': { text: 'Added! Daily email digest at 8 AM listing items that crossed the 90-day threshold.', changes: ['Email alert trigger added', 'Template: stale_items_digest.html', 'Configurable threshold and send time'], suggestions: ['Preview the email template', 'Change threshold to 60 days', 'Add Slack notifications too'] },
+  'Add a weekly summary report': { text: 'Done! Monday 9 AM report covering: items flagged, markdowns executed, revenue recovered, and velocity changes.', changes: ['Weekly report section added', 'PDF generation for downloads', '7-day rolling metrics'], suggestions: ['Add week-over-week comparison', 'Include charts', 'Change to Friday'] },
+  'Customize the color scheme': { text: 'Sure! Theme settings are now in the Config tab. Set primary/accent colors and the preview updates live.', changes: ['Theme config added', 'Live preview reflects changes', 'Client branding override support'], suggestions: ['Match AMC brand colors', 'Dark mode dashboard', 'Add logo upload'] }
+};
+var fallbacks = [
+  { text: 'Got it — I\'ve updated the agent config. Check the preview.', changes: ['Configuration updated', 'Preview refreshed'] },
+  { text: 'Done! Let me know what else to tweak.', changes: ['New component added', 'Logic updated'] }
+];
+var fIdx = 0;
+function builderSend(text) {
+  var input = document.getElementById('builder-input');
+  var msg = text || input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  var sug = document.getElementById('builder-suggestions'); if (sug) sug.remove();
+  var area = document.querySelector('.chat-area');
+  var u = document.createElement('div'); u.className = 'chat-msg user';
+  u.innerHTML = '<div class="chat-msg-label">You</div><div class="chat-bubble">' + msg + '</div>';
+  area.appendChild(u); area.scrollTop = area.scrollHeight;
+  var t = document.createElement('div'); t.className = 'builder-typing';
+  t.innerHTML = '<div class="builder-typing-dot"></div><div class="builder-typing-dot"></div><div class="builder-typing-dot"></div>';
+  area.appendChild(t); area.scrollTop = area.scrollHeight;
+  var resp = builderResponses[msg] || fallbacks[fIdx++ % fallbacks.length];
+  setTimeout(function() {
+    t.remove();
+    var ai = document.createElement('div'); ai.className = 'chat-msg ai';
+    var ch = '<div class="chat-changes"><div class="chat-changes-title">Changes Applied</div>';
+    resp.changes.forEach(function(c) { ch += '<div class="chat-change">' + c + '</div>'; });
+    ch += '</div>';
+    ai.innerHTML = '<div class="chat-msg-label">PranaOS Builder</div><div class="chat-bubble">' + resp.text + '</div>' + ch;
+    area.appendChild(ai);
+    if (resp.suggestions) {
+      var sd = document.createElement('div'); sd.className = 'chat-suggestions'; sd.id = 'builder-suggestions';
+      resp.suggestions.forEach(function(s) { var b = document.createElement('button'); b.className = 'chat-suggest'; b.textContent = s; b.onclick = function(){builderSend(s);}; sd.appendChild(b); });
+      area.appendChild(sd);
+    }
+    area.scrollTop = area.scrollHeight;
+  }, 1200);
+}
+</script>
+</body>
+</html>

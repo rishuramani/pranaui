@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Maintenance</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-card: #fffdf9; --bg-elevated: #f0e8dc;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-hover: #147a60; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 14px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  }
+  .container {
+    text-align: center; padding: 40px; max-width: 520px;
+  }
+  .logo {
+    display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 48px;
+  }
+  .logo svg { width: 32px; height: 32px; }
+  .logo-text { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo-text span { color: var(--accent); }
+  .icon {
+    font-size: 56px; margin-bottom: 20px; display: block;
+  }
+  .title {
+    font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px;
+  }
+  .desc {
+    font-size: 14px; color: var(--text-muted); font-weight: 300; line-height: 1.8;
+    margin-bottom: 28px;
+  }
+  .eta-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 20px 28px;
+    display: inline-flex; align-items: center; gap: 16px;
+    box-shadow: var(--shadow-sm); margin-bottom: 32px;
+  }
+  .eta-label {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.5px; color: var(--text-dim);
+  }
+  .eta-value {
+    font-family: 'IBM Plex Mono', monospace; font-size: 18px;
+    font-weight: 600; color: var(--accent);
+  }
+  .eta-divider {
+    width: 1px; height: 36px; background: var(--border);
+  }
+  .status-bar {
+    background: var(--accent-bg); border: 1px solid var(--accent-border);
+    border-radius: var(--radius-xs); padding: 10px 18px;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 500; color: var(--accent);
+    margin-bottom: 32px;
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent-bright);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+  .help-text {
+    font-size: 12px; color: var(--text-dim); font-weight: 300; line-height: 1.8;
+  }
+  .help-text a {
+    color: var(--accent); text-decoration: none; font-weight: 500;
+  }
+  .help-text a:hover { text-decoration: underline; }
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 100; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>S-10</strong> Maintenance</div>
+
+<div class="container">
+  <div class="logo">
+    <svg viewBox="0 0 512 512" fill="none">
+      <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+      <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="256" cy="256" r="21" fill="#18856a"/>
+    </svg>
+    <span class="logo-text">Prana<span>OS</span></span>
+  </div>
+
+  <span class="icon">🔧</span>
+  <div class="title">We'll be right back</div>
+  <div class="desc">
+    We're performing scheduled maintenance to improve your experience.<br>
+    Your agents and data are safe — everything will be back to normal shortly.
+  </div>
+
+  <div class="eta-card">
+    <div>
+      <div class="eta-label">Estimated return</div>
+      <div class="eta-value">~30 minutes</div>
+    </div>
+    <div class="eta-divider"></div>
+    <div>
+      <div class="eta-label">Started at</div>
+      <div class="eta-value">2:00 PM PST</div>
+    </div>
+  </div>
+
+  <br>
+
+  <div class="status-bar">
+    <span class="status-dot"></span>
+    Maintenance in progress
+  </div>
+
+  <br><br>
+
+  <div class="help-text">
+    Follow <a href="#">@PranaOS</a> for real-time updates.<br>
+    Questions? Email <a href="mailto:support@pranaos.com">support@pranaos.com</a>
+  </div>
+</div>
+
+</body>
+</html>

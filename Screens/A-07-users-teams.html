@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Users & Teams</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-card: #fffdf9; --bg-elevated: #f0e8dc;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-secondary: #4a3d2a; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-hover: #147a60; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08); --warn-border: rgba(196,132,45,0.18);
+    --error: #c25a5a; --error-bg: rgba(194,90,90,0.06); --error-border: rgba(194,90,90,0.18);
+    --purple: #8b5cf6; --purple-bg: rgba(139,92,246,0.06); --purple-border: rgba(139,92,246,0.18);
+    --blue: #3b82f6; --blue-bg: rgba(59,130,246,0.06); --blue-border: rgba(59,130,246,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 14px; --radius-sm: 10px; --radius-xs: 8px;
+    --sidebar-w: 240px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+  .app-shell { display: grid; grid-template-columns: var(--sidebar-w) 1fr; min-height: 100vh; }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; margin-bottom: 8px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-section { margin-bottom: 24px; }
+  .sb-section-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; padding: 0 24px; margin-bottom: 6px; }
+  .sb-nav { list-style: none; }
+  .sb-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; position: relative; }
+  .sb-nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+  .sb-nav-item.active { color: var(--accent); font-weight: 600; background: var(--accent-bg); }
+  .sb-nav-item.active::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--accent); border-radius: 0 2px 2px 0; }
+  .sb-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sb-nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; color: #fff; background: var(--error); min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .sb-nav-badge.warn { background: var(--warn); }
+  .sb-footer { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .sb-user { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 0; }
+  .sb-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+  .sb-user-info { flex: 1; min-width: 0; }
+  .sb-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); font-weight: 300; }
+  .sb-org { padding: 0 24px; margin-bottom: 28px; }
+  .sb-org-name { font-size: 12px; color: var(--text-muted); font-weight: 500; padding: 6px 12px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background 0.2s; }
+  .sb-org-name:hover { background: var(--border-subtle); }
+  .sb-org-dot { width: 7px; height: 7px; background: var(--accent-bright); border-radius: 50%; }
+
+  /* ===== MAIN ===== */
+  .main { padding: 32px 40px 80px; overflow-y: auto; }
+  .main-max { max-width: 960px; }
+
+  .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 24px; }
+  .breadcrumb a { color: var(--text-dim); text-decoration: none; font-weight: 500; }
+  .breadcrumb a:hover { color: var(--text); }
+  .breadcrumb .sep { color: var(--border); }
+  .breadcrumb .current { color: var(--text); font-weight: 600; }
+
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+  .page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .page-subtitle { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-top: 2px; }
+
+  /* Scope selector */
+  .scope-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; padding: 14px 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); }
+  .scope-label { font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+  .scope-select { padding: 8px 32px 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--bg); font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text); cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%237a6348' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+  .scope-divider { width: 1px; height: 28px; background: var(--border); }
+  .scope-stat { font-size: 12px; color: var(--text-dim); }
+  .scope-stat strong { color: var(--text); font-weight: 700; }
+
+  /* Tab nav */
+  .tab-nav { display: flex; gap: 2px; border-bottom: 2px solid var(--border); margin-bottom: 28px; }
+  .tab-item { padding: 12px 20px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; display: flex; align-items: center; gap: 6px; }
+  .tab-item:hover { color: var(--text); }
+  .tab-item.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab-badge { font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 8px; background: var(--bg-elevated); color: var(--text-dim); }
+  .tab-item.active .tab-badge { background: var(--accent-bg); color: var(--accent); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeUp 0.2s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ===== DEPARTMENTS TAB ===== */
+  .dept-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .dept-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm);
+    transition: all 0.15s; cursor: default;
+  }
+  .dept-card:hover { box-shadow: var(--shadow-md); }
+  .dept-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .dept-name { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .dept-icon { font-size: 18px; }
+  .dept-count { font-size: 11px; color: var(--text-dim); background: var(--bg-elevated); padding: 3px 8px; border-radius: 4px; }
+  .dept-menu { font-size: 16px; color: var(--text-dim); cursor: pointer; padding: 4px 8px; border-radius: 4px; }
+  .dept-menu:hover { background: var(--bg-elevated); color: var(--text); }
+
+  .dept-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); font-weight: 600; margin-bottom: 6px; margin-top: 12px; }
+  .dept-tag-list { display: flex; flex-wrap: wrap; gap: 5px; }
+  .dept-tag { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 6px; }
+  .dept-tag.agent { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+  .dept-tag.knowledge { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+
+  .dept-add-card {
+    background: var(--bg); border: 2px dashed var(--border);
+    border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; cursor: pointer;
+    transition: all 0.15s; min-height: 160px;
+  }
+  .dept-add-card:hover { border-color: var(--accent); background: var(--accent-bg); }
+  .dept-add-icon { font-size: 28px; margin-bottom: 8px; color: var(--text-dim); }
+  .dept-add-text { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+
+  /* ===== TEAM MEMBERS TAB ===== */
+  .team-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .team-search { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--bg-card); font-family: inherit; font-size: 13px; color: var(--text); outline: none; }
+  .team-search:focus { border-color: var(--accent); }
+  .team-search::placeholder { color: var(--text-dim); }
+  .team-filter { padding: 10px 32px 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--bg-card); font-family: inherit; font-size: 12px; color: var(--text); outline: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%237a6348' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+  .btn-primary { padding: 10px 20px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; box-shadow: 0 1px 4px rgba(24,133,106,0.2); }
+  .btn-primary:hover { filter: brightness(0.92); }
+  .btn-secondary { padding: 10px 20px; background: var(--bg-card); color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .btn-secondary:hover { color: var(--text); border-color: var(--text-dim); }
+
+  /* User table */
+  .user-table { width: 100%; border-collapse: collapse; }
+  .user-table th { text-align: left; padding: 10px 14px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); font-weight: 600; border-bottom: 2px solid var(--border); background: var(--bg); }
+  .user-table td { padding: 14px; font-size: 13px; border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
+  .user-table tr:hover { background: rgba(24,133,106,0.02); }
+  .user-row-info { display: flex; align-items: center; gap: 12px; }
+  .user-row-avatar { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .user-row-name { font-weight: 600; font-size: 13px; }
+  .user-row-email { font-size: 11px; color: var(--text-dim); }
+  .role-badge { font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 4px; }
+  .role-badge.admin { background: var(--accent-bg); color: var(--accent); }
+  .role-badge.member { background: var(--blue-bg); color: var(--blue); }
+  .role-badge.viewer { background: var(--bg-elevated); color: var(--text-dim); }
+  .status-badge { font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 4px; }
+  .status-badge.active { background: var(--accent-bg); color: var(--accent); }
+  .status-badge.pending { background: var(--warn-bg); color: var(--warn); }
+  .status-badge.expired { background: var(--error-bg); color: var(--error); }
+  .user-dept-tag { font-size: 10px; padding: 2px 8px; border-radius: 4px; background: var(--bg-elevated); color: var(--text-dim); }
+  .user-actions { display: flex; gap: 6px; }
+  .user-action-btn { padding: 6px 10px; font-size: 11px; font-weight: 500; border: 1px solid var(--border); background: none; border-radius: 6px; cursor: pointer; color: var(--text-muted); font-family: inherit; transition: all 0.15s; }
+  .user-action-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .user-action-btn.danger:hover { border-color: var(--error-border); color: var(--error); }
+
+  /* ===== AGENCY TEAM TAB ===== */
+  .agency-note { padding: 14px 18px; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+  .agency-note strong { color: var(--accent); }
+
+  /* ===== INVITE MODAL ===== */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(42,31,16,0.4); z-index: 300; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 18px; width: 480px; max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(42,31,16,0.2); animation: modalIn 0.25s ease;
+  }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .modal-header { padding: 24px 28px 0; display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 18px; font-weight: 700; }
+  .modal-close { font-size: 20px; color: var(--text-dim); cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+  .modal-close:hover { background: var(--bg-elevated); color: var(--text); }
+  .modal-body { padding: 20px 28px; }
+  .modal-footer { padding: 16px 28px 24px; display: flex; gap: 10px; justify-content: flex-end; }
+  .modal-field { margin-bottom: 16px; }
+  .modal-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+  .modal-input { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--bg); font-family: inherit; font-size: 13px; color: var(--text); outline: none; }
+  .modal-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .modal-select { width: 100%; padding: 11px 14px; padding-right: 32px; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--bg); font-family: inherit; font-size: 13px; color: var(--text); outline: none; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%237a6348' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+  .modal-textarea { width: 100%; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--bg); font-family: inherit; font-size: 13px; color: var(--text); outline: none; resize: vertical; min-height: 80px; }
+  .modal-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .modal-hint { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+  /* New dept modal fields */
+  .access-checklist { margin-top: 6px; }
+  .access-check { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+  .access-check input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+  .access-check-label { font-size: 13px; font-weight: 500; }
+  .access-check-desc { font-size: 11px; color: var(--text-dim); }
+
+  /* Tag search input */
+  .tag-input-wrap { position: relative; border: 1px solid var(--border); border-radius: var(--radius-xs); background: var(--bg); padding: 6px 8px; min-height: 44px; cursor: text; transition: all 0.2s; }
+  .tag-input-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .tag-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 2px; }
+  .tag-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 6px; animation: fadeUp 0.15s ease; }
+  .tag-chip.agent { background: var(--purple-bg); color: var(--purple); border: 1px solid var(--purple-border); }
+  .tag-chip.knowledge { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+  .tag-chip-x { cursor: pointer; font-size: 14px; opacity: 0.6; margin-left: 2px; }
+  .tag-chip-x:hover { opacity: 1; }
+  .tag-search { border: none; background: none; font-family: inherit; font-size: 13px; color: var(--text); outline: none; width: 100%; padding: 4px 2px; }
+  .tag-search::placeholder { color: var(--text-dim); }
+  .tag-dropdown { display: none; position: absolute; left: -1px; right: -1px; top: 100%; margin-top: 4px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xs); box-shadow: var(--shadow-md); z-index: 10; max-height: 200px; overflow-y: auto; }
+  .tag-dropdown.open { display: block; }
+  .tag-dd-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-size: 13px; cursor: pointer; transition: background 0.1s; }
+  .tag-dd-item:hover { background: var(--accent-bg); }
+  .tag-dd-item .tag-dd-icon { font-size: 16px; flex-shrink: 0; }
+  .tag-dd-item .tag-dd-label { font-weight: 500; }
+  .tag-dd-item .tag-dd-desc { font-size: 11px; color: var(--text-dim); }
+  .tag-dd-empty { padding: 14px; text-align: center; font-size: 12px; color: var(--text-dim); }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+
+  @media (max-width: 900px) {
+    .app-shell { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .main { padding: 20px; }
+    .dept-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>A-07</strong> Users & Teams</div>
+
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 512 512" fill="none" width="28" height="28">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="sb-logo-text">Prana<span>OS</span></span>
+    </div>
+    <div class="sb-org">
+      <div class="sb-org-name"><span class="sb-org-dot"></span> Prana IQ</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Main</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('dashboard')"><span class="sb-nav-icon">📊</span> Command Center</li>
+        <li class="sb-nav-item" onclick="navTo('clients')"><span class="sb-nav-icon">🏢</span> Clients <span class="sb-nav-badge warn">5</span></li>
+        <li class="sb-nav-item" onclick="navTo('decisions')"><span class="sb-nav-icon">📥</span> Decision Inbox <span class="sb-nav-badge">12</span></li>
+        <li class="sb-nav-item" onclick="navTo('marketplace')"><span class="sb-nav-icon">🤖</span> Agent Marketplace</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Manage</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('builder')"><span class="sb-nav-icon">⚡</span> Builder</li>
+        <li class="sb-nav-item" onclick="navTo('analytics')"><span class="sb-nav-icon">📈</span> Analytics</li>
+        <li class="sb-nav-item" onclick="navTo('billing')"><span class="sb-nav-icon">💳</span> Billing</li>
+        <li class="sb-nav-item active" onclick="navTo('team')"><span class="sb-nav-icon">👥</span> Team</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">System</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('settings')"><span class="sb-nav-icon">⚙️</span> Settings</li>
+      </ul>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">RK</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Rishabh K.</div>
+          <div class="sb-user-role">Owner · Growth plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-max">
+
+      <div class="breadcrumb">
+        <a href="#" onclick="return false;">Command Center</a>
+        <span class="sep">›</span>
+        <span class="current">Users & Teams</span>
+      </div>
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">Users & Teams</div>
+          <div class="page-subtitle">Manage your agency team and client users. Create departments, assign access, and send invites.</div>
+        </div>
+      </div>
+
+      <!-- Scope Selector -->
+      <div class="scope-bar">
+        <span class="scope-label">Viewing:</span>
+        <select class="scope-select" id="scope-select" onchange="switchScope(this.value)">
+          <option value="agency">🏠 Prana IQ (Agency Team)</option>
+          <option value="amc" selected>🏢 AMC Theatres</option>
+          <option value="sip">🏢 Sip Coffee & Beer</option>
+          <option value="dutch">🏢 Dutch Bros Region 14</option>
+        </select>
+        <span class="scope-divider"></span>
+        <span class="scope-stat"><strong id="scope-dept-count">3</strong> departments</span>
+        <span class="scope-stat"><strong id="scope-user-count">8</strong> users</span>
+        <span class="scope-stat"><strong id="scope-pending-count">2</strong> pending invites</span>
+      </div>
+
+      <!-- Tab Navigation -->
+      <div class="tab-nav" id="main-tabs">
+        <div class="tab-item active" onclick="switchTab('departments')">🏬 Departments <span class="tab-badge" id="dept-badge">3</span></div>
+        <div class="tab-item" onclick="switchTab('members')">👤 Team Members <span class="tab-badge" id="member-badge">8</span></div>
+        <div class="tab-item" onclick="switchTab('invites')">✉️ Pending Invites <span class="tab-badge" id="invite-badge">2</span></div>
+      </div>
+
+      <!-- ===== DEPARTMENTS TAB ===== -->
+      <div class="tab-panel active" id="tab-departments">
+        <div class="dept-grid" id="dept-grid">
+
+          <!-- Operations -->
+          <div class="dept-card" id="dept-ops">
+            <div class="dept-card-header">
+              <div class="dept-name"><span class="dept-icon">⚙️</span> Operations</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="dept-count">4 users</span>
+                <span class="dept-menu" onclick="editDept('ops')">✏️</span>
+                <span class="dept-menu" onclick="deleteDept('ops')">🗑️</span>
+              </div>
+            </div>
+            <div class="dept-section-label">Agent Access</div>
+            <div class="dept-tag-list">
+              <span class="dept-tag agent">🏷️ Final Sale Agent</span>
+              <span class="dept-tag agent">📊 Revenue Reporter</span>
+            </div>
+            <div class="dept-section-label">Knowledge Sources</div>
+            <div class="dept-tag-list">
+              <span class="dept-tag knowledge">📁 Operations / Pricing</span>
+              <span class="dept-tag knowledge">📁 Operations / Policies</span>
+              <span class="dept-tag knowledge">📊 Google Sheets — Margin Targets</span>
+            </div>
+          </div>
+
+          <!-- Marketing -->
+          <div class="dept-card" id="dept-marketing">
+            <div class="dept-card-header">
+              <div class="dept-name"><span class="dept-icon">📣</span> Marketing</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="dept-count">3 users</span>
+                <span class="dept-menu" onclick="editDept('marketing')">✏️</span>
+                <span class="dept-menu" onclick="deleteDept('marketing')">🗑️</span>
+              </div>
+            </div>
+            <div class="dept-section-label">Agent Access</div>
+            <div class="dept-tag-list">
+              <span class="dept-tag agent">📣 Paid Ads Manager</span>
+              <span class="dept-tag agent">✉️ Email Drafter</span>
+            </div>
+            <div class="dept-section-label">Knowledge Sources</div>
+            <div class="dept-tag-list">
+              <span class="dept-tag knowledge">📁 Marketing / Brand Assets</span>
+              <span class="dept-tag knowledge">📁 Marketing / Campaign Playbooks</span>
+            </div>
+          </div>
+
+          <!-- Finance -->
+          <div class="dept-card" id="dept-finance">
+            <div class="dept-card-header">
+              <div class="dept-name"><span class="dept-icon">💰</span> Finance</div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="dept-count">1 user</span>
+                <span class="dept-menu" onclick="editDept('finance')">✏️</span>
+                <span class="dept-menu" onclick="deleteDept('finance')">🗑️</span>
+              </div>
+            </div>
+            <div class="dept-section-label">Agent Access</div>
+            <div class="dept-tag-list">
+              <span class="dept-tag agent">📊 Revenue Reporter</span>
+            </div>
+            <div class="dept-section-label">Knowledge Sources</div>
+            <div class="dept-tag-list">
+              <span class="dept-tag knowledge">📁 Finance / Vendor Contracts</span>
+              <span class="dept-tag knowledge">📊 Google Sheets — Margin Targets</span>
+            </div>
+          </div>
+
+          <!-- Add New -->
+          <div class="dept-add-card" onclick="openModal('dept')">
+            <div class="dept-add-icon">+</div>
+            <div class="dept-add-text">Add department</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ===== TEAM MEMBERS TAB ===== -->
+      <div class="tab-panel" id="tab-members">
+        <div class="team-toolbar">
+          <input type="text" class="team-search" placeholder="Search by name or email…">
+          <select class="team-filter">
+            <option>All departments</option>
+            <option>Operations</option>
+            <option>Marketing</option>
+            <option>Finance</option>
+          </select>
+          <select class="team-filter">
+            <option>All roles</option>
+            <option>Admin</option>
+            <option>Member</option>
+            <option>Viewer</option>
+          </select>
+          <button class="btn-primary" onclick="openModal('invite')">+ Invite user</button>
+          <button class="btn-secondary" onclick="openModal('bulk')">Bulk invite</button>
+        </div>
+
+        <table class="user-table">
+          <thead><tr><th>User</th><th>Department</th><th>Role</th><th>Status</th><th>Last Active</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="user-row-info"><div class="user-row-avatar" style="background:linear-gradient(135deg,#c41e3a,#e94560);">JM</div><div><div class="user-row-name">Jessica Miller</div><div class="user-row-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9df7f8eeeef4fefcb3f0f4f1f1f8efddfcf0fee9f5f8fce9eff8eeb3fef2f0">[email&#160;protected]</a></div></div></div></td>
+              <td><span class="user-dept-tag">All departments</span></td>
+              <td><span class="role-badge admin">Admin</span></td>
+              <td><span class="status-badge active">Active</span></td>
+              <td style="font-size:12px;color:var(--text-dim);">2 hours ago</td>
+              <td><div class="user-actions"><button class="user-action-btn" onclick="alert('Edit user: role, department, permissions')">Edit</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-row-info"><div class="user-row-avatar" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">TC</div><div><div class="user-row-name">Tom Chen</div><div class="user-row-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c1b5aeacefa2a9a4af81a0aca2b5a9a4a0b5b3a4b2efa2aeac">[email&#160;protected]</a></div></div></div></td>
+              <td><span class="user-dept-tag">Operations</span></td>
+              <td><span class="role-badge member">Member</span></td>
+              <td><span class="status-badge active">Active</span></td>
+              <td style="font-size:12px;color:var(--text-dim);">Yesterday</td>
+              <td><div class="user-actions"><button class="user-action-btn" onclick="alert('Edit user')">Edit</button><button class="user-action-btn danger" onclick="alert('Remove user from AMC Theatres')">Remove</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-row-info"><div class="user-row-avatar" style="background:linear-gradient(135deg,#3b82f6,#60a5fa);">SP</div><div><div class="user-row-name">Sarah Park</div><div class="user-row-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="06756774676e287667746d46676b65726e6367727463752865696b">[email&#160;protected]</a></div></div></div></td>
+              <td><span class="user-dept-tag">Operations</span></td>
+              <td><span class="role-badge member">Member</span></td>
+              <td><span class="status-badge active">Active</span></td>
+              <td style="font-size:12px;color:var(--text-dim);">3 days ago</td>
+              <td><div class="user-actions"><button class="user-action-btn" onclick="alert('Edit user')">Edit</button><button class="user-action-btn danger" onclick="alert('Remove user')">Remove</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-row-info"><div class="user-row-avatar" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">MJ</div><div><div class="user-row-name">Mike Johnson</div><div class="user-row-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="91fcf8faf4bffbd1f0fcf2e5f9f4f0e5e3f4e2bff2fefc">[email&#160;protected]</a></div></div></div></td>
+              <td><span class="user-dept-tag">Operations</span></td>
+              <td><span class="role-badge viewer">Viewer</span></td>
+              <td><span class="status-badge active">Active</span></td>
+              <td style="font-size:12px;color:var(--text-dim);">1 week ago</td>
+              <td><div class="user-actions"><button class="user-action-btn" onclick="alert('Edit user')">Edit</button><button class="user-action-btn danger" onclick="alert('Remove user')">Remove</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-row-info"><div class="user-row-avatar" style="background:linear-gradient(135deg,#c41e3a,#e94560);">AW</div><div><div class="user-row-name">Amanda Wilson</div><div class="user-row-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="92f3bce5fbfee1fdfcd2f3fff1e6faf7f3e6e0f7e1bcf1fdff">[email&#160;protected]</a></div></div></div></td>
+              <td><span class="user-dept-tag">Marketing</span></td>
+              <td><span class="role-badge admin">Admin</span></td>
+              <td><span class="status-badge active">Active</span></td>
+              <td style="font-size:12px;color:var(--text-dim);">5 hours ago</td>
+              <td><div class="user-actions"><button class="user-action-btn" onclick="alert('Edit user')">Edit</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-row-info"><div class="user-row-avatar" style="background:linear-gradient(135deg,#18856a,#2dd4a0);">KL</div><div><div class="user-row-name">Kevin Lee</div><div class="user-row-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="432826352a2d6d2f262603222e20372b2622373126306d202c2e">[email&#160;protected]</a></div></div></div></td>
+              <td><span class="user-dept-tag">Marketing</span></td>
+              <td><span class="role-badge member">Member</span></td>
+              <td><span class="status-badge active">Active</span></td>
+              <td style="font-size:12px;color:var(--text-dim);">Yesterday</td>
+              <td><div class="user-actions"><button class="user-action-btn" onclick="alert('Edit user')">Edit</button><button class="user-action-btn danger" onclick="alert('Remove user')">Remove</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-row-info"><div class="user-row-avatar" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">DR</div><div><div class="user-row-name">Diana Ross</div><div class="user-row-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e2868b838c83cc908d9191a2838f81968a878396908791cc818d8f">[email&#160;protected]</a></div></div></div></td>
+              <td><span class="user-dept-tag">Marketing</span></td>
+              <td><span class="role-badge viewer">Viewer</span></td>
+              <td><span class="status-badge active">Active</span></td>
+              <td style="font-size:12px;color:var(--text-dim);">4 days ago</td>
+              <td><div class="user-actions"><button class="user-action-btn" onclick="alert('Edit user')">Edit</button><button class="user-action-btn danger" onclick="alert('Remove user')">Remove</button></div></td>
+            </tr>
+            <tr>
+              <td><div class="user-row-info"><div class="user-row-avatar" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa);">RN</div><div><div class="user-row-name">Rachel Nguyen</div><div class="user-row-email"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d3a1fdbdb4a6aab6bd93b2beb0a7bbb6b2a7a1b6a0fdb0bcbe">[email&#160;protected]</a></div></div></div></td>
+              <td><span class="user-dept-tag">Finance</span></td>
+              <td><span class="role-badge member">Member</span></td>
+              <td><span class="status-badge active">Active</span></td>
+              <td style="font-size:12px;color:var(--text-dim);">Today</td>
+              <td><div class="user-actions"><button class="user-action-btn" onclick="alert('Edit user')">Edit</button><button class="user-action-btn danger" onclick="alert('Remove user')">Remove</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ===== PENDING INVITES TAB ===== -->
+      <div class="tab-panel" id="tab-invites">
+        <div class="team-toolbar">
+          <button class="btn-primary" onclick="openModal('invite')">+ Invite user</button>
+          <button class="btn-secondary" onclick="openModal('bulk')">Bulk invite</button>
+        </div>
+
+        <table class="user-table">
+          <thead><tr><th>Email</th><th>Department</th><th>Role</th><th>Status</th><th>Sent</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td style="font-size:13px;font-weight:500;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="4c262d21293f623b3e252b24380c2d212f3824292d383e293f622f2321">[email&#160;protected]</a></td>
+              <td><span class="user-dept-tag">Operations</span></td>
+              <td><span class="role-badge member">Member</span></td>
+              <td><span class="status-badge pending">Pending</span></td>
+              <td style="font-size:12px;color:var(--text-dim);">2 days ago</td>
+              <td><div class="user-actions"><button class="user-action-btn" onclick="resendInvite(this)">Resend</button><button class="user-action-btn danger" onclick="this.closest('tr').remove()">Revoke</button></div></td>
+            </tr>
+            <tr>
+              <td style="font-size:13px;font-weight:500;"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="bed2d7cddf90d6cbdfd0d9fedfd3ddcad6dbdfcaccdbcd90ddd1d3">[email&#160;protected]</a></td>
+              <td><span class="user-dept-tag">Finance</span></td>
+              <td><span class="role-badge viewer">Viewer</span></td>
+              <td><span class="status-badge pending">Pending</span></td>
+              <td style="font-size:12px;color:var(--text-dim);">5 days ago</td>
+              <td><div class="user-actions"><button class="user-action-btn" onclick="resendInvite(this)">Resend</button><button class="user-action-btn danger" onclick="this.closest('tr').remove()">Revoke</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ===== INVITE MODAL ===== -->
+<div class="modal-overlay" id="modal-invite">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Invite user</div>
+      <span class="modal-close" onclick="closeModal('invite')">×</span>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label class="modal-label">Email address</label>
+        <input type="email" class="modal-input" placeholder="name@company.com" id="invite-email">
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Department</label>
+        <select class="modal-select">
+          <option>Operations</option>
+          <option>Marketing</option>
+          <option>Finance</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Role</label>
+        <select class="modal-select">
+          <option>Admin — Full access, can manage users and settings</option>
+          <option selected>Member — Can use agents and approve decisions</option>
+          <option>Viewer — Read-only access to dashboards and reports</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label class="modal-label">Personal note (optional)</label>
+        <input type="text" class="modal-input" placeholder="Welcome to the team! Here's your access to our AI tools.">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('invite')">Cancel</button>
+      <button class="btn-primary" onclick="sendInvite()">Send invite</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BULK INVITE MODAL ===== -->
+<div class="modal-overlay" id="modal-bulk">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Bulk invite</div>
+      <span class="modal-close" onclick="closeModal('bulk')">×</span>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label class="modal-label">Email addresses</label>
+        <textarea class="modal-textarea" placeholder="Enter one email per line, or paste a comma-separated list…&#10;&#10;e.g.&#10;john@company.com&#10;jane@company.com&#10;bob@company.com"></textarea>
+        <div class="modal-hint">All users will be assigned to the same department and role below.</div>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <div class="modal-field" style="flex:1;">
+          <label class="modal-label">Department</label>
+          <select class="modal-select">
+            <option>Operations</option>
+            <option>Marketing</option>
+            <option>Finance</option>
+          </select>
+        </div>
+        <div class="modal-field" style="flex:1;">
+          <label class="modal-label">Role</label>
+          <select class="modal-select">
+            <option>Admin</option>
+            <option selected>Member</option>
+            <option>Viewer</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('bulk')">Cancel</button>
+      <button class="btn-primary" onclick="sendBulkInvite()">Send invites</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DEPARTMENT MODAL (Create + Edit) ===== -->
+<div class="modal-overlay" id="modal-dept">
+  <div class="modal" style="width:540px;">
+    <div class="modal-header">
+      <div class="modal-title" id="dept-modal-title">Add department</div>
+      <span class="modal-close" onclick="closeModal('dept')">×</span>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label class="modal-label">Department name</label>
+        <input type="text" class="modal-input" placeholder="e.g. Customer Support, HR, Procurement…" id="new-dept-name">
+      </div>
+
+      <div class="modal-field">
+        <label class="modal-label">Agent access</label>
+        <div class="modal-hint" style="margin-top:0;margin-bottom:8px;">Search and add agents this department can use.</div>
+        <div class="tag-input-wrap" id="agent-tag-wrap">
+          <div class="tag-chips" id="agent-chips"></div>
+          <input type="text" class="tag-search" id="agent-search" placeholder="Search agents…" oninput="filterAgentList()" onfocus="showAgentDropdown()" autocomplete="off">
+          <div class="tag-dropdown" id="agent-dropdown"></div>
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <label class="modal-label">Knowledge sources</label>
+        <div class="modal-hint" style="margin-top:0;margin-bottom:8px;">Search and add folders or connected data sources.</div>
+        <div class="tag-input-wrap" id="knowledge-tag-wrap">
+          <div class="tag-chips" id="knowledge-chips"></div>
+          <input type="text" class="tag-search" id="knowledge-search" placeholder="Search sources…" oninput="filterKnowledgeList()" onfocus="showKnowledgeDropdown()" autocomplete="off">
+          <div class="tag-dropdown" id="knowledge-dropdown"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('dept')">Cancel</button>
+      <button class="btn-primary" id="dept-modal-btn" onclick="saveDept()">Create department</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function navTo(target) {
+    const routes = {
+      'dashboard': 'A-03-command-center.html',
+      'clients': 'A-10-client-management.html',
+      'decisions': 'A-11-decision-inbox-agency.html',
+      'marketplace': 'A-04-agent-marketplace.html',
+      'builder': 'A-13-agent-builder.html',
+      'analytics': 'A-16-analytics.html',
+      'billing': 'A-12-billing-management.html',
+      'team': 'A-17-team-management.html',
+      'settings': 'A-18-audit-log.html'
+    };
+    if (routes[target]) {
+      window.location.href = routes[target];
+    } else {
+      alert('→ ' + target + ' (screen not yet built)');
+    }
+  }
+
+  function switchTab(id) {
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.tab-item').forEach(function(t) { t.classList.remove('active'); });
+    document.getElementById('tab-' + id).classList.add('active');
+    event.target.closest('.tab-item').classList.add('active');
+  }
+
+  function switchScope(val) {
+    if (val === 'agency') {
+      document.getElementById('scope-dept-count').textContent = '\u2014';
+      document.getElementById('scope-user-count').textContent = '3';
+      document.getElementById('scope-pending-count').textContent = '0';
+      document.getElementById('dept-badge').textContent = '\u2014';
+      document.getElementById('member-badge').textContent = '3';
+      document.getElementById('invite-badge').textContent = '0';
+    } else {
+      var data = {
+        'amc': { depts: 3, users: 8, pending: 2 },
+        'sip': { depts: 2, users: 5, pending: 1 },
+        'dutch': { depts: 3, users: 12, pending: 0 }
+      };
+      var d = data[val];
+      document.getElementById('scope-dept-count').textContent = d.depts;
+      document.getElementById('scope-user-count').textContent = d.users;
+      document.getElementById('scope-pending-count').textContent = d.pending;
+      document.getElementById('dept-badge').textContent = d.depts;
+      document.getElementById('member-badge').textContent = d.users;
+      document.getElementById('invite-badge').textContent = d.pending;
+    }
+  }
+
+  var allAgents = [
+    { id: 'final-sale', icon: '\ud83c\udff7\ufe0f', name: 'Final Sale Agent' },
+    { id: 'paid-ads', icon: '\ud83d\udce3', name: 'Paid Ads Manager' },
+    { id: 'email-drafter', icon: '\u2709\ufe0f', name: 'Email Drafter' },
+    { id: 'revenue-reporter', icon: '\ud83d\udcca', name: 'Revenue Reporter' },
+    { id: 'inventory-sync', icon: '\ud83d\udce6', name: 'Inventory Sync' },
+    { id: 'customer-feedback', icon: '\ud83d\udcac', name: 'Customer Feedback Agent' }
+  ];
+
+  var allSources = [
+    { id: 'ops-pricing', icon: '\ud83d\udcc1', name: 'Operations / Pricing', desc: 'Google Drive folder \u00b7 12 files' },
+    { id: 'ops-policies', icon: '\ud83d\udcc1', name: 'Operations / Policies', desc: 'Google Drive folder \u00b7 6 files' },
+    { id: 'mktg-brand', icon: '\ud83d\udcc1', name: 'Marketing / Brand Assets', desc: 'Google Drive folder \u00b7 24 files' },
+    { id: 'mktg-playbooks', icon: '\ud83d\udcc1', name: 'Marketing / Campaign Playbooks', desc: 'Google Drive folder \u00b7 8 files' },
+    { id: 'fin-vendor', icon: '\ud83d\udcc1', name: 'Finance / Vendor Contracts', desc: 'Google Drive folder \u00b7 18 files' },
+    { id: 'sheets-margin', icon: '\ud83d\udcca', name: 'Google Sheets \u2014 Margin Targets', desc: 'Connected spreadsheet \u00b7 Syncs daily' },
+    { id: 'sharepoint-reports', icon: '\ud83d\udcc1', name: 'SharePoint / Monthly Reports', desc: 'SharePoint folder \u00b7 36 files' }
+  ];
+
+  var deptConfigs = {
+    ops: { name: 'Operations', agents: ['final-sale', 'revenue-reporter'], sources: ['ops-pricing', 'ops-policies', 'sheets-margin'] },
+    marketing: { name: 'Marketing', agents: ['paid-ads', 'email-drafter'], sources: ['mktg-brand', 'mktg-playbooks'] },
+    finance: { name: 'Finance', agents: ['revenue-reporter'], sources: ['fin-vendor', 'sheets-margin'] }
+  };
+
+  var editingDept = null;
+  var selectedAgents = [];
+  var selectedSources = [];
+
+  function findAgent(id) { return allAgents.find(function(x) { return x.id === id; }); }
+  function findSource(id) { return allSources.find(function(x) { return x.id === id; }); }
+
+  function makeChipHtml(icon, name, removeFunc, removeId) {
+    return icon + ' ' + name + ' <span class="tag-chip-x" onclick="' + removeFunc + '(&quot;' + removeId + '&quot;)">&times;</span>';
+  }
+
+  function makeDdHtml(icon, name, desc, addFunc, addId) {
+    var descHtml = desc ? '<div class="tag-dd-desc">' + desc + '</div>' : '';
+    return '<div class="tag-dd-item" onmousedown="' + addFunc + '(&quot;' + addId + '&quot;)"><span class="tag-dd-icon">' + icon + '</span><div><div class="tag-dd-label">' + name + '</div>' + descHtml + '</div></div>';
+  }
+
+  function renderAgentChips() {
+    var c = document.getElementById('agent-chips'); c.innerHTML = '';
+    selectedAgents.forEach(function(id) {
+      var a = findAgent(id); if (!a) return;
+      var chip = document.createElement('span'); chip.className = 'tag-chip agent';
+      chip.innerHTML = makeChipHtml(a.icon, a.name, 'removeAgent', id);
+      c.appendChild(chip);
+    });
+  }
+
+  function renderKnowledgeChips() {
+    var c = document.getElementById('knowledge-chips'); c.innerHTML = '';
+    selectedSources.forEach(function(id) {
+      var s = findSource(id); if (!s) return;
+      var chip = document.createElement('span'); chip.className = 'tag-chip knowledge';
+      chip.innerHTML = makeChipHtml(s.icon, s.name, 'removeSource', id);
+      c.appendChild(chip);
+    });
+  }
+
+  function addAgent(id) {
+    if (selectedAgents.indexOf(id) === -1) { selectedAgents.push(id); renderAgentChips(); }
+    document.getElementById('agent-search').value = '';
+    document.getElementById('agent-dropdown').classList.remove('open');
+  }
+  function removeAgent(id) { selectedAgents = selectedAgents.filter(function(a) { return a !== id; }); renderAgentChips(); }
+  function addSource(id) {
+    if (selectedSources.indexOf(id) === -1) { selectedSources.push(id); renderKnowledgeChips(); }
+    document.getElementById('knowledge-search').value = '';
+    document.getElementById('knowledge-dropdown').classList.remove('open');
+  }
+  function removeSource(id) { selectedSources = selectedSources.filter(function(s) { return s !== id; }); renderKnowledgeChips(); }
+
+  function showAgentDropdown() { filterAgentList(); }
+  function showKnowledgeDropdown() { filterKnowledgeList(); }
+
+  function filterAgentList() {
+    var q = document.getElementById('agent-search').value.toLowerCase();
+    var dd = document.getElementById('agent-dropdown');
+    var avail = allAgents.filter(function(a) { return selectedAgents.indexOf(a.id) === -1 && a.name.toLowerCase().indexOf(q) !== -1; });
+    if (avail.length === 0) { dd.innerHTML = '<div class="tag-dd-empty">No agents found</div>'; }
+    else { dd.innerHTML = avail.map(function(a) { return makeDdHtml(a.icon, a.name, '', 'addAgent', a.id); }).join(''); }
+    dd.classList.add('open');
+  }
+
+  function filterKnowledgeList() {
+    var q = document.getElementById('knowledge-search').value.toLowerCase();
+    var dd = document.getElementById('knowledge-dropdown');
+    var avail = allSources.filter(function(s) { return selectedSources.indexOf(s.id) === -1 && s.name.toLowerCase().indexOf(q) !== -1; });
+    if (avail.length === 0) { dd.innerHTML = '<div class="tag-dd-empty">No sources found</div>'; }
+    else { dd.innerHTML = avail.map(function(s) { return makeDdHtml(s.icon, s.name, s.desc, 'addSource', s.id); }).join(''); }
+    dd.classList.add('open');
+  }
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#agent-tag-wrap')) document.getElementById('agent-dropdown').classList.remove('open');
+    if (!e.target.closest('#knowledge-tag-wrap')) document.getElementById('knowledge-dropdown').classList.remove('open');
+  });
+
+  function openModal(type) {
+    if (type === 'dept' && !editingDept) {
+      document.getElementById('dept-modal-title').textContent = 'Add department';
+      document.getElementById('dept-modal-btn').textContent = 'Create department';
+      document.getElementById('new-dept-name').value = '';
+      selectedAgents = []; selectedSources = [];
+      renderAgentChips(); renderKnowledgeChips();
+    }
+    document.getElementById('modal-' + type).classList.add('open');
+  }
+
+  function closeModal(type) {
+    document.getElementById('modal-' + type).classList.remove('open');
+    if (type === 'dept') editingDept = null;
+  }
+
+  function editDept(id) {
+    editingDept = id;
+    var cfg = deptConfigs[id];
+    document.getElementById('dept-modal-title').textContent = 'Edit department';
+    document.getElementById('dept-modal-btn').textContent = 'Save changes';
+    document.getElementById('new-dept-name').value = cfg.name;
+    selectedAgents = cfg.agents.slice();
+    selectedSources = cfg.sources.slice();
+    renderAgentChips(); renderKnowledgeChips();
+    openModal('dept');
+  }
+
+  function deleteDept(id) {
+    var cfg = deptConfigs[id];
+    if (confirm('Delete "' + cfg.name + '" department? Users will need to be reassigned.')) {
+      document.getElementById('dept-' + id).remove();
+    }
+  }
+
+  function makeTagSpan(cls, icon, name) { return '<span class="dept-tag ' + cls + '">' + icon + ' ' + name + '</span>'; }
+
+  function saveDept() {
+    var name = document.getElementById('new-dept-name').value || 'New Department';
+    if (editingDept) {
+      deptConfigs[editingDept].agents = selectedAgents.slice();
+      deptConfigs[editingDept].sources = selectedSources.slice();
+      var card = document.getElementById('dept-' + editingDept);
+      var tagLists = card.querySelectorAll('.dept-tag-list');
+      tagLists[0].innerHTML = selectedAgents.map(function(id) { var a = findAgent(id); return a ? makeTagSpan('agent', a.icon, a.name) : ''; }).join('');
+      tagLists[1].innerHTML = selectedSources.map(function(id) { var s = findSource(id); return s ? makeTagSpan('knowledge', s.icon, s.name) : ''; }).join('');
+      var btn = document.getElementById('dept-modal-btn');
+      btn.textContent = '\u2713 Saved';
+      setTimeout(function() { closeModal('dept'); btn.textContent = 'Save changes'; }, 800);
+    } else {
+      closeModal('dept');
+      var grid = document.getElementById('dept-grid');
+      var addCard = grid.querySelector('.dept-add-card');
+      var card = document.createElement('div');
+      card.className = 'dept-card';
+      card.style.animation = 'fadeUp 0.3s ease';
+      var at = selectedAgents.map(function(id) { var a = findAgent(id); return a ? makeTagSpan('agent', a.icon, a.name) : ''; }).join('');
+      var st = selectedSources.map(function(id) { var s = findSource(id); return s ? makeTagSpan('knowledge', s.icon, s.name) : ''; }).join('');
+      card.innerHTML = '<div class="dept-card-header"><div class="dept-name"><span class="dept-icon">\ud83c\udfe2</span> ' + name + '</div><div style="display:flex;align-items:center;gap:8px;"><span class="dept-count">0 users</span></div></div><div class="dept-section-label">Agent Access</div><div class="dept-tag-list">' + at + '</div><div class="dept-section-label">Knowledge Sources</div><div class="dept-tag-list">' + st + '</div>';
+      grid.insertBefore(card, addCard);
+    }
+  }
+
+  function sendInvite() {
+    var email = document.getElementById('invite-email').value || 'user@company.com';
+    closeModal('invite');
+    alert('Invite sent to ' + email);
+  }
+
+  function sendBulkInvite() { closeModal('bulk'); alert('Invites sent.'); }
+
+  function resendInvite(btn) {
+    btn.textContent = '\u2713 Sent'; btn.style.color = 'var(--accent)'; btn.style.borderColor = 'var(--accent-border)';
+    setTimeout(function() { btn.textContent = 'Resend'; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+  }
+
+  document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+    overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.classList.remove('open'); });
+  });
+</script>
+</body>
+</html>

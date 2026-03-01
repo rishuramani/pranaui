@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0;
+    --bg-card: #fffdf9;
+    --bg-elevated: #f0e8dc;
+    --border: #e2d5c4;
+    --border-subtle: #ede4d6;
+    --text: #2a1f10;
+    --text-secondary: #4a3d2a;
+    --text-muted: #7a6348;
+    --text-dim: #a89880;
+    --accent: #18856a;
+    --accent-hover: #147a60;
+    --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07);
+    --accent-border: rgba(24,133,106,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04);
+    --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --radius-xs: 8px;
+    --error: #c25a5a;
+    --error-bg: rgba(194,90,90,0.06);
+    --error-border: rgba(194,90,90,0.15);
+    --warn: #c4842d;
+    --warn-bg: rgba(196,132,45,0.06);
+    --warn-border: rgba(196,132,45,0.15);
+    --sidebar-w: 240px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* ===== APP SHELL ===== */
+  .app-shell {
+    display: grid;
+    grid-template-columns: var(--sidebar-w) 1fr;
+    min-height: 100vh;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .sb-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 24px;
+    margin-bottom: 8px;
+  }
+
+  .sb-logo svg { width: 28px; height: 28px; }
+
+  .sb-logo-text {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  .sb-logo-text span { color: var(--accent); }
+
+  .sb-org {
+    padding: 0 24px;
+    margin-bottom: 28px;
+  }
+
+  .sb-org-name {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    padding: 6px 12px;
+    background: var(--bg-elevated);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .sb-org-name:hover { background: var(--border-subtle); }
+
+  .sb-org-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--accent-bright);
+    border-radius: 50%;
+  }
+
+  .sb-section {
+    margin-bottom: 24px;
+  }
+
+  .sb-section-label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 600;
+    padding: 0 24px;
+    margin-bottom: 6px;
+  }
+
+  .sb-nav { list-style: none; }
+
+  .sb-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 24px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .sb-nav-item:hover {
+    background: var(--bg-elevated);
+    color: var(--text);
+  }
+
+  .sb-nav-item.active {
+    color: var(--accent);
+    font-weight: 600;
+    background: var(--accent-bg);
+  }
+
+  .sb-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .sb-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .sb-nav-badge {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--error);
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+  }
+
+  .sb-nav-badge.warn { background: var(--warn); }
+
+  .sb-footer {
+    margin-top: auto;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .sb-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px 0;
+  }
+
+  .sb-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-bright));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .sb-user-info { flex: 1; min-width: 0; }
+  .sb-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); font-weight: 300; }
+
+  /* ===== MAIN CONTENT ===== */
+  .main-content {
+    padding: 36px 40px 60px;
+    overflow-y: auto;
+  }
+
+  /* Header */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  .page-greeting {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .page-greeting-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-top: 2px;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-action {
+    padding: 10px 18px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-xs);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(24,133,106,0.2);
+  }
+
+  .btn-action:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+  .btn-action-sec {
+    padding: 10px 18px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-action-sec:hover { border-color: var(--text-dim); color: var(--text); }
+
+  /* ===== ALERTS ===== */
+  .alerts-strip {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .alert-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .alert-card:hover { transform: translateY(-1px); }
+
+  .alert-card.error {
+    background: var(--error-bg);
+    border: 1px solid var(--error-border);
+    color: var(--error);
+  }
+
+  .alert-card.warn {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    color: var(--warn);
+  }
+
+  .alert-card.info {
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    color: var(--accent);
+  }
+
+  .alert-icon { font-size: 16px; }
+  .alert-dismiss {
+    margin-left: 4px;
+    opacity: 0.5;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .alert-dismiss:hover { opacity: 1; }
+
+  /* ===== STAT CARDS ===== */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .stat-change {
+    font-size: 11px;
+    font-weight: 500;
+    margin-top: 6px;
+  }
+
+  .stat-change.up { color: var(--accent); }
+  .stat-change.down { color: var(--error); }
+
+  /* ===== SECTION HEADERS ===== */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .section-link {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .section-link:hover { text-decoration: underline; }
+
+  /* ===== CLIENT GRID ===== */
+  .client-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .client-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+
+  .client-card:hover {
+    border-color: var(--accent-border);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .client-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .client-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .client-name { font-size: 15px; font-weight: 600; }
+
+  .client-health {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .client-health.green { background: var(--accent-bright); box-shadow: 0 0 6px rgba(45,212,160,0.4); }
+  .client-health.yellow { background: #eab308; box-shadow: 0 0 6px rgba(234,179,8,0.4); }
+  .client-health.red { background: var(--error); box-shadow: 0 0 6px rgba(194,90,90,0.4); }
+
+  .client-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .client-stat-item {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .client-stat-item strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .client-card-footer {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .client-badge {
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .client-badge.internal {
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+  }
+
+  .client-view-link {
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .client-view-link:hover {
+    text-decoration: underline;
+    color: var(--accent-hover);
+  }
+
+  /* Add client card */
+  .client-card.add-card {
+    border-style: dashed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 180px;
+    color: var(--text-dim);
+  }
+
+  .client-card.add-card:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .add-icon { font-size: 28px; opacity: 0.5; }
+  .add-text { font-size: 13px; font-weight: 500; }
+
+  /* ===== DECISION INBOX PREVIEW ===== */
+  .decision-preview {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 36px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .decision-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .decision-item:last-child { border-bottom: none; }
+  .decision-item:hover { background: var(--bg-elevated); }
+
+  .decision-agent-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .decision-info { flex: 1; min-width: 0; }
+  .decision-title { font-size: 13px; font-weight: 600; }
+  .decision-meta { font-size: 11px; color: var(--text-dim); font-weight: 300; }
+
+  .decision-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .decision-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .decision-btn.approve {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .decision-btn.approve:hover { background: var(--accent-hover); }
+
+  .decision-btn.reject {
+    background: var(--bg-elevated);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .decision-btn.reject:hover { background: var(--border-subtle); }
+
+  .decision-btn.view {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent-border);
+  }
+
+  .decision-time {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-weight: 300;
+    white-space: nowrap;
+  }
+
+  /* ===== BILLING SUMMARY ===== */
+  .billing-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 36px;
+  }
+
+  .billing-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .billing-card-title {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .billing-amount {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1;
+  }
+
+  .billing-amount.green { color: var(--accent); }
+
+  .billing-detail {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 300;
+    margin-top: 8px;
+  }
+
+  .billing-breakdown {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .billing-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    padding: 3px 0;
+  }
+
+  .billing-line-label { color: var(--text-dim); font-weight: 300; }
+  .billing-line-value { font-weight: 600; }
+  .billing-line-value.overdue { color: var(--error); }
+
+  /* ===== SCREEN ID ===== */
+  .screen-id {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .screen-id strong { color: var(--accent); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1000px) {
+    .client-grid { grid-template-columns: 1fr 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    .app-shell { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .main-content { padding: 24px 20px; }
+    .client-grid { grid-template-columns: 1fr; }
+    .billing-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>A-03</strong> Agency Command Center</div>
+
+<div class="app-shell">
+
+  <!-- ===== SIDEBAR ===== -->
+  <nav class="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 512 512" fill="none" width="28" height="28">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="sb-logo-text">Prana<span>OS</span></span>
+    </div>
+
+    <div class="sb-org">
+      <div class="sb-org-name">
+        <span class="sb-org-dot"></span>
+        Prana IQ
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">Main</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item active" onclick="navTo('dashboard')">
+          <span class="sb-nav-icon">📊</span> Command Center
+        </li>
+        <li class="sb-nav-item" onclick="navTo('clients')">
+          <span class="sb-nav-icon">🏢</span> Clients
+          <span class="sb-nav-badge warn">5</span>
+        </li>
+        <li class="sb-nav-item" onclick="navTo('decisions')">
+          <span class="sb-nav-icon">📥</span> Decision Inbox
+          <span class="sb-nav-badge">12</span>
+        </li>
+        <li class="sb-nav-item" onclick="navTo('marketplace')">
+          <span class="sb-nav-icon">🤖</span> Agent Marketplace
+        </li>
+      </ul>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">Manage</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('builder')">
+          <span class="sb-nav-icon">⚡</span> Builder
+        </li>
+        <li class="sb-nav-item" onclick="navTo('analytics')">
+          <span class="sb-nav-icon">📈</span> Analytics
+        </li>
+        <li class="sb-nav-item" onclick="navTo('billing')">
+          <span class="sb-nav-icon">💳</span> Billing
+        </li>
+        <li class="sb-nav-item" onclick="navTo('team')">
+          <span class="sb-nav-icon">👥</span> Team
+        </li>
+      </ul>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-label">System</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('settings')">
+          <span class="sb-nav-icon">⚙️</span> Settings
+        </li>
+      </ul>
+    </div>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">RK</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Rishabh K.</div>
+          <div class="sb-user-role">Owner · Growth plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="main-content">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-greeting">Good morning, Rishabh 👋</div>
+        <div class="page-greeting-sub">Here's what's happening across your clients today.</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-action-sec" onclick="navTo('marketplace')">Browse agents</button>
+        <button class="btn-action" onclick="navTo('add-client')">+ Add client</button>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <div class="alerts-strip">
+      <div class="alert-card error" onclick="navTo('clients')">
+        <span class="alert-icon">⚠️</span>
+        Shopify disconnected on <strong>Dutch Bros</strong>
+        <span class="alert-dismiss" onclick="event.stopPropagation(); this.closest('.alert-card').remove();">✕</span>
+      </div>
+      <div class="alert-card warn" onclick="navTo('billing')">
+        <span class="alert-icon">💳</span>
+        <strong>Sip Coffee</strong> invoice overdue · 3 days
+        <span class="alert-dismiss" onclick="event.stopPropagation(); this.closest('.alert-card').remove();">✕</span>
+      </div>
+      <div class="alert-card info" onclick="navTo('decisions')">
+        <span class="alert-icon">📥</span>
+        12 decisions pending across 4 clients
+        <span class="alert-dismiss" onclick="event.stopPropagation(); this.closest('.alert-card').remove();">✕</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Active Clients</div>
+        <div class="stat-value">5</div>
+        <div class="stat-change up">↑ 2 this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Agents</div>
+        <div class="stat-value">18</div>
+        <div class="stat-change up">↑ 4 deployed this week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Decisions This Week</div>
+        <div class="stat-value">47</div>
+        <div class="stat-change up">↑ 12% vs last week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Client MRR</div>
+        <div class="stat-value" style="color:var(--accent);">$8.2k</div>
+        <div class="stat-change up">↑ $1.4k new revenue</div>
+      </div>
+    </div>
+
+    <!-- Clients -->
+    <div class="section-header">
+      <span class="section-title">Your Clients</span>
+      <a class="section-link" onclick="navTo('clients')">View all →</a>
+    </div>
+
+    <div class="client-grid">
+      <!-- Internal -->
+      <div class="client-card" onclick="navTo('client-site')">
+        <div class="client-health green"></div>
+        <div class="client-card-header">
+          <div class="client-logo" style="background:linear-gradient(135deg,#18856a,#2dd4a0);">PI</div>
+          <div class="client-name">Prana IQ</div>
+        </div>
+        <div class="client-stats">
+          <div class="client-stat-item"><strong>4</strong> Agents</div>
+          <div class="client-stat-item"><strong>0</strong> Decisions</div>
+          <div class="client-stat-item"><strong>3</strong> Users</div>
+          <div class="client-stat-item"><strong>142</strong> Messages</div>
+        </div>
+        <div class="client-card-footer">
+          <span class="client-badge internal">Internal</span>
+          <a class="client-view-link" onclick="event.stopPropagation(); navTo('client-site')">View my client site →</a>
+        </div>
+      </div>
+
+      <!-- AMC -->
+      <div class="client-card" onclick="navTo('client-site')">
+        <div class="client-health green"></div>
+        <div class="client-card-header">
+          <div class="client-logo" style="background:linear-gradient(135deg,#c41e3a,#e94560);">A</div>
+          <div class="client-name">AMC Theatres</div>
+        </div>
+        <div class="client-stats">
+          <div class="client-stat-item"><strong>5</strong> Agents</div>
+          <div class="client-stat-item"><strong>4</strong> Decisions</div>
+          <div class="client-stat-item"><strong>12</strong> Users</div>
+          <div class="client-stat-item"><strong>834</strong> Messages</div>
+        </div>
+        <div class="client-card-footer">
+          <span>$2,400/mo</span>
+          <a class="client-view-link" onclick="event.stopPropagation(); navTo('client-site')">View client site →</a>
+        </div>
+      </div>
+
+      <!-- Dutch Bros -->
+      <div class="client-card" onclick="navTo('client-site')">
+        <div class="client-health red"></div>
+        <div class="client-card-header">
+          <div class="client-logo" style="background:linear-gradient(135deg,#005f8f,#0088cc);">DB</div>
+          <div class="client-name">Dutch Bros</div>
+        </div>
+        <div class="client-stats">
+          <div class="client-stat-item"><strong>3</strong> Agents</div>
+          <div class="client-stat-item"><strong>2</strong> Decisions</div>
+          <div class="client-stat-item"><strong>8</strong> Users</div>
+          <div class="client-stat-item"><strong>567</strong> Messages</div>
+        </div>
+        <div class="client-card-footer">
+          <span style="color:var(--error);">⚠ Integration error</span>
+          <a class="client-view-link" onclick="event.stopPropagation(); navTo('client-site')">View client site →</a>
+        </div>
+      </div>
+
+      <!-- Sip Coffee -->
+      <div class="client-card" onclick="navTo('client-site')">
+        <div class="client-health yellow"></div>
+        <div class="client-card-header">
+          <div class="client-logo" style="background:linear-gradient(135deg,#8b6914,#c49b2a);">SC</div>
+          <div class="client-name">Sip Coffee & Beer</div>
+        </div>
+        <div class="client-stats">
+          <div class="client-stat-item"><strong>3</strong> Agents</div>
+          <div class="client-stat-item"><strong>3</strong> Decisions</div>
+          <div class="client-stat-item"><strong>4</strong> Users</div>
+          <div class="client-stat-item"><strong>289</strong> Messages</div>
+        </div>
+        <div class="client-card-footer">
+          <span style="color:var(--warn);">$1,200/mo · Overdue</span>
+          <a class="client-view-link" onclick="event.stopPropagation(); navTo('client-site')">View client site →</a>
+        </div>
+      </div>
+
+      <!-- Alexander Jane -->
+      <div class="client-card" onclick="navTo('client-site')">
+        <div class="client-health green"></div>
+        <div class="client-card-header">
+          <div class="client-logo" style="background:linear-gradient(135deg,#4a2060,#7c3aed);">AJ</div>
+          <div class="client-name">Alexander Jane</div>
+        </div>
+        <div class="client-stats">
+          <div class="client-stat-item"><strong>3</strong> Agents</div>
+          <div class="client-stat-item"><strong>3</strong> Decisions</div>
+          <div class="client-stat-item"><strong>2</strong> Users</div>
+          <div class="client-stat-item"><strong>421</strong> Messages</div>
+        </div>
+        <div class="client-card-footer">
+          <span>$1,600/mo</span>
+          <a class="client-view-link" onclick="event.stopPropagation(); navTo('client-site')">View client site →</a>
+        </div>
+      </div>
+
+      <!-- Add Client -->
+      <div class="client-card add-card" onclick="navTo('add-client')">
+        <div class="add-icon">+</div>
+        <div class="add-text">Add new client</div>
+      </div>
+    </div>
+
+    <!-- Decision Inbox Preview -->
+    <div class="section-header">
+      <span class="section-title">Pending Decisions</span>
+      <a class="section-link" onclick="navTo('decisions')">View all 12 →</a>
+    </div>
+
+    <div class="decision-preview">
+      <div class="decision-item" onclick="navTo('decision-detail')">
+        <div class="decision-agent-icon">🏷️</div>
+        <div class="decision-info">
+          <div class="decision-title">Final Sale scan returned 47 SKUs — approve markdowns?</div>
+          <div class="decision-meta">Alexander Jane · Final Sale Agent · 15 min ago</div>
+        </div>
+        <div class="decision-actions">
+          <button class="decision-btn approve" onclick="event.stopPropagation(); approveDecision(this);">Approve</button>
+          <button class="decision-btn view">View</button>
+        </div>
+      </div>
+      <div class="decision-item" onclick="navTo('decision-detail')">
+        <div class="decision-agent-icon">📣</div>
+        <div class="decision-info">
+          <div class="decision-title">Paid Ads content ready for review — 3 new ad variants</div>
+          <div class="decision-meta">AMC Theatres · Paid Ads Manager · 1 hr ago</div>
+        </div>
+        <div class="decision-actions">
+          <button class="decision-btn view">Review</button>
+        </div>
+      </div>
+      <div class="decision-item" onclick="navTo('decision-detail')">
+        <div class="decision-agent-icon">📊</div>
+        <div class="decision-info">
+          <div class="decision-title">Weekly revenue report ready — anomaly detected in Fri sales</div>
+          <div class="decision-meta">Sip Coffee & Beer · Revenue Reporter · 2 hrs ago</div>
+        </div>
+        <div class="decision-actions">
+          <button class="decision-btn view">View</button>
+        </div>
+      </div>
+      <div class="decision-item" onclick="navTo('decision-detail')">
+        <div class="decision-agent-icon">🤝</div>
+        <div class="decision-info">
+          <div class="decision-title">Affiliate program found 5 new potential partners — review list</div>
+          <div class="decision-meta">Alexander Jane · Affiliate Manager · 3 hrs ago</div>
+        </div>
+        <div class="decision-actions">
+          <button class="decision-btn view">Review</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Billing -->
+    <div class="section-header">
+      <span class="section-title">Billing Overview</span>
+      <a class="section-link" onclick="navTo('billing')">Manage billing →</a>
+    </div>
+
+    <div class="billing-row">
+      <div class="billing-card">
+        <div class="billing-card-title">Your Client Revenue (MRR)</div>
+        <div class="billing-amount green">$8,200</div>
+        <div class="billing-detail">Across 4 paying clients + 1 internal</div>
+        <div class="billing-breakdown">
+          <div class="billing-line">
+            <span class="billing-line-label">AMC Theatres</span>
+            <span class="billing-line-value">$2,400</span>
+          </div>
+          <div class="billing-line">
+            <span class="billing-line-label">Dutch Bros</span>
+            <span class="billing-line-value">$1,800</span>
+          </div>
+          <div class="billing-line">
+            <span class="billing-line-label">Alexander Jane</span>
+            <span class="billing-line-value">$1,600</span>
+          </div>
+          <div class="billing-line">
+            <span class="billing-line-label">Sip Coffee & Beer</span>
+            <span class="billing-line-value overdue">$1,200 ⚠</span>
+          </div>
+          <div class="billing-line">
+            <span class="billing-line-label">Usage markup</span>
+            <span class="billing-line-value">$1,200</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="billing-card">
+        <div class="billing-card-title">Your PranaOS Cost</div>
+        <div class="billing-amount">$3,182</div>
+        <div class="billing-detail">Growth plan · 2 seats · 5 partitions</div>
+        <div class="billing-breakdown">
+          <div class="billing-line">
+            <span class="billing-line-label">Plan (2 × $997)</span>
+            <span class="billing-line-value">$1,994</span>
+          </div>
+          <div class="billing-line">
+            <span class="billing-line-label">Partitions (4 × $50)</span>
+            <span class="billing-line-value">$200</span>
+          </div>
+          <div class="billing-line">
+            <span class="billing-line-label">Usage (API + messages)</span>
+            <span class="billing-line-value">$988</span>
+          </div>
+          <div class="billing-line" style="border-top:1px solid var(--border-subtle);margin-top:6px;padding-top:6px;">
+            <span class="billing-line-label" style="font-weight:600;color:var(--text);">Your margin</span>
+            <span class="billing-line-value" style="color:var(--accent);font-size:14px;">$5,018 (61%)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function navTo(target) {
+    const routes = {
+      'dashboard': 'A-03-command-center.html',
+      'clients': 'A-10-client-management.html',
+      'decisions': 'A-11-decision-inbox-agency.html',
+      'marketplace': 'A-04-agent-marketplace.html',
+      'builder': 'A-13-agent-builder.html',
+      'analytics': 'A-16-analytics.html',
+      'billing': 'A-12-billing-management.html',
+      'team': 'A-17-team-management.html',
+      'settings': 'A-18-audit-log.html',
+      'client-site': 'A-08-agency-admin-view.html',
+      'add-client': 'A-05-client-setup.html',
+      'decision-detail': 'A-11-decision-inbox-agency.html'
+    };
+    if (routes[target]) {
+      window.location.href = routes[target];
+    } else {
+      alert('→ ' + target + ' (screen not yet built)');
+    }
+  }
+
+  function approveDecision(btn) {
+    const item = btn.closest('.decision-item');
+    btn.textContent = '✓ Approved';
+    btn.style.background = 'var(--accent-bright)';
+    btn.style.pointerEvents = 'none';
+    setTimeout(() => {
+      item.style.opacity = '0.4';
+    }, 600);
+  }
+</script>
+</body>
+</html>

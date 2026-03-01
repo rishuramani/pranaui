@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Guided Walkthrough</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --client-primary: #c41e3a; --client-primary-light: rgba(196,30,58,0.08);
+    --bg: #faf6f0; --bg-card: #fffdf9; --bg-elevated: #f0e8dc;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08); --warn-border: rgba(196,132,45,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 14px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* Header */
+  .client-header { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; align-items: center; height: 60px; position: sticky; top: 0; z-index: 50; }
+  .ch-logo { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; background: linear-gradient(135deg, var(--client-primary), #e94560); margin-right: 10px; }
+  .ch-name { font-size: 15px; font-weight: 700; }
+  .ch-spacer { flex: 1; }
+  .ch-avatar { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, var(--client-primary), #e94560); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
+
+  /* Dashboard */
+  .dashboard { padding: 24px 32px 140px; max-width: 960px; margin: 0 auto; }
+  .greeting { font-size: 18px; font-weight: 300; color: var(--text-muted); margin-bottom: 20px; }
+  .greeting strong { font-weight: 700; color: var(--text); }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; box-shadow: var(--shadow-sm); }
+  .stat-label { font-size: 10px; color: var(--text-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .stat-value { font-size: 22px; font-weight: 800; margin-top: 2px; }
+  .section-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+
+  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; position: relative; }
+  .agent-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.2s; position: relative; }
+  .agent-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .agent-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .agent-card-icon { font-size: 20px; }
+  .agent-card-name { font-size: 13px; font-weight: 700; }
+  .agent-card-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-bright); margin-left: auto; }
+  .agent-card-desc { font-size: 11px; color: var(--text-muted); font-weight: 300; line-height: 1.5; }
+
+  /* Pulsing highlight on target card */
+  .agent-card.highlighted {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-bg), var(--shadow-md);
+    animation: cardPulse 2s infinite;
+    z-index: 206;
+    position: relative;
+  }
+  .agent-card.highlighted::after {
+    content: '👆 Click me';
+    position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #fff; font-size: 11px; font-weight: 700;
+    padding: 4px 12px; border-radius: 6px; white-space: nowrap;
+    animation: bounce 1s infinite;
+  }
+  @keyframes cardPulse { 0%,100% { box-shadow: 0 0 0 3px var(--accent-bg), var(--shadow-md); } 50% { box-shadow: 0 0 0 6px rgba(45,212,160,0.15), var(--shadow-md); } }
+  @keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-4px); } }
+
+  /* Chat bar */
+  .chat-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 8px 32px rgba(42,31,16,0.15); display: flex; align-items: center; gap: 10px; padding: 10px 16px; width: min(480px, calc(100vw - 40px)); z-index: 60; }
+  .chat-bar.highlighted { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg), 0 8px 32px rgba(42,31,16,0.15); z-index: 206; animation: cardPulse 2s infinite; }
+  .chat-bar-icon { font-size: 16px; }
+  .chat-bar-input { flex: 1; border: none; background: none; font-family: inherit; font-size: 13px; color: var(--text); outline: none; }
+  .chat-bar-input::placeholder { color: var(--text-dim); }
+  .chat-bar-send { width: 32px; height: 32px; border-radius: 8px; background: var(--accent); color: #fff; border: none; font-size: 14px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+
+  /* ===== WALKTHROUGH SYSTEM ===== */
+  /* Dim overlay with clip-path hole */
+  .wt-dim { display: none; position: fixed; inset: 0; background: rgba(42,31,16,0.6); z-index: 200; transition: clip-path 0.4s ease; }
+
+  /* Floating tooltip card - always centered below viewport top or positioned smartly */
+  .wt-tooltip {
+    display: none; position: fixed; z-index: 300;
+    background: #fff; border-radius: 16px;
+    padding: 0; width: min(400px, calc(100vw - 40px));
+    box-shadow: 0 16px 48px rgba(42,31,16,0.25);
+    overflow: hidden;
+    animation: tooltipIn 0.4s ease;
+  }
+  @keyframes tooltipIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .wt-tooltip-header { padding: 20px 24px 0; }
+  .wt-tooltip-body { padding: 0 24px 20px; }
+  .wt-tooltip-footer { padding: 14px 24px; background: var(--bg); border-top: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; }
+  .wt-step-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .wt-step-num { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+  .wt-title { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .wt-desc { font-size: 13px; color: var(--text-muted); font-weight: 400; line-height: 1.7; margin-bottom: 0; }
+  .wt-cta-text { font-size: 12px; color: var(--text-dim); display: flex; align-items: center; gap: 6px; }
+  .wt-pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-bright); display: inline-block; animation: pulse 1.5s infinite; flex-shrink: 0; }
+  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(1.5); } }
+  .wt-dots { display: flex; gap: 6px; }
+  .wt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); transition: all 0.3s; }
+  .wt-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
+  .wt-dot.done { background: var(--accent-bright); }
+
+  /* Agent preview panel (step 2) */
+  .agent-preview {
+    display: none; position: fixed; z-index: 210;
+    width: min(520px, calc(100vw - 40px));
+    background: #fff; border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(42,31,16,0.25); overflow: hidden;
+    border: 3px solid var(--accent-bright);
+    animation: cardPulse 2s infinite;
+  }
+  .ap-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .ap-icon { font-size: 20px; }
+  .ap-name { font-size: 14px; font-weight: 700; }
+  .ap-sub { font-size: 11px; color: var(--text-dim); }
+  .ap-body { padding: 16px 20px; }
+  .ap-kpis { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+  .ap-kpi { padding: 10px; background: var(--bg); border-radius: 10px; text-align: center; }
+  .ap-kpi-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; }
+  .ap-kpi-value { font-size: 20px; font-weight: 800; margin-top: 2px; }
+  .ap-decision { padding: 12px 14px; background: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 10px; }
+  .ap-decision-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .ap-decision-icon { font-size: 16px; }
+  .ap-decision-title { font-size: 13px; font-weight: 700; }
+  .ap-decision-desc { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+  .ap-decision-actions { display: flex; gap: 6px; }
+  .ap-btn-approve { padding: 8px 20px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+  .ap-btn-approve:hover { filter: brightness(0.9); transform: scale(1.02); }
+  .ap-btn-reject { padding: 8px 20px; background: none; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 12px; color: var(--text-muted); cursor: pointer; }
+
+  /* Completion */
+  .wt-complete { display: none; position: fixed; inset: 0; z-index: 400; background: rgba(250,246,240,0.94); backdrop-filter: blur(10px); align-items: center; justify-content: center; flex-direction: column; }
+  .wt-complete.show { display: flex; }
+  .wt-complete-icon { font-size: 56px; margin-bottom: 16px; animation: pop 0.5s ease; }
+  @keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .wt-complete-title { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+  .wt-complete-desc { font-size: 14px; color: var(--text-muted); font-weight: 300; margin-bottom: 28px; max-width: 360px; text-align: center; line-height: 1.6; }
+  .wt-complete-btn { padding: 16px 44px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(24,133,106,0.25); }
+  .wt-complete-btn:hover { filter: brightness(0.92); }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 100; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+
+  @media (max-width: 700px) {
+    .agent-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .dashboard { padding: 20px 16px 140px; }
+    .client-header { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>C-03</strong> Client Guided Walkthrough</div>
+
+<!-- Header -->
+<div class="client-header">
+  <div class="ch-logo">AMC</div>
+  <div class="ch-name">AMC Theatres</div>
+  <div class="ch-spacer"></div>
+  <div class="ch-avatar">JM</div>
+</div>
+
+<!-- Dashboard -->
+<div class="dashboard">
+  <div class="greeting">Good afternoon, <strong>Jessica</strong></div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Active Agents</div><div class="stat-value">6</div></div>
+    <div class="stat-card"><div class="stat-label">Decisions</div><div class="stat-value">&mdash;</div></div>
+    <div class="stat-card"><div class="stat-label">Messages</div><div class="stat-value">&mdash;</div></div>
+    <div class="stat-card"><div class="stat-label">Time Saved</div><div class="stat-value">&mdash;</div></div>
+  </div>
+  <div class="section-title">Your Agents</div>
+  <div class="agent-grid" id="agent-grid">
+    <div class="agent-card" id="card-final-sale">
+      <div class="agent-card-top"><span class="agent-card-icon">🏷️</span><span class="agent-card-name">Final Sale Agent</span><span class="agent-card-dot"></span></div>
+      <div class="agent-card-desc">Identifies slow-moving inventory and recommends strategic markdowns</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-card-top"><span class="agent-card-icon">📣</span><span class="agent-card-name">Paid Ads Manager</span><span class="agent-card-dot"></span></div>
+      <div class="agent-card-desc">Monitors ad spend, pauses underperformers, reallocates budget</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-card-top"><span class="agent-card-icon">✉️</span><span class="agent-card-name">Email Drafter</span><span class="agent-card-dot"></span></div>
+      <div class="agent-card-desc">Drafts customer and vendor emails using your tone and templates</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-card-top"><span class="agent-card-icon">📊</span><span class="agent-card-name">Revenue Reporter</span><span class="agent-card-dot"></span></div>
+      <div class="agent-card-desc">Generates weekly revenue reports with anomaly detection</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-card-top"><span class="agent-card-icon">📦</span><span class="agent-card-name">Inventory Sync</span><span class="agent-card-dot"></span></div>
+      <div class="agent-card-desc">Keeps Shopify and POS inventory in sync across locations</div>
+    </div>
+    <div class="agent-card" style="opacity:0.6;">
+      <div class="agent-card-top"><span class="agent-card-icon">💬</span><span class="agent-card-name">Customer Feedback</span><span class="agent-card-dot" style="background:var(--warn);"></span></div>
+      <div class="agent-card-desc">Analyzes reviews and survey responses</div>
+    </div>
+  </div>
+</div>
+
+<!-- Chat bar -->
+<div class="chat-bar" id="chat-bar">
+  <span class="chat-bar-icon">💬</span>
+  <input type="text" class="chat-bar-input" id="chat-input" placeholder="Ask anything about AMC Theatres&hellip;">
+  <button class="chat-bar-send" id="chat-send">&rarr;</button>
+</div>
+
+<!-- Dim overlay -->
+<div class="wt-dim" id="wt-dim"></div>
+
+<!-- Tooltip -->
+<div class="wt-tooltip" id="wt-tooltip"></div>
+
+<!-- Agent preview (step 2 only) -->
+<div class="agent-preview" id="agent-preview">
+  <div class="ap-header">
+    <span class="ap-icon">🏷️</span>
+    <div><div class="ap-name">Final Sale Agent</div><div class="ap-sub">Last scan: Just now</div></div>
+  </div>
+  <div class="ap-body">
+    <div class="ap-kpis">
+      <div class="ap-kpi"><div class="ap-kpi-label">Items Scanned</div><div class="ap-kpi-value">1,247</div></div>
+      <div class="ap-kpi"><div class="ap-kpi-label">Flagged</div><div class="ap-kpi-value" style="color:var(--warn);">12</div></div>
+      <div class="ap-kpi"><div class="ap-kpi-label">Est. Recovery</div><div class="ap-kpi-value" style="color:var(--accent);">$4,280</div></div>
+    </div>
+    <div class="ap-decision">
+      <div class="ap-decision-top"><span class="ap-decision-icon">⚡</span><span class="ap-decision-title">Jumbo Popcorn Bucket</span></div>
+      <div class="ap-decision-desc">127 days in stock &middot; Suggested 25% markdown &middot; Est. recovery $890</div>
+      <div class="ap-decision-actions">
+        <button class="ap-btn-approve" id="btn-approve">✓ Approve Markdown</button>
+        <button class="ap-btn-reject">Reject</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Completion -->
+<div class="wt-complete" id="wt-complete">
+  <div class="wt-complete-icon">🎉</div>
+  <div class="wt-complete-title">You're all set!</div>
+  <div class="wt-complete-desc">Explore your agents, review decisions, or ask anything using the chat bar below. Your AI workspace is ready.</div>
+  <button class="wt-complete-btn" onclick="window.location.href='C-04-client-dashboard.html'">Start exploring</button>
+</div>
+
+<script>
+var currentStep = -1;
+var TOTAL = 3;
+
+/* ---- helpers ---- */
+function cutHole(el) {
+  var r = el.getBoundingClientRect();
+  var pad = 10;
+  var t = r.top - pad, l = r.left - pad, b = r.bottom + pad, ri = r.right + pad;
+  var dim = document.getElementById('wt-dim');
+  dim.style.display = 'block';
+  dim.style.clipPath =
+    'polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, ' +
+    l+'px '+t+'px, '+ri+'px '+t+'px, '+ri+'px '+b+'px, '+l+'px '+b+'px, '+l+'px '+t+'px)';
+  return r;
+}
+
+function clearAll() {
+  document.getElementById('wt-dim').style.display = 'none';
+  document.getElementById('wt-tooltip').style.display = 'none';
+  document.getElementById('agent-preview').style.display = 'none';
+  document.getElementById('card-final-sale').classList.remove('highlighted');
+  document.getElementById('chat-bar').classList.remove('highlighted');
+}
+
+function dots() {
+  var h = '';
+  for (var i = 0; i < TOTAL; i++) {
+    var c = i < currentStep ? 'wt-dot done' : (i === currentStep ? 'wt-dot active' : 'wt-dot');
+    h += '<div class="'+c+'"></div>';
+  }
+  return h;
+}
+
+function showTooltip(stepNum, title, desc, ctaText, x, y) {
+  var tt = document.getElementById('wt-tooltip');
+  tt.style.display = 'block';
+  tt.style.left = x + 'px';
+  tt.style.top = y + 'px';
+  tt.innerHTML =
+    '<div class="wt-tooltip-header">' +
+      '<div class="wt-step-badge"><span class="wt-step-num">'+(stepNum)+'</span> Step '+stepNum+' of '+TOTAL+'</div>' +
+      '<div class="wt-title">'+title+'</div>' +
+    '</div>' +
+    '<div class="wt-tooltip-body">' +
+      '<div class="wt-desc">'+desc+'</div>' +
+    '</div>' +
+    '<div class="wt-tooltip-footer">' +
+      '<div class="wt-cta-text"><span class="wt-pulse"></span> '+ctaText+'</div>' +
+      '<div class="wt-dots">'+dots()+'</div>' +
+    '</div>';
+}
+
+function positionCenter(rect, ttWidth) {
+  var x = rect.left + rect.width / 2 - ttWidth / 2;
+  x = Math.max(20, Math.min(x, window.innerWidth - ttWidth - 20));
+  return x;
+}
+
+/* ---- steps ---- */
+function step1() {
+  currentStep = 0;
+  clearAll();
+
+  // Highlight just the Final Sale card
+  var card = document.getElementById('card-final-sale');
+  card.classList.add('highlighted');
+
+  // Dim with hole around the whole agent grid
+  var grid = document.getElementById('agent-grid');
+  var r = cutHole(grid);
+
+  // Tooltip below the grid
+  var ttW = Math.min(400, window.innerWidth - 40);
+  var x = positionCenter(r, ttW);
+  var y = r.bottom + 20;
+  // If too low, put above
+  if (y + 220 > window.innerHeight) y = r.top - 230;
+
+  showTooltip(1,
+    'Here are your agents',
+    'These 6 AI tools have been set up for AMC Theatres. Each handles a different part of your business &mdash; from inventory to ads to customer emails.',
+    'Click the <strong>Final Sale Agent</strong> card above',
+    x, y);
+}
+
+function step2() {
+  currentStep = 1;
+  clearAll();
+
+  // Show agent preview centered
+  var preview = document.getElementById('agent-preview');
+  preview.style.display = 'block';
+
+  // Position: centered in viewport
+  var pw = Math.min(520, window.innerWidth - 40);
+  preview.style.width = pw + 'px';
+  preview.style.left = (window.innerWidth / 2 - pw / 2) + 'px';
+  preview.style.top = '80px';
+
+  // Dim with hole around preview
+  setTimeout(function() {
+    var r = cutHole(preview);
+
+    // Tooltip below preview
+    var ttW = Math.min(400, window.innerWidth - 40);
+    var x = positionCenter(r, ttW);
+    var y = r.bottom + 16;
+    if (y + 200 > window.innerHeight) y = r.top - 210;
+
+    showTooltip(2,
+      'This is your real data',
+      'The agent just scanned <strong>1,247 items</strong> in your inventory and flagged <strong>12</strong> for markdown. Try approving one &mdash; this is how you\'ll make decisions every day.',
+      'Click <strong>✓ Approve Markdown</strong> above',
+      x, y);
+  }, 50);
+}
+
+function step3() {
+  currentStep = 2;
+  clearAll();
+
+  // Prefill chat
+  var input = document.getElementById('chat-input');
+  input.value = 'What are my top 3 slowest-moving items?';
+  var sendBtn = document.getElementById('chat-send');
+  sendBtn.style.display = 'flex';
+
+  // Highlight chat bar
+  var bar = document.getElementById('chat-bar');
+  bar.classList.add('highlighted');
+  var r = cutHole(bar);
+
+  // Tooltip above chat bar
+  var ttW = Math.min(400, window.innerWidth - 40);
+  var x = positionCenter(r, ttW);
+  var y = r.top - 220;
+  if (y < 20) y = r.bottom + 16;
+
+  showTooltip(3,
+    'Ask anything',
+    'The chat connects to all your agents and data. Questions are automatically routed to the right tool. Try sending this one!',
+    'Press <strong>Enter</strong> or click the <strong>&rarr;</strong> button',
+    x, y);
+}
+
+function complete() {
+  clearAll();
+  document.getElementById('wt-complete').classList.add('show');
+}
+
+function dismiss() {
+  document.getElementById('wt-complete').classList.remove('show');
+  clearAll();
+}
+
+/* ---- event wiring ---- */
+document.getElementById('card-final-sale').addEventListener('click', function() {
+  if (currentStep === 0) step2();
+});
+
+document.getElementById('btn-approve').addEventListener('click', function() {
+  if (currentStep === 1) {
+    this.textContent = '✓ Approved!';
+    this.style.background = 'var(--accent-bright)';
+    this.style.color = '#fff';
+    this.style.pointerEvents = 'none';
+    setTimeout(step3, 600);
+  }
+});
+
+document.getElementById('chat-send').addEventListener('click', function() {
+  if (currentStep === 2) complete();
+});
+
+document.getElementById('chat-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && currentStep === 2) complete();
+});
+
+/* ---- start ---- */
+setTimeout(step1, 500);
+</script>
+</body>
+</html>

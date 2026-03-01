@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Accept Invite</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0;
+    --bg-card: #fffdf9;
+    --bg-elevated: #f0e8dc;
+    --border: #e2d5c4;
+    --border-subtle: #ede4d6;
+    --text: #2a1f10;
+    --text-secondary: #4a3d2a;
+    --text-muted: #7a6348;
+    --text-dim: #a89880;
+    --accent: #18856a;
+    --accent-hover: #147a60;
+    --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07);
+    --accent-border: rgba(24,133,106,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04);
+    --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --shadow-lg: 0 12px 40px rgba(42,31,16,0.12);
+    --error: #c25a5a;
+    --error-bg: rgba(194,90,90,0.06);
+    --success: #18856a;
+    --success-bg: rgba(24,133,106,0.06);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --radius-xs: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  /* ===== PAGE WRAPPER ===== */
+  .invite-page {
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ===== LOGO ===== */
+  .logo-centered {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .logo-centered svg { width: 36px; height: 36px; }
+
+  .logo-wordmark {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .logo-wordmark span { color: var(--accent); }
+
+  /* ===== CARD ===== */
+  .invite-card {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    box-shadow: var(--shadow-md);
+  }
+
+  .invite-heading {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  .invite-subtext {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.7;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .invite-subtext strong {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* ===== ORG BADGE ===== */
+  .org-badge {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 28px;
+  }
+
+  .org-logo {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-xs);
+    background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+    letter-spacing: -0.5px;
+  }
+
+  .org-details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .org-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .org-platform {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  /* ===== FORM FIELDS ===== */
+  .field-group {
+    margin-bottom: 18px;
+  }
+
+  .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .field-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    background: var(--bg-card);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .field-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-bg);
+  }
+
+  .field-input::placeholder {
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .field-input.readonly {
+    background: var(--bg-elevated);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    border-color: var(--border-subtle);
+  }
+
+  .field-input.error {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px var(--error-bg);
+  }
+
+  .field-error {
+    font-size: 11px;
+    color: var(--error);
+    font-weight: 500;
+    margin-top: 4px;
+    display: none;
+  }
+
+  .field-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 300;
+    margin-top: 4px;
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn-primary {
+    width: 100%;
+    padding: 14px 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(24,133,106,0.25);
+    margin-top: 6px;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 4px 16px rgba(24,133,106,0.3);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .decline-link {
+    display: block;
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 400;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    background: none;
+    border: none;
+    font-family: inherit;
+    width: 100%;
+  }
+
+  .decline-link:hover {
+    color: var(--text-muted);
+    text-decoration: underline;
+  }
+
+  /* ===== LOADING ===== */
+  .loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ===== SCREEN ID BADGE ===== */
+  .screen-id {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .screen-id strong { color: var(--accent); }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 520px) {
+    body { padding: 24px 16px; }
+    .invite-card { padding: 28px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>S-07</strong> Accept Invite</div>
+
+<div class="invite-page">
+
+  <!-- LOGO -->
+  <div class="logo-centered">
+    <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="256" cy="256" r="238" stroke="#18856a" stroke-width="6" opacity="0.22"/>
+      <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.32"/>
+      <circle cx="256" cy="256" r="153" stroke="#18856a" stroke-width="10.5" opacity="0.40"/>
+      <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="256" cy="256" r="21" fill="#18856a"/>
+    </svg>
+    <span class="logo-wordmark">Prana<span>OS</span></span>
+  </div>
+
+  <!-- CARD -->
+  <div class="invite-card">
+    <h2 class="invite-heading">You've been invited!</h2>
+    <p class="invite-subtext"><strong>Jessica Miller</strong> invited you to join <strong>AMC Theatres</strong> on PranaOS.</p>
+
+    <!-- Organization Badge -->
+    <div class="org-badge">
+      <div class="org-logo">A</div>
+      <div class="org-details">
+        <div class="org-name">AMC Theatres</div>
+        <div class="org-platform">PranaOS Organization</div>
+      </div>
+    </div>
+
+    <!-- Email (read-only) -->
+    <div class="field-group">
+      <label class="field-label">Your email</label>
+      <input type="email" class="field-input readonly" value="sarah.lee@amctheatres.com" readonly tabindex="-1">
+    </div>
+
+    <!-- Set Password -->
+    <div class="field-group">
+      <label class="field-label">Set your password</label>
+      <input type="password" class="field-input" id="password-input" placeholder="At least 8 characters">
+      <div class="field-hint">Must be at least 8 characters with one number.</div>
+      <div class="field-error" id="password-error">Password must be at least 8 characters with one number.</div>
+    </div>
+
+    <!-- Confirm Password -->
+    <div class="field-group">
+      <label class="field-label">Confirm password</label>
+      <input type="password" class="field-input" id="confirm-password-input" placeholder="Re-enter your password">
+      <div class="field-error" id="confirm-error">Passwords do not match.</div>
+    </div>
+
+    <!-- Accept Button -->
+    <button class="btn-primary" id="accept-btn" onclick="acceptInvite()">Accept & Join</button>
+
+    <!-- Decline Link -->
+    <button class="decline-link" onclick="declineInvite()">Decline</button>
+  </div>
+</div>
+
+<script>
+  function validatePassword(password) {
+    return password.length >= 8 && /\d/.test(password);
+  }
+
+  function acceptInvite() {
+    const passwordInput = document.getElementById('password-input');
+    const confirmInput = document.getElementById('confirm-password-input');
+    const passwordError = document.getElementById('password-error');
+    const confirmError = document.getElementById('confirm-error');
+    const password = passwordInput.value;
+    const confirm = confirmInput.value;
+
+    let valid = true;
+
+    // Clear previous errors
+    passwordInput.classList.remove('error');
+    confirmInput.classList.remove('error');
+    passwordError.style.display = 'none';
+    confirmError.style.display = 'none';
+
+    // Validate password strength
+    if (!validatePassword(password)) {
+      passwordInput.classList.add('error');
+      passwordError.style.display = 'block';
+      valid = false;
+    }
+
+    // Validate passwords match
+    if (password !== confirm || !confirm) {
+      confirmInput.classList.add('error');
+      confirmError.style.display = 'block';
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    // Show loading state
+    const btn = document.getElementById('accept-btn');
+    btn.innerHTML = '<span class="loading-spinner"></span>Joining...';
+    btn.disabled = true;
+
+    // Simulate processing then redirect
+    setTimeout(() => {
+      window.location.href = 'C-08-user-walkthrough.html';
+    }, 1500);
+  }
+
+  function declineInvite() {
+    if (confirm('Are you sure you want to decline this invitation?')) {
+      // In a real app, this would call an API to decline
+      alert('Invitation declined. You can close this tab.');
+    }
+  }
+
+  // Clear errors on focus
+  document.querySelectorAll('.field-input:not(.readonly)').forEach(input => {
+    input.addEventListener('focus', function() {
+      this.classList.remove('error');
+      const errorEl = this.parentElement.querySelector('.field-error');
+      if (errorEl) errorEl.style.display = 'none';
+    });
+  });
+
+  // Allow Enter key to submit from confirm password field
+  document.getElementById('confirm-password-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      acceptInvite();
+    }
+  });
+</script>
+</body>
+</html>

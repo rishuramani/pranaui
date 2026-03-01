@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Agency Admin View</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --client-primary: #c41e3a;
+    --client-primary-light: rgba(196,30,58,0.08);
+    --client-primary-border: rgba(196,30,58,0.18);
+    --bg: #faf6f0; --bg-card: #fffdf9; --bg-elevated: #f0e8dc;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-secondary: #4a3d2a; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-hover: #147a60; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08); --warn-border: rgba(196,132,45,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 14px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* ===== ADMIN BAR ===== */
+  .admin-bar {
+    background: #1a1a2e; color: #fff;
+    padding: 0 24px; height: 48px;
+    display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+    font-size: 13px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s;
+  }
+  .admin-bar.hidden { transform: translateY(-100%); height: 0; padding: 0; overflow: hidden; }
+
+  .ab-logo { display: flex; align-items: center; gap: 8px; }
+  .ab-logo svg { width: 20px; height: 20px; }
+  .ab-logo-text { font-size: 13px; font-weight: 600; opacity: 0.7; }
+  .ab-logo-text span { color: var(--accent-bright); }
+
+  .ab-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.12); }
+
+  .ab-viewing { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; opacity: 0.8; }
+  .ab-viewing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-bright); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .ab-client-select {
+    padding: 5px 28px 5px 10px; border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px; background: rgba(255,255,255,0.06);
+    font-family: inherit; font-size: 12px; font-weight: 600; color: #fff;
+    cursor: pointer; outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+  }
+  .ab-client-select:hover { background: rgba(255,255,255,0.12); }
+  .ab-client-select option { color: #1a1a2e; }
+
+  .ab-spacer { flex: 1; }
+
+  .ab-shortcuts { display: flex; gap: 6px; }
+  .ab-shortcut {
+    padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+    cursor: pointer; transition: all 0.15s; color: rgba(255,255,255,0.8);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .ab-shortcut:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+  .ab-toggle {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 14px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .ab-toggle.admin-mode { background: var(--accent); color: #fff; }
+  .ab-toggle.client-mode { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); }
+
+  .ab-back {
+    padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+    background: none; border: 1px solid rgba(255,255,255,0.15);
+    cursor: pointer; color: rgba(255,255,255,0.6); transition: all 0.15s;
+    text-decoration: none; display: flex; align-items: center; gap: 4px;
+  }
+  .ab-back:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+  /* ===== ADMIN OVERLAY PANELS ===== */
+  .admin-overlay {
+    display: flex; gap: 12px; padding: 16px 40px;
+    background: linear-gradient(180deg, rgba(26,26,46,0.04) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s;
+  }
+  .admin-overlay.hidden { display: none; }
+
+  .ao-card {
+    flex: 1; padding: 14px 18px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);
+    cursor: pointer; transition: all 0.15s;
+    position: relative;
+  }
+  .ao-card:hover { box-shadow: var(--shadow-md); border-color: var(--accent-border); }
+  .ao-card-icon { font-size: 18px; margin-bottom: 6px; }
+  .ao-card-title { font-size: 12px; font-weight: 700; }
+  .ao-card-value { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .ao-card-badge { position: absolute; top: 10px; right: 12px; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 6px; }
+  .ao-card-badge.green { background: var(--accent-bg); color: var(--accent); }
+  .ao-card-badge.amber { background: var(--warn-bg); color: var(--warn); }
+  .ao-card-badge.red { background: rgba(194,90,90,0.08); color: #c25a5a; }
+
+  /* ===== CLIENT HEADER (below admin bar) ===== */
+  .client-header {
+    background: var(--bg-card); border-bottom: 1px solid var(--border);
+    padding: 0 40px; display: flex; align-items: center; height: 64px;
+    position: sticky; top: 48px; z-index: 50;
+    transition: top 0.3s;
+  }
+  .client-header.no-admin { top: 0; }
+  .ch-logo {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 800; color: #fff;
+    background: linear-gradient(135deg, var(--client-primary), #e94560);
+    margin-right: 12px;
+  }
+  .ch-name { font-size: 16px; font-weight: 700; letter-spacing: -0.3px; }
+  .ch-nav { display: flex; gap: 4px; margin-left: 32px; }
+  .ch-nav-item {
+    padding: 8px 16px; font-size: 13px; font-weight: 500;
+    color: var(--text-muted); cursor: pointer; border-radius: var(--radius-xs);
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+  }
+  .ch-nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+  .ch-nav-item.active { background: var(--client-primary-light); color: var(--client-primary); font-weight: 600; }
+  .ch-nav-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 6px; background: var(--client-primary); color: #fff; }
+  .ch-spacer { flex: 1; }
+  .ch-user { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .ch-avatar { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+
+  /* ===== DASHBOARD CONTENT ===== */
+  .dashboard { padding: 28px 40px 80px; max-width: 1100px; }
+
+  .greeting { font-size: 20px; font-weight: 300; color: var(--text-muted); margin-bottom: 24px; }
+  .greeting strong { font-weight: 700; color: var(--text); }
+
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 18px 20px; box-shadow: var(--shadow-sm); }
+  .stat-label { font-size: 11px; color: var(--text-dim); font-weight: 500; text-transform: uppercase; letter-spacing: 0.3px; }
+  .stat-value { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-top: 4px; }
+  .stat-change { font-size: 11px; font-weight: 600; margin-top: 2px; }
+  .stat-change.up { color: var(--accent); }
+
+  .roi-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px 28px; box-shadow: var(--shadow-sm); margin-bottom: 24px;
+  }
+  .roi-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .roi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .roi-item-label { font-size: 11px; color: var(--text-dim); }
+  .roi-item-value { font-size: 20px; font-weight: 800; }
+  .roi-item-value.highlight { color: var(--accent); }
+
+  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 28px; }
+  .agent-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.15s;
+    position: relative;
+  }
+  .agent-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+  .agent-card-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .agent-card-icon { font-size: 24px; }
+  .agent-card-name { font-size: 14px; font-weight: 700; }
+  .agent-card-status { width: 7px; height: 7px; border-radius: 50%; margin-left: auto; }
+  .agent-card-status.active { background: var(--accent-bright); }
+  .agent-card-status.paused { background: var(--warn); }
+  .agent-card-desc { font-size: 12px; color: var(--text-muted); font-weight: 300; margin-bottom: 12px; }
+  .agent-card-stats { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); padding-top: 10px; border-top: 1px solid var(--border-subtle); }
+  .agent-card-stats strong { color: var(--text); font-weight: 700; }
+  /* Admin gear icon on cards */
+  .agent-admin-gear {
+    position: absolute; top: 12px; right: 12px;
+    width: 28px; height: 28px; border-radius: 6px;
+    background: rgba(26,26,46,0.06); border: 1px solid rgba(26,26,46,0.08);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; cursor: pointer; transition: all 0.15s;
+    opacity: 0;
+  }
+  .agent-card:hover .agent-admin-gear { opacity: 1; }
+  .agent-admin-gear:hover { background: var(--accent-bg); border-color: var(--accent-border); }
+  .agent-admin-gear.hidden { display: none; }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .section-title { font-size: 15px; font-weight: 700; }
+
+  .powered-by { text-align: center; padding: 24px; font-size: 11px; color: var(--text-dim); }
+
+  /* Chat bar */
+  .chat-bar {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; box-shadow: 0 8px 32px rgba(42,31,16,0.15);
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 20px; width: 480px; max-width: 90vw; z-index: 60;
+  }
+  .chat-bar-icon { font-size: 18px; }
+  .chat-bar-input {
+    flex: 1; border: none; background: none; font-family: inherit;
+    font-size: 13px; color: var(--text); outline: none;
+  }
+  .chat-bar-input::placeholder { color: var(--text-dim); }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>A-08</strong> Client Site (Agency Admin View)</div>
+
+<!-- ===== ADMIN BAR ===== -->
+<div class="admin-bar" id="admin-bar">
+  <div class="ab-logo">
+    <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg>
+    <div class="ab-logo-text">Prana<span>OS</span></div>
+  </div>
+
+  <div class="ab-divider"></div>
+
+  <div class="ab-viewing">
+    <span class="ab-viewing-dot"></span>
+    Admin view
+  </div>
+
+  <select class="ab-client-select" id="client-select" onchange="switchClient(this.value)">
+    <option value="amc" selected>AMC Theatres</option>
+    <option value="sip">Sip Coffee & Beer</option>
+    <option value="dutch">Dutch Bros Region 14</option>
+    <option value="board">Board & Brew</option>
+    <option value="starbucks">Starbucks Metro</option>
+  </select>
+
+  <div class="ab-spacer"></div>
+
+  <div class="ab-shortcuts" id="admin-shortcuts">
+    <div class="ab-shortcut" onclick="window.location.href='A-06-agent-config-integrations.html'">🔗 Integrations</div>
+    <div class="ab-shortcut" onclick="window.location.href='A-07-users-teams.html'">👥 Users</div>
+    <div class="ab-shortcut" onclick="window.location.href='A-06-agent-config-integrations.html'">📚 Knowledge</div>
+    <div class="ab-shortcut" onclick="window.location.href='A-11-performance.html'">📈 Performance</div>
+  </div>
+
+  <div class="ab-divider"></div>
+
+  <div class="ab-toggle admin-mode" id="view-toggle" onclick="toggleView()">
+    👁️ View as client
+  </div>
+
+  <a href="A-03-command-center.html" class="ab-back">
+    ← Agency Dashboard
+  </a>
+</div>
+
+<!-- ===== ADMIN OVERLAY ===== -->
+<div class="admin-overlay" id="admin-overlay">
+  <div class="ao-card" onclick="window.location.href='A-06-agent-config-integrations.html'">
+    <div class="ao-card-icon">🔗</div>
+    <div class="ao-card-title">Integrations</div>
+    <div class="ao-card-value">5 connected · 1 pending</div>
+    <span class="ao-card-badge amber">1 pending</span>
+  </div>
+  <div class="ao-card" onclick="window.location.href='A-07-users-teams.html'">
+    <div class="ao-card-icon">👥</div>
+    <div class="ao-card-title">Users & Teams</div>
+    <div class="ao-card-value">3 departments · 8 users</div>
+    <span class="ao-card-badge green">All active</span>
+  </div>
+  <div class="ao-card" onclick="window.location.href='A-06-agent-config-integrations.html'">
+    <div class="ao-card-icon">📚</div>
+    <div class="ao-card-title">Knowledge Base</div>
+    <div class="ao-card-value">7 sources · 142 documents indexed</div>
+    <span class="ao-card-badge green">Synced</span>
+  </div>
+  <div class="ao-card" onclick="window.location.href='A-09-activity-log.html'">
+    <div class="ao-card-icon">📋</div>
+    <div class="ao-card-title">Activity Log</div>
+    <div class="ao-card-value">47 actions this week</div>
+  </div>
+  <div class="ao-card" onclick="window.location.href='A-10-usage-billing.html'">
+    <div class="ao-card-icon">💰</div>
+    <div class="ao-card-title">Usage & Billing</div>
+    <div class="ao-card-value">$1,247 this month · 6 seats</div>
+    <span class="ao-card-badge green">Current</span>
+  </div>
+</div>
+
+<!-- ===== CLIENT HEADER ===== -->
+<div class="client-header" id="client-header">
+  <div class="ch-logo">AMC</div>
+  <div class="ch-name">AMC Theatres</div>
+  <div class="ch-nav">
+    <div class="ch-nav-item active">Home</div>
+    <div class="ch-nav-item" onclick="window.location.href='C-05-agent-gui.html'">Agents</div>
+    <div class="ch-nav-item" onclick="window.location.href='C-07-decision-inbox.html'">Decisions <span class="ch-nav-badge" id="decision-badge">7</span></div>
+    <div class="ch-nav-item" onclick="window.location.href='A-06-agent-config-integrations.html'">Knowledge</div>
+    <div class="ch-nav-item" onclick="window.location.href='A-06-agent-config-integrations.html'">Settings</div>
+  </div>
+  <div class="ch-spacer"></div>
+  <div class="ch-user">
+    <div class="ch-avatar">RK</div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="dashboard">
+  <div class="greeting">Good afternoon, <strong>Rishabh</strong></div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Active Agents</div><div class="stat-value">6</div><div class="stat-change up">↑ 2 this month</div></div>
+    <div class="stat-card"><div class="stat-label">Decisions This Week</div><div class="stat-value">34</div><div class="stat-change up">↑ 18%</div></div>
+    <div class="stat-card"><div class="stat-label">Messages Sent</div><div class="stat-value">89</div><div class="stat-change up">↑ 24%</div></div>
+    <div class="stat-card"><div class="stat-label">Time Saved This Month</div><div class="stat-value">47h</div><div class="stat-change up">↑ 31%</div></div>
+  </div>
+
+  <div class="roi-card">
+    <div class="roi-title">📊 Return on Investment</div>
+    <div class="roi-grid">
+      <div><div class="roi-item-label">Time Saved</div><div class="roi-item-value">47h × $85/hr</div></div>
+      <div><div class="roi-item-label">Revenue Impact</div><div class="roi-item-value">$12,400</div></div>
+      <div><div class="roi-item-label">Monthly Cost</div><div class="roi-item-value">$1,247</div></div>
+      <div><div class="roi-item-label">Return</div><div class="roi-item-value highlight">8.1x</div></div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Your Agents</div>
+  </div>
+
+  <div class="agent-grid">
+    <div class="agent-card" onclick="window.location.href='C-05-agent-gui.html'">
+      <div class="agent-admin-gear" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">⚙️</div>
+      <div class="agent-card-top"><span class="agent-card-icon">🏷️</span><span class="agent-card-name">Final Sale Agent</span><span class="agent-card-status active"></span></div>
+      <div class="agent-card-desc">Identifies slow-moving inventory and recommends strategic markdowns</div>
+      <div class="agent-card-stats"><span><strong>12</strong> decisions</span><span><strong>18h</strong> saved</span></div>
+    </div>
+    <div class="agent-card" onclick="window.location.href='C-05-agent-gui.html'">
+      <div class="agent-admin-gear" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">⚙️</div>
+      <div class="agent-card-top"><span class="agent-card-icon">📣</span><span class="agent-card-name">Paid Ads Manager</span><span class="agent-card-status active"></span></div>
+      <div class="agent-card-desc">Monitors ad spend, pauses underperformers, and reallocates budget</div>
+      <div class="agent-card-stats"><span><strong>8</strong> decisions</span><span><strong>12h</strong> saved</span></div>
+    </div>
+    <div class="agent-card" onclick="window.location.href='C-05-agent-gui.html'">
+      <div class="agent-admin-gear" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">⚙️</div>
+      <div class="agent-card-top"><span class="agent-card-icon">✉️</span><span class="agent-card-name">Email Drafter</span><span class="agent-card-status active"></span></div>
+      <div class="agent-card-desc">Drafts customer and vendor emails using your tone and templates</div>
+      <div class="agent-card-stats"><span><strong>6</strong> decisions</span><span><strong>8h</strong> saved</span></div>
+    </div>
+    <div class="agent-card" onclick="window.location.href='C-05-agent-gui.html'">
+      <div class="agent-admin-gear" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">⚙️</div>
+      <div class="agent-card-top"><span class="agent-card-icon">📊</span><span class="agent-card-name">Revenue Reporter</span><span class="agent-card-status active"></span></div>
+      <div class="agent-card-desc">Generates weekly revenue reports with anomaly detection</div>
+      <div class="agent-card-stats"><span><strong>4</strong> decisions</span><span><strong>5h</strong> saved</span></div>
+    </div>
+    <div class="agent-card" onclick="window.location.href='C-05-agent-gui.html'">
+      <div class="agent-admin-gear" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">⚙️</div>
+      <div class="agent-card-top"><span class="agent-card-icon">📦</span><span class="agent-card-name">Inventory Sync</span><span class="agent-card-status active"></span></div>
+      <div class="agent-card-desc">Keeps Shopify and POS inventory counts in sync across locations</div>
+      <div class="agent-card-stats"><span><strong>2</strong> decisions</span><span><strong>3h</strong> saved</span></div>
+    </div>
+    <div class="agent-card" style="opacity:0.6;" onclick="window.location.href='C-05-agent-gui.html'">
+      <div class="agent-admin-gear" onclick="event.stopPropagation();window.location.href='A-06-agent-config-integrations.html'">⚙️</div>
+      <div class="agent-card-top"><span class="agent-card-icon">💬</span><span class="agent-card-name">Customer Feedback</span><span class="agent-card-status paused"></span></div>
+      <div class="agent-card-desc">Analyzes customer reviews and survey responses for insights</div>
+      <div class="agent-card-stats"><span><strong>2</strong> decisions</span><span><strong>1h</strong> saved</span></div>
+    </div>
+  </div>
+
+  <div class="powered-by">Powered by PranaOS · Implemented by Prana IQ</div>
+</div>
+
+<!-- Chat bar -->
+<div class="chat-bar">
+  <span class="chat-bar-icon">💬</span>
+  <input type="text" class="chat-bar-input" placeholder="Ask anything about AMC Theatres…" onkeydown="if(event.key==='Enter')window.location.href='C-06-universal-chat.html'">
+</div>
+
+<script>
+  var isAdminView = true;
+
+  function toggleView() {
+    isAdminView = !isAdminView;
+    var bar = document.getElementById('admin-bar');
+    var overlay = document.getElementById('admin-overlay');
+    var toggle = document.getElementById('view-toggle');
+    var header = document.getElementById('client-header');
+    var gears = document.querySelectorAll('.agent-admin-gear');
+    var shortcuts = document.getElementById('admin-shortcuts');
+
+    if (isAdminView) {
+      // Back to admin view
+      bar.classList.remove('hidden');
+      overlay.classList.remove('hidden');
+      header.style.top = '48px';
+      toggle.className = 'ab-toggle admin-mode';
+      toggle.innerHTML = '👁️ View as client';
+      gears.forEach(function(g) { g.classList.remove('hidden'); });
+      shortcuts.style.display = 'flex';
+    } else {
+      // Client view - hide admin stuff
+      overlay.classList.add('hidden');
+      header.style.top = '48px';
+      toggle.className = 'ab-toggle client-mode';
+      toggle.innerHTML = '🔧 Back to admin view';
+      gears.forEach(function(g) { g.classList.add('hidden'); });
+      shortcuts.style.display = 'none';
+    }
+  }
+
+  function switchClient(val) {
+    var names = { amc: 'AMC Theatres', sip: 'Sip Coffee & Beer', dutch: 'Dutch Bros Region 14', board: 'Board & Brew', starbucks: 'Starbucks Metro' };
+    var logos = { amc: 'AMC', sip: 'SIP', dutch: 'DB', board: 'BB', starbucks: 'SBX' };
+    document.querySelector('.ch-name').textContent = names[val];
+    document.querySelector('.ch-logo').textContent = logos[val];
+    document.querySelector('.chat-bar-input').placeholder = 'Ask anything about ' + names[val] + '…';
+    document.querySelector('.greeting strong').textContent = 'Rishabh';
+  }
+</script>
+</body>
+</html>

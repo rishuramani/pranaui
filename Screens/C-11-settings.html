@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --client-primary: #c41e3a; --client-primary-light: rgba(196,30,58,0.08); --client-primary-border: rgba(196,30,58,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08);
+    --red: #c25a5a; --red-bg: rgba(194,90,90,0.08);
+    --purple: #7c3aed; --blue: #2563eb;
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+  /* Client sidebar */
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 20px 0; display: flex; flex-direction: column; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 20px; margin-bottom: 6px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 16px; font-weight: 800; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-client { padding: 0 20px; margin-bottom: 24px; }
+  .sb-client-name { font-size: 13px; font-weight: 700; }
+  .sb-client-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: var(--client-primary-light); color: var(--client-primary); margin-top: 2px; }
+  .sb-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 10px; }
+  .sb-item { padding: 9px 14px; border-radius: var(--radius-xs); font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 10px; }
+  .sb-item:hover { background: var(--client-primary-light); color: var(--text); }
+  .sb-item.active { background: var(--client-primary-light); color: var(--client-primary); font-weight: 700; }
+  .sb-divider { height: 1px; background: var(--border-subtle); margin: 12px 20px; }
+  .sb-badge { font-size: 9px; font-weight: 700; color: #fff; background: var(--client-primary); min-width: 16px; height: 16px; border-radius: 8px; display: flex; align-items: center; justify-content: center; padding: 0 4px; margin-left: auto; }
+  .sb-user { padding: 12px 20px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border-subtle); margin-top: auto; }
+  .sb-user-avatar { width: 30px; height: 30px; border-radius: 7px; background: linear-gradient(135deg, var(--client-primary), #e94560); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .sb-user-name { font-size: 12px; font-weight: 600; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); }
+
+  /* Main content area */
+  .main { padding: 28px 32px; overflow-y: auto; min-width: 0; }
+  .page-header { margin-bottom: 24px; }
+  .page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .page-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-top: 2px; }
+
+  /* Tab bar */
+  .tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+  .tab-btn { padding: 10px 20px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-muted); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s; margin-bottom: -1px; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+  .tab-btn.danger { color: var(--text-muted); }
+  .tab-btn.danger.active { color: var(--red); border-bottom-color: var(--red); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Form styles */
+  .form-section { max-width: 560px; }
+  .form-group { margin-bottom: 20px; }
+  .form-label { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 6px; display: block; }
+  .form-hint { font-size: 10px; color: var(--text-dim); font-weight: 400; margin-left: 4px; }
+  .form-input, .form-select {
+    width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs);
+    font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg-card); outline: none; transition: border-color 0.15s;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+  .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%237a6348' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+
+  .btn { padding: 10px 22px; border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .btn-primary:hover { filter: brightness(0.92); }
+  .btn-outline { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); }
+  .btn-outline:hover { background: var(--bg-warm); color: var(--text); }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-danger:hover { filter: brightness(0.9); }
+  .btn-danger-outline { background: none; border: 1px solid var(--red); color: var(--red); }
+  .btn-danger-outline:hover { background: var(--red-bg); }
+
+  /* Notification toggle rows */
+  .toggle-list { display: flex; flex-direction: column; gap: 2px; max-width: 600px; }
+  .toggle-row {
+    display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    transition: all 0.15s;
+  }
+  .toggle-row:hover { box-shadow: var(--shadow-sm); }
+  .toggle-info { flex: 1; min-width: 0; }
+  .toggle-label { font-size: 13px; font-weight: 700; color: var(--text); }
+  .toggle-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Toggle switch */
+  .toggle-switch {
+    width: 40px; height: 22px; border-radius: 11px; background: var(--border);
+    position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+  }
+  .toggle-switch::after {
+    content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+    border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    transition: transform 0.2s;
+  }
+  .toggle-switch.on { background: var(--accent); }
+  .toggle-switch.on::after { transform: translateX(18px); }
+
+  /* Integration cards */
+  .integration-list { display: flex; flex-direction: column; gap: 10px; max-width: 640px; }
+  .integration-card {
+    display: flex; align-items: center; gap: 14px; padding: 16px 18px;
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm); transition: all 0.15s;
+  }
+  .integration-card:hover { box-shadow: var(--shadow-md); }
+  .integ-icon {
+    width: 40px; height: 40px; border-radius: var(--radius-xs); display: flex;
+    align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+  }
+  .integ-info { flex: 1; min-width: 0; }
+  .integ-name { font-size: 14px; font-weight: 700; }
+  .integ-meta { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .integ-status {
+    display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 600;
+    padding: 4px 10px; border-radius: 12px; flex-shrink: 0;
+  }
+  .integ-status .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .integ-status.connected { background: var(--accent-bg); color: var(--accent); }
+  .integ-status.connected .dot { background: var(--accent); }
+  .integ-status.pending { background: var(--warn-bg); color: var(--warn); }
+  .integ-status.pending .dot { background: var(--warn); }
+  .integ-status.disconnected { background: var(--bg-warm); color: var(--text-dim); }
+  .integ-status.disconnected .dot { background: var(--text-dim); }
+
+  .integ-actions { flex-shrink: 0; }
+  .integ-btn {
+    padding: 7px 16px; border-radius: var(--radius-xs); font-family: inherit;
+    font-size: 11px; font-weight: 700; cursor: pointer; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-muted); transition: all 0.15s;
+  }
+  .integ-btn:hover { background: var(--bg-warm); color: var(--text); }
+  .integ-btn.connect { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .integ-btn.connect:hover { filter: brightness(0.92); }
+  .integ-btn.authorize { background: var(--warn-bg); color: var(--warn); border-color: rgba(196,132,45,0.25); }
+  .integ-btn.authorize:hover { filter: brightness(0.95); }
+
+  /* Danger zone */
+  .danger-zone {
+    max-width: 600px; border: 1.5px solid var(--red); border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .danger-zone-header {
+    padding: 16px 20px; background: var(--red-bg);
+    font-size: 14px; font-weight: 800; color: var(--red);
+    border-bottom: 1px solid rgba(194,90,90,0.15);
+  }
+  .danger-item {
+    display: flex; align-items: center; gap: 16px; padding: 18px 20px;
+    border-bottom: 1px solid rgba(194,90,90,0.1);
+  }
+  .danger-item:last-child { border-bottom: none; }
+  .danger-item-info { flex: 1; min-width: 0; }
+  .danger-item-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .danger-item-desc { font-size: 11px; color: var(--text-dim); margin-top: 3px; line-height: 1.5; }
+
+  /* Screen ID badge */
+  .screen-id {
+    position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--text-dim); background: var(--bg-card);
+    border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px;
+    z-index: 100; box-shadow: var(--shadow-sm);
+  }
+  .screen-id strong { color: var(--accent); }
+
+  /* Save confirmation toast */
+  .toast {
+    position: fixed; bottom: 80px; right: 20px; background: var(--accent); color: #fff;
+    padding: 10px 20px; border-radius: var(--radius-xs); font-size: 12px; font-weight: 600;
+    box-shadow: var(--shadow-md); z-index: 100; opacity: 0; transform: translateY(10px);
+    transition: all 0.3s ease; pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+<div class="screen-id"><strong>C-11</strong> Settings</div>
+
+<div class="toast" id="toast">Changes saved successfully</div>
+
+<div class="shell">
+<div class="sidebar">
+  <div class="sb-logo"><svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg><div class="sb-logo-text">Prana<span>OS</span></div></div>
+  <div class="sb-client">
+    <div class="sb-client-name">AMC Theatres</div>
+    <div class="sb-client-badge">&#128100; Client Admin</div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-item" onclick="navTo('dashboard')">&#128202; Dashboard</div>
+    <div class="sb-item" onclick="navTo('agents')">&#129302; Agents</div>
+    <div class="sb-item" onclick="navTo('chat')">&#128172; Chat</div>
+    <div class="sb-item" onclick="navTo('decisions')">&#128229; Decisions <span class="sb-badge">4</span></div>
+    <div class="sb-divider"></div>
+    <div class="sb-item" onclick="navTo('knowledge')">&#128218; Knowledge</div>
+    <div class="sb-item" onclick="navTo('departments')">&#127970; Departments</div>
+    <div class="sb-item" onclick="navTo('team')">&#128101; Team</div>
+    <div class="sb-item active" onclick="navTo('settings')">&#9881;&#65039; Settings</div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-user-avatar">JM</div>
+    <div><div class="sb-user-name">Jessica Miller</div><div class="sb-user-role">Admin &middot; All depts</div></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="page-header">
+    <div class="page-title">Settings</div>
+    <div class="page-desc">Manage your organization preferences, notifications, integrations, and account settings.</div>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('general', this)">General</button>
+    <button class="tab-btn" onclick="switchTab('notifications', this)">Notifications</button>
+    <button class="tab-btn" onclick="switchTab('integrations', this)">Integrations</button>
+    <button class="tab-btn danger" onclick="switchTab('danger', this)">Danger Zone</button>
+  </div>
+
+  <!-- Tab 1: General -->
+  <div class="tab-content active" id="tab-general">
+    <div class="form-section">
+      <div class="form-group">
+        <label class="form-label">Organization Name</label>
+        <input type="text" class="form-input" value="AMC Theatres">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Timezone</label>
+        <select class="form-select">
+          <option>America/New_York (EST)</option>
+          <option>America/Chicago (CST)</option>
+          <option>America/Denver (MST)</option>
+          <option selected>America/Los_Angeles (PST)</option>
+          <option>America/Anchorage (AKST)</option>
+          <option>Pacific/Honolulu (HST)</option>
+          <option>Europe/London (GMT)</option>
+          <option>Europe/Berlin (CET)</option>
+          <option>Asia/Tokyo (JST)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Default Language</label>
+        <select class="form-select">
+          <option selected>English</option>
+          <option>Spanish</option>
+          <option>French</option>
+          <option>German</option>
+          <option>Japanese</option>
+          <option>Portuguese</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date Format</label>
+        <select class="form-select">
+          <option selected>MM/DD/YYYY</option>
+          <option>DD/MM/YYYY</option>
+          <option>YYYY-MM-DD</option>
+          <option>DD.MM.YYYY</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="showToast()">Save Changes</button>
+    </div>
+  </div>
+
+  <!-- Tab 2: Notifications -->
+  <div class="tab-content" id="tab-notifications">
+    <div class="toggle-list">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">Decision Alerts</div>
+          <div class="toggle-desc">Get notified when agents surface new decisions that need your approval.</div>
+        </div>
+        <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">Agent Status Changes</div>
+          <div class="toggle-desc">Receive alerts when agents go online, offline, or encounter errors.</div>
+        </div>
+        <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">Weekly Digest Email</div>
+          <div class="toggle-desc">A summary of agent activity, decisions made, and key metrics delivered every Monday.</div>
+        </div>
+        <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">Chat Mentions</div>
+          <div class="toggle-desc">Get notified when someone mentions you in a chat conversation with an agent.</div>
+        </div>
+        <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">New Team Member Joins</div>
+          <div class="toggle-desc">Receive a notification when a new user is added to your organization.</div>
+        </div>
+        <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Integrations -->
+  <div class="tab-content" id="tab-integrations">
+    <div class="integration-list">
+      <!-- Shopify -->
+      <div class="integration-card">
+        <div class="integ-icon" style="background: linear-gradient(135deg, #96bf48, #5e8e3e);">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M14.5 3.5L13 4l-.5-1.5L11 3l-1-2-3 1.5L4 17l6 2 6-2-1.5-13.5z" fill="#fff" opacity="0.9"/></svg>
+        </div>
+        <div class="integ-info">
+          <div class="integ-name">Shopify</div>
+          <div class="integ-meta">Last synced 2 min ago</div>
+        </div>
+        <span class="integ-status connected"><span class="dot"></span> Connected</span>
+        <div class="integ-actions">
+          <button class="integ-btn" onclick="alert('Manage Shopify integration')">Manage</button>
+        </div>
+      </div>
+      <!-- Google Analytics -->
+      <div class="integration-card">
+        <div class="integ-icon" style="background: linear-gradient(135deg, #f9ab00, #e37400);">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="12" width="3" height="5" rx="1" fill="#fff"/><rect x="8.5" y="8" width="3" height="9" rx="1" fill="#fff"/><rect x="14" y="4" width="3" height="13" rx="1" fill="#fff"/></svg>
+        </div>
+        <div class="integ-info">
+          <div class="integ-name">Google Analytics</div>
+          <div class="integ-meta">Tracking active</div>
+        </div>
+        <span class="integ-status connected"><span class="dot"></span> Connected</span>
+        <div class="integ-actions">
+          <button class="integ-btn" onclick="alert('Manage Google Analytics integration')">Manage</button>
+        </div>
+      </div>
+      <!-- Slack -->
+      <div class="integration-card">
+        <div class="integ-icon" style="background: linear-gradient(135deg, #4a154b, #611f69);">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="8" width="5" height="2" rx="1" fill="#E01E5A"/><rect x="8" y="3" width="2" height="5" rx="1" fill="#36C5F0"/><rect x="12" y="10" width="5" height="2" rx="1" fill="#2EB67D"/><rect x="10" y="12" width="2" height="5" rx="1" fill="#ECB22E"/></svg>
+        </div>
+        <div class="integ-info">
+          <div class="integ-name">Slack</div>
+          <div class="integ-meta">Authorization required</div>
+        </div>
+        <span class="integ-status pending"><span class="dot"></span> Pending</span>
+        <div class="integ-actions">
+          <button class="integ-btn authorize" onclick="alert('Redirecting to Slack authorization...')">Authorize</button>
+        </div>
+      </div>
+      <!-- HubSpot -->
+      <div class="integration-card">
+        <div class="integ-icon" style="background: linear-gradient(135deg, #ff7a59, #ff5c35);">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="4" fill="#fff" opacity="0.9"/><circle cx="10" cy="10" r="2" fill="#ff5c35"/></svg>
+        </div>
+        <div class="integ-info">
+          <div class="integ-name">HubSpot</div>
+          <div class="integ-meta">CRM and marketing automation</div>
+        </div>
+        <span class="integ-status disconnected"><span class="dot"></span> Not connected</span>
+        <div class="integ-actions">
+          <button class="integ-btn connect" onclick="alert('Starting HubSpot connection flow...')">Connect</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 4: Danger Zone -->
+  <div class="tab-content" id="tab-danger">
+    <div class="danger-zone">
+      <div class="danger-zone-header">&#9888;&#65039; Danger Zone</div>
+      <div class="danger-item">
+        <div class="danger-item-info">
+          <div class="danger-item-title">Delete Organization</div>
+          <div class="danger-item-desc">Permanently delete the <strong>AMC Theatres</strong> organization, all associated data, agents, chat history, and decision logs. This action cannot be undone.</div>
+        </div>
+        <button class="btn btn-danger" onclick="if(confirm('Are you sure you want to delete AMC Theatres? This action is permanent and cannot be undone.')) alert('Organization deletion initiated.')">Delete Organization</button>
+      </div>
+      <div class="danger-item">
+        <div class="danger-item-info">
+          <div class="danger-item-title">Transfer Ownership</div>
+          <div class="danger-item-desc">Transfer the admin role to another team member. You will be downgraded to a regular user and lose admin privileges.</div>
+        </div>
+        <button class="btn btn-danger-outline" onclick="alert('Opening ownership transfer dialog...')">Transfer Ownership</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function navTo(target) {
+  var routes = {
+    'dashboard': 'C-04-client-dashboard.html',
+    'agents': 'C-05-agent-gui.html',
+    'chat': 'C-06-universal-chat.html',
+    'decisions': 'C-07-decision-inbox.html',
+    'knowledge': 'C-08-user-walkthrough.html',
+    'departments': 'C-09-department-setup.html',
+    'team': 'C-10-user-management.html',
+    'settings': 'C-11-settings.html'
+  };
+  if (routes[target]) {
+    window.location.href = routes[target];
+  } else {
+    alert('Navigation: ' + target + ' (screen not yet built)');
+  }
+}
+
+function switchTab(tabId, btn) {
+  // Deactivate all tabs
+  var tabs = document.querySelectorAll('.tab-content');
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].classList.remove('active');
+  }
+  var btns = document.querySelectorAll('.tab-btn');
+  for (var j = 0; j < btns.length; j++) {
+    btns[j].classList.remove('active');
+  }
+  // Activate selected
+  document.getElementById('tab-' + tabId).classList.add('active');
+  btn.classList.add('active');
+}
+
+function showToast() {
+  var toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(function() {
+    toast.classList.remove('show');
+  }, 2400);
+}
+</script>
+</body>
+</html>

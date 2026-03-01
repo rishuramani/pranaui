@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Onboarding Survey</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0;
+    --bg-card: #fffdf9;
+    --bg-elevated: #f0e8dc;
+    --border: #e2d5c4;
+    --border-subtle: #ede4d6;
+    --text: #2a1f10;
+    --text-secondary: #4a3d2a;
+    --text-muted: #7a6348;
+    --text-dim: #a89880;
+    --accent: #18856a;
+    --accent-hover: #147a60;
+    --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07);
+    --accent-border: rgba(24,133,106,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04);
+    --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --radius-xs: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Layout */
+  .survey-shell {
+    width: 100%;
+    max-width: 580px;
+    padding: 40px 24px;
+  }
+
+  /* Header */
+  .survey-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .survey-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 36px;
+  }
+
+  .survey-logo svg { width: 28px; height: 28px; }
+
+  .survey-logo-text {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+
+  .survey-logo-text span { color: var(--accent); }
+
+  /* Progress */
+  .survey-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .sp-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.4s ease;
+  }
+
+  .sp-dot.active {
+    background: var(--accent);
+    width: 28px;
+    border-radius: 4px;
+  }
+
+  .sp-dot.completed {
+    background: var(--accent-bright);
+  }
+
+  .survey-step-label {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 400;
+    text-align: center;
+  }
+
+  /* Question view */
+  .q-view {
+    display: none;
+    animation: qIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .q-view.active { display: block; }
+
+  @keyframes qIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes qOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(-30px); }
+  }
+
+  .q-emoji {
+    font-size: 40px;
+    margin-bottom: 16px;
+  }
+
+  .q-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .q-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 32px;
+  }
+
+  /* Option chips (multi-select) */
+  .chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .chip {
+    padding: 10px 18px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .chip:hover {
+    border-color: var(--accent-border);
+    background: var(--accent-bg);
+  }
+
+  .chip.selected {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(24,133,106,0.25);
+  }
+
+  .chip-icon { margin-right: 6px; }
+
+  /* Single-select cards */
+  .option-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .option-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .option-card:hover {
+    border-color: var(--accent-border);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  .option-card:active { transform: translateY(0); }
+
+  .option-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-bg), var(--shadow-md);
+  }
+
+  .option-radio {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: border-color 0.2s;
+  }
+
+  .option-card.selected .option-radio {
+    border-color: var(--accent);
+  }
+
+  .option-radio-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .option-card.selected .option-radio-dot {
+    transform: scale(1);
+  }
+
+  .option-content { flex: 1; }
+
+  .option-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 1px;
+  }
+
+  .option-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  .option-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  /* Buttons */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-primary {
+    flex: 1;
+    padding: 14px 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(24,133,106,0.25);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 4px 16px rgba(24,133,106,0.3);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .btn-secondary {
+    padding: 14px 20px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--text-dim);
+    color: var(--text);
+  }
+
+  /* Skip */
+  .skip-link {
+    text-align: center;
+    margin-top: 16px;
+  }
+
+  .skip-link a {
+    font-size: 13px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-weight: 300;
+    transition: color 0.2s;
+  }
+
+  .skip-link a:hover {
+    color: var(--text-muted);
+    text-decoration: underline;
+  }
+
+  /* Personalization summary */
+  .summary-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .summary-title {
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 14px;
+  }
+
+  .summary-row:last-child { border-bottom: none; }
+
+  .summary-label {
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  .summary-value {
+    font-weight: 600;
+    text-align: right;
+    max-width: 60%;
+  }
+
+  .summary-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-end;
+  }
+
+  .summary-chip {
+    font-size: 11px;
+    background: var(--accent-bg);
+    color: var(--accent);
+    border: 1px solid var(--accent-border);
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  .summary-note {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-weight: 300;
+    line-height: 1.6;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  /* Screen ID */
+  .screen-id {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .screen-id strong { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    .survey-shell { padding: 24px 16px; }
+    .q-title { font-size: 22px; }
+    .chip { font-size: 13px; padding: 8px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>A-01</strong> Onboarding Survey</div>
+
+<div class="survey-shell">
+
+  <!-- HEADER -->
+  <div class="survey-header">
+    <div class="survey-logo">
+      <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <circle cx="256" cy="256" r="153" stroke="#18856a" stroke-width="10.5" opacity="0.38"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="survey-logo-text">Prana<span>OS</span></span>
+    </div>
+
+    <div class="survey-progress">
+      <div class="sp-dot active" id="dot-1"></div>
+      <div class="sp-dot" id="dot-2"></div>
+      <div class="sp-dot" id="dot-3"></div>
+    </div>
+    <div class="survey-step-label" id="step-label">Question 1 of 3</div>
+  </div>
+
+  <!-- ========== Q1: INDUSTRIES ========== -->
+  <div class="q-view active" id="q-1">
+    <div class="q-emoji">🏢</div>
+    <h2 class="q-title">What industries do your clients operate in?</h2>
+    <p class="q-desc">Select all that apply. This helps us recommend the right agents for your business.</p>
+
+    <div class="chip-grid" id="industry-chips">
+      <div class="chip" onclick="toggleChip(this)" data-value="retail"><span class="chip-icon">🛍️</span> Retail & E-Commerce</div>
+      <div class="chip" onclick="toggleChip(this)" data-value="saas"><span class="chip-icon">💻</span> SaaS & Tech</div>
+      <div class="chip" onclick="toggleChip(this)" data-value="healthcare"><span class="chip-icon">🏥</span> Healthcare</div>
+      <div class="chip" onclick="toggleChip(this)" data-value="realestate"><span class="chip-icon">🏠</span> Real Estate</div>
+      <div class="chip" onclick="toggleChip(this)" data-value="finance"><span class="chip-icon">💰</span> Finance & Accounting</div>
+      <div class="chip" onclick="toggleChip(this)" data-value="hospitality"><span class="chip-icon">🍽️</span> Hospitality & F&B</div>
+      <div class="chip" onclick="toggleChip(this)" data-value="legal"><span class="chip-icon">⚖️</span> Legal</div>
+      <div class="chip" onclick="toggleChip(this)" data-value="manufacturing"><span class="chip-icon">🏭</span> Manufacturing</div>
+      <div class="chip" onclick="toggleChip(this)" data-value="education"><span class="chip-icon">📚</span> Education</div>
+      <div class="chip" onclick="toggleChip(this)" data-value="marketing"><span class="chip-icon">📣</span> Marketing & Advertising</div>
+      <div class="chip" onclick="toggleChip(this)" data-value="construction"><span class="chip-icon">🔨</span> Construction</div>
+      <div class="chip" onclick="toggleChip(this)" data-value="other"><span class="chip-icon">✦</span> Other / Mixed</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="q1-continue" onclick="nextQuestion(1)" disabled>Continue</button>
+    </div>
+    <div class="skip-link"><a href="#" onclick="skipQuestion(1); return false;">Skip for now</a></div>
+  </div>
+
+  <!-- ========== Q2: CLIENT COUNT ========== -->
+  <div class="q-view" id="q-2">
+    <div class="q-emoji">👥</div>
+    <h2 class="q-title">How many clients do you currently serve?</h2>
+    <p class="q-desc">Helps us set the right scale expectations and suggest the best workflow.</p>
+
+    <div class="option-list" id="client-count-options">
+      <div class="option-card" onclick="selectOption(this, 'clientCount', 'solo')">
+        <div class="option-radio"><div class="option-radio-dot"></div></div>
+        <div class="option-content">
+          <div class="option-title">Just me</div>
+          <div class="option-desc">I'm a solopreneur or solo consultant</div>
+        </div>
+        <div class="option-icon">🧑‍💼</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'clientCount', '1-5')">
+        <div class="option-radio"><div class="option-radio-dot"></div></div>
+        <div class="option-content">
+          <div class="option-title">1–5 clients</div>
+          <div class="option-desc">Small agency or early-stage consultancy</div>
+        </div>
+        <div class="option-icon">🏠</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'clientCount', '6-20')">
+        <div class="option-radio"><div class="option-radio-dot"></div></div>
+        <div class="option-content">
+          <div class="option-title">6–20 clients</div>
+          <div class="option-desc">Growing agency with a team</div>
+        </div>
+        <div class="option-icon">🏢</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'clientCount', '20+')">
+        <div class="option-radio"><div class="option-radio-dot"></div></div>
+        <div class="option-content">
+          <div class="option-title">20+ clients</div>
+          <div class="option-desc">Established MSP or full-service agency</div>
+        </div>
+        <div class="option-icon">🏙️</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="prevQuestion(2)">← Back</button>
+      <button class="btn-primary" id="q2-continue" onclick="nextQuestion(2)" disabled>Continue</button>
+    </div>
+  </div>
+
+  <!-- ========== Q3: AI EXPERIENCE ========== -->
+  <div class="q-view" id="q-3">
+    <div class="q-emoji">🤖</div>
+    <h2 class="q-title">Have you implemented AI tools for clients before?</h2>
+    <p class="q-desc">No wrong answer — we'll tailor the setup experience to match your comfort level.</p>
+
+    <div class="option-list" id="ai-exp-options">
+      <div class="option-card" onclick="selectOption(this, 'aiExp', 'yes')">
+        <div class="option-radio"><div class="option-radio-dot"></div></div>
+        <div class="option-content">
+          <div class="option-title">Yes, I've done this before</div>
+          <div class="option-desc">I've deployed AI/ML tools, chatbots, or automation for clients</div>
+        </div>
+        <div class="option-icon">🚀</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'aiExp', 'some')">
+        <div class="option-radio"><div class="option-radio-dot"></div></div>
+        <div class="option-content">
+          <div class="option-title">A little — I use AI personally</div>
+          <div class="option-desc">I use ChatGPT/Claude but haven't deployed it for clients yet</div>
+        </div>
+        <div class="option-icon">🌱</div>
+      </div>
+      <div class="option-card" onclick="selectOption(this, 'aiExp', 'no')">
+        <div class="option-radio"><div class="option-radio-dot"></div></div>
+        <div class="option-content">
+          <div class="option-title">Not yet — I'm exploring</div>
+          <div class="option-desc">I know AI is the future and I want to offer it to my clients</div>
+        </div>
+        <div class="option-icon">🔍</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="prevQuestion(3)">← Back</button>
+      <button class="btn-primary" id="q3-continue" onclick="completeSurvey()" disabled>Finish & start building</button>
+    </div>
+  </div>
+
+  <!-- ========== COMPLETE ========== -->
+  <div class="q-view" id="q-complete">
+    <div class="q-emoji">✨</div>
+    <h2 class="q-title">Perfect — we've got you.</h2>
+    <p class="q-desc">Based on your answers, we've tailored your experience. Let's build your agency's AI operating system.</p>
+
+    <div class="summary-card">
+      <div class="summary-title">Your Profile</div>
+      <div class="summary-row">
+        <span class="summary-label">Industries</span>
+        <span class="summary-value"><span class="summary-chips" id="summary-industries"></span></span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Client count</span>
+        <span class="summary-value" id="summary-clients">—</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">AI experience</span>
+        <span class="summary-value" id="summary-ai">—</span>
+      </div>
+      <div class="summary-note">We'll pre-filter the agent marketplace to your industries and adjust the walkthrough to your experience level. You can change these anytime in Settings.</div>
+    </div>
+
+    <button class="btn-primary" onclick="goToSelfSetup()" style="width:100%;">Let's set up your agency OS →</button>
+    <div class="skip-link" style="margin-top:12px;"><a href="#" onclick="goToSelfSetup(); return false;">Skip straight to dashboard</a></div>
+  </div>
+
+</div>
+
+<script>
+  let currentQ = 1;
+  const answers = {
+    industries: [],
+    clientCount: null,
+    aiExp: null
+  };
+
+  function updateProgress(q) {
+    for (let i = 1; i <= 3; i++) {
+      const dot = document.getElementById('dot-' + i);
+      dot.classList.remove('active', 'completed');
+      if (i < q) dot.classList.add('completed');
+      if (i === q) dot.classList.add('active');
+    }
+    if (q <= 3) {
+      document.getElementById('step-label').textContent = 'Question ' + q + ' of 3';
+    } else {
+      document.getElementById('step-label').textContent = 'All done!';
+      document.querySelectorAll('.sp-dot').forEach(d => d.classList.add('completed'));
+    }
+  }
+
+  function showQuestion(q) {
+    document.getElementById('q-' + currentQ).classList.remove('active');
+    currentQ = q;
+
+    const target = q <= 3 ? 'q-' + q : 'q-complete';
+    const el = document.getElementById(target);
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = '';
+    el.classList.add('active');
+
+    updateProgress(q);
+  }
+
+  function toggleChip(chip) {
+    chip.classList.toggle('selected');
+    
+    const selected = document.querySelectorAll('#industry-chips .chip.selected');
+    answers.industries = Array.from(selected).map(c => c.dataset.value);
+    
+    document.getElementById('q1-continue').disabled = answers.industries.length === 0;
+  }
+
+  function selectOption(card, field, value) {
+    const parent = card.parentElement;
+    parent.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    
+    answers[field] = value;
+
+    if (field === 'clientCount') {
+      document.getElementById('q2-continue').disabled = false;
+    }
+    if (field === 'aiExp') {
+      document.getElementById('q3-continue').disabled = false;
+    }
+  }
+
+  function nextQuestion(from) {
+    showQuestion(from + 1);
+  }
+
+  function prevQuestion(from) {
+    showQuestion(from - 1);
+  }
+
+  function skipQuestion(from) {
+    if (from === 1) {
+      answers.industries = ['other'];
+    }
+    nextQuestion(from);
+  }
+
+  function completeSurvey() {
+    // Build summary
+    const industryLabels = {
+      retail: 'Retail', saas: 'SaaS', healthcare: 'Healthcare', realestate: 'Real Estate',
+      finance: 'Finance', hospitality: 'Hospitality', legal: 'Legal', manufacturing: 'Manufacturing',
+      education: 'Education', marketing: 'Marketing', construction: 'Construction', other: 'Other'
+    };
+
+    const clientLabels = {
+      solo: 'Solopreneur', '1-5': '1–5 clients', '6-20': '6–20 clients', '20+': '20+ clients'
+    };
+
+    const aiLabels = {
+      yes: 'Experienced', some: 'Some experience', no: 'Exploring'
+    };
+
+    const chipsHtml = answers.industries.map(i => 
+      '<span class="summary-chip">' + (industryLabels[i] || i) + '</span>'
+    ).join('');
+
+    document.getElementById('summary-industries').innerHTML = chipsHtml;
+    document.getElementById('summary-clients').textContent = clientLabels[answers.clientCount] || '—';
+    document.getElementById('summary-ai').textContent = aiLabels[answers.aiExp] || '—';
+
+    showQuestion(4);
+  }
+
+  function goToSelfSetup() {
+    window.location.href = 'A-02-agency-self-setup.html';
+  }
+</script>
+</body>
+</html>

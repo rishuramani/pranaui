@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Email Templates</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-card: #fffdf9; --bg-elevated: #f0e8dc;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-hover: #147a60; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 14px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* Nav */
+  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 16px 40px; display: flex; align-items: center; background: rgba(250,246,240,0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(226,213,196,0.5); }
+  .nav-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  .nav-logo svg { width: 32px; height: 32px; }
+  .nav-logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+  .nav-logo-text span { color: var(--accent); }
+  .nav-links { display: flex; gap: 32px; margin-left: 60px; }
+  .nav-link { font-size: 13px; font-weight: 500; color: var(--text-muted); text-decoration: none; cursor: pointer; transition: color 0.15s; }
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--accent); font-weight: 600; }
+  .nav-spacer { flex: 1; }
+  .nav-cta { padding: 9px 22px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 8px rgba(24,133,106,0.2); transition: filter 0.15s; }
+  .nav-cta:hover { filter: brightness(0.92); }
+  .nav-login { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-right: 16px; cursor: pointer; text-decoration: none; transition: color 0.15s; }
+  .nav-login:hover { color: var(--text); }
+
+  /* Page Hero */
+  .page-hero { padding: 130px 40px 40px; text-align: center; position: relative; }
+  .page-hero::before { content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 500px; height: 400px; background: radial-gradient(circle, var(--accent-bg) 0%, transparent 70%); pointer-events: none; }
+  .hero-title { font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1.2; margin-bottom: 10px; position: relative; }
+  .hero-sub { font-size: 15px; font-weight: 300; color: var(--text-muted); max-width: 480px; margin: 0 auto; line-height: 1.7; position: relative; }
+
+  /* Main content */
+  .main-content { max-width: 800px; margin: 0 auto; padding: 32px 40px 80px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 28px; }
+  .tab { padding: 12px 24px; font-size: 14px; font-weight: 600; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; user-select: none; }
+  .tab:hover { color: var(--text-muted); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* Email preview card */
+  .email-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-md); overflow: hidden; }
+
+  /* Email header fields */
+  .email-header { padding: 20px 28px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-card); }
+  .email-field { display: flex; align-items: baseline; gap: 10px; padding: 4px 0; }
+  .email-field-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); min-width: 58px; font-family: 'IBM Plex Mono', monospace; }
+  .email-field-value { font-size: 13px; color: var(--text); font-weight: 400; }
+  .email-field-value.subject { font-weight: 700; font-size: 14px; }
+
+  /* Email body */
+  .email-body { background: var(--bg); padding: 0; }
+  .email-body-inner { max-width: 560px; margin: 0 auto; padding: 40px 20px; }
+
+  /* Email branding header */
+  .email-brand { text-align: center; margin-bottom: 28px; }
+  .email-brand-logo { display: inline-flex; align-items: center; gap: 8px; }
+  .email-brand-logo svg { width: 28px; height: 28px; }
+  .email-brand-text { font-size: 16px; font-weight: 800; letter-spacing: -0.5px; }
+  .email-brand-text span { color: var(--accent); }
+
+  /* Email content card */
+  .email-content { background: #fff; border-radius: var(--radius-sm); padding: 36px 32px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-subtle); }
+  .email-content h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 16px; color: var(--text); }
+  .email-content p { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 14px; font-weight: 400; }
+  .email-content .greeting { font-size: 14px; color: var(--text); font-weight: 500; margin-bottom: 14px; }
+  .email-content .btn-email { display: inline-block; padding: 14px 32px; background: var(--accent); color: #fff; border-radius: var(--radius-xs); font-family: inherit; font-size: 14px; font-weight: 700; text-decoration: none; text-align: center; margin: 8px 0 16px; box-shadow: 0 2px 12px rgba(24,133,106,0.25); }
+  .email-content .note { font-size: 12px; color: var(--text-dim); font-style: italic; margin-bottom: 0; }
+  .email-content .security-note { font-size: 12px; color: var(--text-dim); background: var(--bg); border-radius: var(--radius-xs); padding: 12px 14px; margin-top: 8px; line-height: 1.6; border: 1px solid var(--border-subtle); }
+  .email-content ul { list-style: none; margin: 12px 0 18px; padding: 0; }
+  .email-content ul li { font-size: 14px; color: var(--text-muted); padding: 8px 0; padding-left: 24px; position: relative; line-height: 1.5; }
+  .email-content ul li::before { content: ''; position: absolute; left: 0; top: 14px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent-bg); border: 2px solid var(--accent); }
+  .email-content .decision-box { background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: var(--radius-xs); padding: 16px 18px; margin: 14px 0; }
+  .email-content .decision-box .db-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-bottom: 6px; }
+  .email-content .decision-box .db-text { font-size: 13px; color: var(--text); line-height: 1.6; }
+  .email-content .reply-note { font-size: 12px; color: var(--text-dim); background: var(--bg-elevated); padding: 10px 14px; border-radius: var(--radius-xs); margin-top: 8px; font-family: 'IBM Plex Mono', monospace; }
+
+  /* Email footer inside body */
+  .email-footer { text-align: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-subtle); }
+  .email-footer p { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+
+  /* Hide inactive tabs */
+  .email-tab-content { display: none; }
+  .email-tab-content.active { display: block; }
+
+  /* Footer */
+  .footer { border-top: 1px solid var(--border); padding: 40px; }
+  .footer-inner { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+  .footer-logo { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; }
+  .footer-logo span { color: var(--accent); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-link { font-size: 12px; color: var(--text-dim); text-decoration: none; cursor: pointer; transition: color 0.15s; }
+  .footer-link:hover { color: var(--text-muted); }
+  .footer-copy { font-size: 11px; color: var(--text-dim); }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .page-hero { padding: 120px 20px 30px; }
+    .main-content { padding: 24px 16px 60px; }
+    .tabs { overflow-x: auto; }
+    .tab { padding: 10px 16px; font-size: 13px; white-space: nowrap; }
+    .email-header { padding: 16px 20px; }
+    .email-content { padding: 28px 20px; }
+    .email-body-inner { padding: 28px 12px; }
+    .footer-inner { flex-direction: column; gap: 16px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>S-08</strong> Email Templates</div>
+
+<!-- Nav -->
+<div class="nav">
+  <div class="nav-logo" onclick="window.open('S-01-marketing-site.html','_self')">
+    <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg>
+    <div class="nav-logo-text">Prana<span>OS</span></div>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" onclick="window.open('S-01-marketing-site.html','_self')">Features</a>
+    <a class="nav-link" onclick="window.open('S-03-pricing.html','_self')">Pricing</a>
+    <a class="nav-link" onclick="window.open('S-01b-partners.html','_self')">Partners</a>
+    <a class="nav-link" onclick="window.open('S-05-login.html','_self')">Login</a>
+  </div>
+  <div class="nav-spacer"></div>
+  <a class="nav-login" onclick="window.open('S-05-login.html','_self')">Log in</a>
+  <button class="nav-cta" onclick="window.open('S-04-signup-checkout.html','_self')">Get Started</button>
+</div>
+
+<!-- Hero -->
+<div class="page-hero">
+  <h1 class="hero-title">Email Templates</h1>
+  <p class="hero-sub">Preview the automated emails PranaOS sends on your behalf</p>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('invite')">Invite</div>
+    <div class="tab" onclick="switchTab('welcome')">Welcome</div>
+    <div class="tab" onclick="switchTab('reset')">Reset</div>
+    <div class="tab" onclick="switchTab('decision')">Decision</div>
+  </div>
+
+  <!-- Tab 1: Invite Email -->
+  <div class="email-tab-content active" id="tab-invite">
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-field">
+          <span class="email-field-label">From</span>
+          <span class="email-field-value">noreply@pranaos.com</span>
+        </div>
+        <div class="email-field">
+          <span class="email-field-label">To</span>
+          <span class="email-field-value">recipient@example.com</span>
+        </div>
+        <div class="email-field">
+          <span class="email-field-label">Subject</span>
+          <span class="email-field-value subject">You've been invited to join [Organization] on PranaOS</span>
+        </div>
+      </div>
+      <div class="email-body">
+        <div class="email-body-inner">
+          <div class="email-brand">
+            <div class="email-brand-logo">
+              <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg>
+              <div class="email-brand-text">Prana<span>OS</span></div>
+            </div>
+          </div>
+          <div class="email-content">
+            <h2>You're invited!</h2>
+            <p class="greeting">Hi there,</p>
+            <p><strong>[Admin Name]</strong> has invited you to join <strong>[Organization]</strong> on PranaOS. Accept the invitation below to get started with your team's AI-powered workspace.</p>
+            <div style="text-align:center;">
+              <a class="btn-email" href="#">Accept Invite</a>
+            </div>
+            <p class="note">This invite expires in 7 days. If you didn't expect this invitation, you can safely ignore this email.</p>
+          </div>
+          <div class="email-footer">
+            <p>Sent by PranaOS on behalf of [Organization]</p>
+            <p>&copy; 2026 Backbar Solutions Inc.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Welcome Email -->
+  <div class="email-tab-content" id="tab-welcome">
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-field">
+          <span class="email-field-label">From</span>
+          <span class="email-field-value">noreply@pranaos.com</span>
+        </div>
+        <div class="email-field">
+          <span class="email-field-label">To</span>
+          <span class="email-field-value">newuser@example.com</span>
+        </div>
+        <div class="email-field">
+          <span class="email-field-label">Subject</span>
+          <span class="email-field-value subject">Welcome to [Organization]!</span>
+        </div>
+      </div>
+      <div class="email-body">
+        <div class="email-body-inner">
+          <div class="email-brand">
+            <div class="email-brand-logo">
+              <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg>
+              <div class="email-brand-text">Prana<span>OS</span></div>
+            </div>
+          </div>
+          <div class="email-content">
+            <h2>Welcome to [Organization]!</h2>
+            <p class="greeting">Hi there,</p>
+            <p>Your account has been set up and you're ready to go. Here are a few things to get you started:</p>
+            <ul>
+              <li><strong>Meet your agents</strong> &mdash; Explore the AI agents assigned to your department and see what they can do</li>
+              <li><strong>Set up departments</strong> &mdash; Configure your team structure and assign roles for the best experience</li>
+              <li><strong>Ask anything</strong> &mdash; Use the universal chat to get instant answers from any of your agents</li>
+            </ul>
+            <div style="text-align:center;">
+              <a class="btn-email" href="#">Go to Dashboard</a>
+            </div>
+            <p class="note">Need help getting started? Reply to this email or visit our docs at docs.pranaos.com.</p>
+          </div>
+          <div class="email-footer">
+            <p>Sent by PranaOS on behalf of [Organization]</p>
+            <p>&copy; 2026 Backbar Solutions Inc.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Reset Password Email -->
+  <div class="email-tab-content" id="tab-reset">
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-field">
+          <span class="email-field-label">From</span>
+          <span class="email-field-value">noreply@pranaos.com</span>
+        </div>
+        <div class="email-field">
+          <span class="email-field-label">To</span>
+          <span class="email-field-value">user@example.com</span>
+        </div>
+        <div class="email-field">
+          <span class="email-field-label">Subject</span>
+          <span class="email-field-value subject">Reset your password</span>
+        </div>
+      </div>
+      <div class="email-body">
+        <div class="email-body-inner">
+          <div class="email-brand">
+            <div class="email-brand-logo">
+              <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg>
+              <div class="email-brand-text">Prana<span>OS</span></div>
+            </div>
+          </div>
+          <div class="email-content">
+            <h2>Reset your password</h2>
+            <p class="greeting">Hi there,</p>
+            <p>We received a request to reset the password for your PranaOS account. Click the button below to choose a new password.</p>
+            <div style="text-align:center;">
+              <a class="btn-email" href="#">Reset Password</a>
+            </div>
+            <p class="note">This link expires in 1 hour. If you didn't request a password reset, no action is needed.</p>
+            <div class="security-note">
+              <strong>Security tip:</strong> PranaOS will never ask for your password via email. If you suspect unauthorized access to your account, please contact support immediately at support@pranaos.com.
+            </div>
+          </div>
+          <div class="email-footer">
+            <p>Sent by PranaOS</p>
+            <p>&copy; 2026 Backbar Solutions Inc.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 4: Decision Email -->
+  <div class="email-tab-content" id="tab-decision">
+    <div class="email-card">
+      <div class="email-header">
+        <div class="email-field">
+          <span class="email-field-label">From</span>
+          <span class="email-field-value">noreply@pranaos.com</span>
+        </div>
+        <div class="email-field">
+          <span class="email-field-label">To</span>
+          <span class="email-field-value">manager@example.com</span>
+        </div>
+        <div class="email-field">
+          <span class="email-field-label">Subject</span>
+          <span class="email-field-value subject">[Agent Name] needs your decision</span>
+        </div>
+      </div>
+      <div class="email-body">
+        <div class="email-body-inner">
+          <div class="email-brand">
+            <div class="email-brand-logo">
+              <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg>
+              <div class="email-brand-text">Prana<span>OS</span></div>
+            </div>
+          </div>
+          <div class="email-content">
+            <h2>[Agent Name] needs your decision</h2>
+            <p class="greeting">Hi there,</p>
+            <p>Your AI agent <strong>[Agent Name]</strong> has encountered a decision that requires your approval before it can proceed. Please review the details below.</p>
+            <div class="decision-box">
+              <div class="db-label">Decision Summary</div>
+              <div class="db-text">The agent has identified a recommended action based on its analysis. It needs your go-ahead to execute the next steps. Review the full context and supporting data in your decision inbox.</div>
+            </div>
+            <div style="text-align:center;">
+              <a class="btn-email" href="#">Review Decision</a>
+            </div>
+            <div class="reply-note">Reply <strong>APPROVE</strong> to this email to approve directly.</div>
+            <p class="note">Decisions left unresolved for 48 hours will be escalated to your team admin.</p>
+          </div>
+          <div class="email-footer">
+            <p>Sent by PranaOS on behalf of [Organization]</p>
+            <p>&copy; 2026 Backbar Solutions Inc.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo"><svg viewBox="0 0 32 32" fill="none" width="20" height="20"><rect width="32" height="32" rx="8" fill="#18856a"/><path d="M8 16 L16 8 L24 16 L16 24Z" fill="#2dd4a0" opacity="0.6"/><circle cx="16" cy="16" r="4" fill="#fff"/></svg> Prana<span>OS</span></div>
+    <div class="footer-links">
+      <a class="footer-link" onclick="window.open('S-01-marketing-site.html','_self')">Features</a>
+      <a class="footer-link" onclick="window.open('S-01b-partners.html','_self')">Partners</a>
+      <a class="footer-link" onclick="window.open('S-03-pricing.html','_self')">Pricing</a>
+      <a class="footer-link">Docs</a>
+      <a class="footer-link">Privacy</a>
+      <a class="footer-link">Terms</a>
+    </div>
+    <div class="footer-copy">&copy; 2026 Backbar Solutions Inc.</div>
+  </div>
+</div>
+
+<script>
+function switchTab(tabName) {
+  // Deactivate all tabs
+  document.querySelectorAll('.tab').forEach(function(t) {
+    t.classList.remove('active');
+  });
+  // Hide all tab content
+  document.querySelectorAll('.email-tab-content').forEach(function(c) {
+    c.classList.remove('active');
+  });
+  // Activate clicked tab
+  var tabs = document.querySelectorAll('.tab');
+  var tabMap = { invite: 0, welcome: 1, reset: 2, decision: 3 };
+  tabs[tabMap[tabName]].classList.add('active');
+  // Show corresponding content
+  document.getElementById('tab-' + tabName).classList.add('active');
+}
+</script>
+</body>
+</html>

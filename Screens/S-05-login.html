@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Log In</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0;
+    --bg-card: #fffdf9;
+    --bg-elevated: #f0e8dc;
+    --border: #e2d5c4;
+    --border-subtle: #ede4d6;
+    --text: #2a1f10;
+    --text-secondary: #4a3d2a;
+    --text-muted: #7a6348;
+    --text-dim: #a89880;
+    --accent: #18856a;
+    --accent-hover: #147a60;
+    --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07);
+    --accent-border: rgba(24,133,106,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04);
+    --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --error: #c25a5a;
+    --error-bg: rgba(194,90,90,0.06);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --radius-xs: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== LAYOUT ===== */
+  .login-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+  }
+
+  /* ===== BRAND PANEL ===== */
+  .brand-panel {
+    background: linear-gradient(160deg, #0d3d2e 0%, #115c45 50%, #18856a 100%);
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .brand-panel::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    right: -20%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(110,236,208,0.08), transparent 70%);
+    border-radius: 50%;
+  }
+
+  .brand-panel::after {
+    content: '';
+    position: absolute;
+    bottom: -10%;
+    left: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(45,212,160,0.06), transparent 70%);
+    border-radius: 50%;
+  }
+
+  .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-logo svg { width: 36px; height: 36px; }
+
+  .brand-wordmark {
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+
+  .brand-wordmark span { color: #6eecd0; }
+
+  .brand-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-tagline {
+    font-size: 38px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -1.5px;
+    line-height: 1.15;
+    margin-bottom: 20px;
+  }
+
+  .brand-tagline em {
+    color: #6eecd0;
+    font-style: normal;
+  }
+
+  .brand-supporting {
+    font-size: 16px;
+    color: rgba(255,255,255,0.55);
+    font-weight: 300;
+    line-height: 1.8;
+    max-width: 400px;
+  }
+
+  .brand-proof {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 32px;
+  }
+
+  .proof-stat {
+    color: rgba(255,255,255,0.45);
+    font-size: 13px;
+    font-weight: 300;
+  }
+
+  .proof-stat strong {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    color: #6eecd0;
+    margin-bottom: 2px;
+  }
+
+  /* ===== FORM PANEL ===== */
+  .form-panel {
+    padding: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+  }
+
+  .form-container {
+    width: 100%;
+    max-width: 440px;
+  }
+
+  /* ===== HEADINGS ===== */
+  .form-title {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .form-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.7;
+    margin-bottom: 32px;
+  }
+
+  /* ===== FORM FIELDS ===== */
+  .field-group {
+    margin-bottom: 18px;
+  }
+
+  .field-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .field-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    background: var(--bg-card);
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .field-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-bg);
+  }
+
+  .field-input::placeholder {
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .field-input.error {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px var(--error-bg);
+  }
+
+  /* ===== FORGOT PASSWORD LINK ===== */
+  .forgot-password-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+
+  .forgot-password-link {
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .forgot-password-link:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn-primary {
+    width: 100%;
+    padding: 14px 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(24,133,106,0.25);
+    margin-top: 8px;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 4px 16px rgba(24,133,106,0.3);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  /* ===== DIVIDER ===== */
+  .divider-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 28px 0;
+  }
+
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .divider-text {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ===== SSO BUTTON ===== */
+  .oauth-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .oauth-btn:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+
+  .oauth-btn:active {
+    transform: translateY(0);
+  }
+
+  .oauth-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+  /* ===== FOOTER ===== */
+  .form-footer {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-dim);
+    font-weight: 300;
+  }
+
+  .form-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .form-footer a:hover { text-decoration: underline; }
+
+  /* ===== LOADING ===== */
+  .loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .login-layout { grid-template-columns: 1fr; }
+    .brand-panel { display: none; }
+    .form-panel { padding: 40px 24px; }
+  }
+
+  /* ===== SCREEN ID BADGE ===== */
+  .screen-id {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>S-05</strong> Login</div>
+
+<div class="login-layout">
+
+  <!-- LEFT: BRAND PANEL -->
+  <div class="brand-panel">
+    <div class="brand-logo">
+      <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="256" cy="256" r="238" stroke="#6eecd0" stroke-width="6" opacity="0.22"/>
+        <circle cx="256" cy="256" r="196" stroke="#6eecd0" stroke-width="8.5" opacity="0.32"/>
+        <circle cx="256" cy="256" r="153" stroke="#6eecd0" stroke-width="10.5" opacity="0.40"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#ffffff" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#6eecd0"/>
+      </svg>
+      <span class="brand-wordmark">Prana<span>OS</span></span>
+    </div>
+
+    <div class="brand-content">
+      <h1 class="brand-tagline">AI agents that<br>work for <em>your<br>business.</em></h1>
+      <p class="brand-supporting">The AI agent platform for agencies, consultants, and service providers. Deploy intelligent tools your clients will love — in minutes, not months.</p>
+    </div>
+
+    <div class="brand-proof">
+      <div class="proof-stat">
+        <strong>200+</strong>
+        Agents available
+      </div>
+      <div class="proof-stat">
+        <strong>50+</strong>
+        Industries served
+      </div>
+      <div class="proof-stat">
+        <strong>5 min</strong>
+        To first deployment
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: FORM PANEL -->
+  <div class="form-panel">
+    <div class="form-container">
+
+      <h2 class="form-title">Welcome back</h2>
+      <p class="form-subtitle">Log in to your PranaOS account</p>
+
+      <!-- Email -->
+      <div class="field-group">
+        <label class="field-label">Email address</label>
+        <input type="email" class="field-input" id="email-input" placeholder="you@agency.com">
+      </div>
+
+      <!-- Password -->
+      <div class="field-group">
+        <label class="field-label">Password</label>
+        <input type="password" class="field-input" id="password-input" placeholder="Enter your password">
+      </div>
+
+      <!-- Forgot password -->
+      <div class="forgot-password-row">
+        <a class="forgot-password-link" onclick="goToForgotPassword()">Forgot password?</a>
+      </div>
+
+      <!-- Log In button -->
+      <button class="btn-primary" id="login-btn" onclick="handleLogin()">Log In</button>
+
+      <!-- Divider -->
+      <div class="divider-row">
+        <div class="divider-line"></div>
+        <span class="divider-text">or</span>
+        <div class="divider-line"></div>
+      </div>
+
+      <!-- Google SSO -->
+      <button class="oauth-btn" id="google-btn" onclick="handleGoogleSSO()">
+        <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Continue with Google
+      </button>
+
+      <!-- Sign up link -->
+      <div class="form-footer">
+        Don't have an account? <a onclick="goToSignUp()">Sign up</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  function handleLogin() {
+    const email = document.getElementById('email-input').value;
+    const password = document.getElementById('password-input').value;
+
+    // Basic validation
+    let hasError = false;
+
+    if (!email || !email.includes('@')) {
+      document.getElementById('email-input').classList.add('error');
+      hasError = true;
+    }
+
+    if (!password || password.length < 1) {
+      document.getElementById('password-input').classList.add('error');
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    // Simulate login
+    const btn = document.getElementById('login-btn');
+    btn.innerHTML = '<span class="loading-spinner"></span>Logging in...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'not-allowed';
+
+    setTimeout(function() {
+      window.location.href = 'A-01-onboarding-survey.html';
+    }, 1200);
+  }
+
+  function handleGoogleSSO() {
+    const btn = document.getElementById('google-btn');
+    const original = btn.innerHTML;
+    btn.innerHTML = '<span class="loading-spinner" style="border-color:rgba(42,31,16,0.15);border-top-color:var(--accent);"></span>Connecting to Google...';
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    btn.style.cursor = 'not-allowed';
+
+    setTimeout(function() {
+      window.location.href = 'A-01-onboarding-survey.html';
+    }, 1200);
+  }
+
+  function goToForgotPassword() {
+    window.location.href = 'S-06-forgot-password.html';
+  }
+
+  function goToSignUp() {
+    window.location.href = 'S-04-signup-checkout.html';
+  }
+
+  // Clear error state on focus
+  document.querySelectorAll('.field-input').forEach(function(input) {
+    input.addEventListener('focus', function() {
+      input.classList.remove('error');
+    });
+  });
+
+  // Allow Enter key to submit
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  });
+</script>
+</body>
+</html>

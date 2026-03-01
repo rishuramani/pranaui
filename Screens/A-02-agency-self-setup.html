@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Set Up Your Agency</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0;
+    --bg-card: #fffdf9;
+    --bg-elevated: #f0e8dc;
+    --border: #e2d5c4;
+    --border-subtle: #ede4d6;
+    --text: #2a1f10;
+    --text-secondary: #4a3d2a;
+    --text-muted: #7a6348;
+    --text-dim: #a89880;
+    --accent: #18856a;
+    --accent-hover: #147a60;
+    --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07);
+    --accent-border: rgba(24,133,106,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04);
+    --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --shadow-lg: 0 12px 40px rgba(42,31,16,0.12);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --radius-xs: 8px;
+    --error: #c25a5a;
+    --warn: #c4842d;
+    --warn-bg: rgba(196,132,45,0.06);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* ===== TOP BAR ===== */
+  .top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .top-bar-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .tb-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .tb-logo svg { width: 24px; height: 24px; }
+
+  .tb-logo-text {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  .tb-logo-text span { color: var(--accent); }
+
+  .tb-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border);
+  }
+
+  .tb-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  /* Progress bar */
+  .progress-track {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: auto;
+    max-width: 280px;
+  }
+
+  .prog-seg {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    transition: background 0.4s ease;
+    position: relative;
+  }
+
+  .prog-seg.active { background: var(--accent); }
+  .prog-seg.done { background: var(--accent-bright); }
+
+  .tb-step-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    min-width: 40px;
+    text-align: right;
+  }
+
+  /* ===== MAIN ===== */
+  .main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 48px 40px 100px;
+  }
+
+  /* Coaching banner */
+  .coaching {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 22px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-radius: var(--radius);
+    margin-bottom: 36px;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .coaching-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .coaching-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  .coaching-text strong { color: var(--accent); font-weight: 600; }
+
+  /* Step view */
+  .step-view {
+    display: none;
+    animation: stepIn 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .step-view.active { display: block; }
+
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .step-header { margin-bottom: 28px; }
+
+  .step-badge {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .step-title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .step-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  /* ===== FORMS ===== */
+  .field-group { margin-bottom: 18px; }
+
+  .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .field-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    background: var(--bg-card);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+  }
+
+  .field-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-bg);
+  }
+
+  .field-input::placeholder { color: var(--text-dim); font-weight: 300; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .slug-preview {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    padding: 8px 14px;
+    border-radius: var(--radius-xs);
+    margin-top: 8px;
+  }
+
+  .color-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .color-picker-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    padding: 8px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+  }
+
+  .color-picker-wrap input[type="color"] {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: none;
+    padding: 0;
+  }
+
+  .color-picker-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  /* ===== ITEM LISTS ===== */
+  .item-list { margin-bottom: 20px; }
+
+  .item-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    box-shadow: var(--shadow-sm);
+    animation: fadeIn 0.3s ease;
+  }
+
+  .item-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-size: 14px; font-weight: 600; }
+  .item-meta { font-size: 11px; color: var(--text-dim); font-weight: 300; }
+
+  .item-action {
+    font-size: 11px;
+    color: var(--error);
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+  }
+
+  .item-action:hover { background: var(--error); color: #fff; }
+
+  .item-status {
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .item-status.connected {
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+  }
+
+  .item-status.pending {
+    color: var(--warn);
+    background: var(--warn-bg);
+    border: 1px solid rgba(196,132,45,0.15);
+  }
+
+  .add-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .add-row .field-input { flex: 1; }
+
+  .btn-add {
+    padding: 10px 18px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-add:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent-border);
+  }
+
+  /* Suggested items */
+  .suggested-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .suggested-chip {
+    padding: 6px 14px;
+    background: var(--bg-elevated);
+    border: 1px dashed var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 400;
+  }
+
+  .suggested-chip:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent-border);
+    color: var(--accent);
+    border-style: solid;
+  }
+
+  /* Role explainer */
+  .role-explainer {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    padding: 14px 18px;
+    margin-bottom: 14px;
+  }
+
+  .role-row {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 300;
+    line-height: 1.6;
+    padding: 3px 0;
+  }
+
+  .role-row strong {
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  /* ===== AGENT CARDS ===== */
+  .agent-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .agent-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+
+  .agent-card:hover {
+    border-color: var(--accent-border);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .agent-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-bg), var(--shadow-md);
+  }
+
+  .agent-card-check {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    background: var(--bg-card);
+  }
+
+  .agent-card.selected .agent-card-check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .agent-card-check svg {
+    width: 12px;
+    height: 12px;
+    stroke: #fff;
+    stroke-width: 3;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .agent-card.selected .agent-card-check svg { opacity: 1; }
+
+  .agent-emoji { font-size: 28px; margin-bottom: 10px; }
+  .agent-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .agent-desc { font-size: 12px; color: var(--text-muted); font-weight: 300; line-height: 1.5; }
+
+  .agent-tags {
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .agent-tag {
+    font-size: 9px;
+    padding: 2px 8px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  /* ===== INTEGRATION CARDS ===== */
+  .integ-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .integ-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 18px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .integ-card:hover {
+    border-color: var(--accent-border);
+    box-shadow: var(--shadow-md);
+  }
+
+  .integ-card.connected {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+  }
+
+  .integ-icon { font-size: 28px; margin-bottom: 8px; }
+  .integ-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .integ-status { font-size: 10px; color: var(--text-dim); font-weight: 300; }
+  .integ-card.connected .integ-status { color: var(--accent); font-weight: 500; }
+
+  /* ===== FILE UPLOAD ===== */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+    background: var(--bg-card);
+  }
+
+  .upload-zone:hover {
+    border-color: var(--accent-border);
+    background: var(--accent-bg);
+  }
+
+  /* Request connector */
+  .btn-request-connector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--bg-card);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 4px;
+  }
+
+  .btn-request-connector:hover {
+    border-color: var(--accent-border);
+    border-style: solid;
+    color: var(--accent);
+    background: var(--accent-bg);
+  }
+
+  .btn-request-connector strong { font-weight: 600; }
+  .btn-request-icon { font-size: 16px; }
+
+  .upload-icon { font-size: 32px; margin-bottom: 8px; }
+  .upload-text { font-size: 14px; font-weight: 500; color: var(--text-secondary); }
+  .upload-hint { font-size: 12px; color: var(--text-dim); font-weight: 300; margin-top: 4px; }
+
+  /* ===== PREVIEW FRAME ===== */
+  .preview-frame {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 24px;
+  }
+
+  .preview-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .preview-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .preview-url {
+    flex: 1;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .preview-body { padding: 24px; }
+
+  .preview-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .preview-logo-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .preview-greeting { font-size: 16px; font-weight: 600; }
+  .preview-sub { font-size: 11px; color: var(--text-dim); font-weight: 300; }
+
+  .preview-agents {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .preview-agent-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    padding: 14px;
+  }
+
+  .preview-agent-emoji { font-size: 20px; margin-bottom: 6px; }
+  .preview-agent-name { font-size: 12px; font-weight: 600; }
+  .preview-agent-status { font-size: 10px; color: var(--accent); font-weight: 400; }
+
+  .preview-chat-bar {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .preview-chat-input {
+    flex: 1;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .preview-chat-send {
+    width: 36px;
+    height: 36px;
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* ===== BUTTONS ===== */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 32px;
+  }
+
+  .btn-primary {
+    flex: 1;
+    padding: 14px 24px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(24,133,106,0.25);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    padding: 14px 20px;
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--text-dim);
+    color: var(--text);
+  }
+
+  .skip-link {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 13px;
+  }
+
+  .skip-link a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-weight: 300;
+  }
+
+  .skip-link a:hover { text-decoration: underline; color: var(--text-muted); }
+
+  /* Screen ID */
+  .screen-id {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .screen-id strong { color: var(--accent); }
+
+  @media (max-width: 700px) {
+    .main { padding: 32px 20px 80px; }
+    .top-bar-inner { padding: 12px 20px; }
+    .agent-grid, .preview-agents { grid-template-columns: 1fr; }
+    .integ-grid { grid-template-columns: 1fr 1fr; }
+    .field-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>A-02</strong> Agency Self-Setup Walkthrough</div>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <div class="tb-logo">
+      <svg viewBox="0 0 512 512" fill="none" width="24" height="24">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="tb-logo-text">Prana<span>OS</span></span>
+    </div>
+    <div class="tb-divider"></div>
+    <span class="tb-title" id="tb-title">Setting up your agency</span>
+    <div class="progress-track">
+      <div class="prog-seg active" id="seg-1"></div>
+      <div class="prog-seg" id="seg-2"></div>
+      <div class="prog-seg" id="seg-3"></div>
+      <div class="prog-seg" id="seg-4"></div>
+      <div class="prog-seg" id="seg-5"></div>
+      <div class="prog-seg" id="seg-6"></div>
+      <div class="prog-seg" id="seg-7"></div>
+    </div>
+    <span class="tb-step-label" id="tb-step">1 / 7</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ========== STEP 1: SETUP ========== -->
+  <div class="step-view active" id="step-1">
+    <div class="coaching">
+      <div class="coaching-icon">💡</div>
+      <div class="coaching-text"><strong>You're building this for your own agency first.</strong> Once you see how it works, you'll build the exact same thing for your clients. This is your free internal partition — no extra charge.</div>
+    </div>
+
+    <div class="step-header">
+      <div class="step-badge">Step 1 of 7 · Setup</div>
+      <h2 class="step-title">Set up your agency</h2>
+      <p class="step-desc">Name your internal workspace, upload your logo, and set your brand colors. This is how your team will see it.</p>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Workspace name</label>
+      <input type="text" class="field-input" id="ws-name" placeholder="e.g. Prana IQ Internal" oninput="updateStep1()">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Logo</label>
+      <div class="upload-zone" onclick="simulateLogoUpload()">
+        <div class="upload-icon" id="logo-preview">📤</div>
+        <div class="upload-text" id="logo-text">Click to upload your logo</div>
+        <div class="upload-hint">PNG, SVG, or JPG · Max 2MB</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Brand colors</label>
+      <div class="color-row">
+        <div class="color-picker-wrap">
+          <input type="color" value="#18856a" id="color-primary">
+          <span class="color-picker-label">Primary</span>
+        </div>
+        <div class="color-picker-wrap">
+          <input type="color" value="#2a1f10" id="color-secondary">
+          <span class="color-picker-label">Secondary</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="goStep(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ========== STEP 2: DEPARTMENTS ========== -->
+  <div class="step-view" id="step-2">
+    <div class="coaching">
+      <div class="coaching-icon">🏢</div>
+      <div class="coaching-text">Departments organize your team and control which agents and knowledge each group can access. <strong>Start with your own agency departments.</strong></div>
+    </div>
+
+    <div class="step-header">
+      <div class="step-badge">Step 2 of 7 · Departments</div>
+      <h2 class="step-title">Create your departments</h2>
+      <p class="step-desc">These are your agency's own departments. Each can have different agents and data access.</p>
+    </div>
+
+    <div class="field-label">Suggested for your agency</div>
+    <div class="suggested-row">
+      <div class="suggested-chip" onclick="addDept('Sales')">+ Sales</div>
+      <div class="suggested-chip" onclick="addDept('Operations')">+ Operations</div>
+      <div class="suggested-chip" onclick="addDept('Delivery')">+ Delivery</div>
+      <div class="suggested-chip" onclick="addDept('Marketing')">+ Marketing</div>
+      <div class="suggested-chip" onclick="addDept('Finance')">+ Finance</div>
+    </div>
+
+    <div class="item-list" id="dept-list"></div>
+
+    <div class="add-row">
+      <input type="text" class="field-input" id="dept-input" placeholder="Custom department name" onkeydown="if(event.key==='Enter')addDeptCustom()">
+      <button class="btn-add" onclick="addDeptCustom()">+ Add</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(1)">← Back</button>
+      <button class="btn-primary" onclick="goStep(3)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ========== STEP 3: TEAM ========== -->
+  <div class="step-view" id="step-3">
+    <div class="coaching">
+      <div class="coaching-icon">👥</div>
+      <div class="coaching-text">Invite your team members and assign them to departments. <strong>Each person gets their own guided walkthrough</strong> when they log in. You can skip this and invite later.</div>
+    </div>
+
+    <div class="step-header">
+      <div class="step-badge">Step 3 of 7 · Team</div>
+      <h2 class="step-title">Invite your team</h2>
+      <p class="step-desc">Add team members by email. They'll get a branded invite and walkthrough on first login.</p>
+    </div>
+
+    <div class="item-list" id="team-list"></div>
+
+    <div class="field-row" style="margin-bottom:8px;">
+      <input type="email" class="field-input" id="team-email" placeholder="Email address">
+      <select class="field-input" id="team-role" style="cursor:pointer;">
+        <option value="">Assign role</option>
+        <option value="super_admin">Super Admin — full access, all settings</option>
+        <option value="dept_admin">Dept Admin — department-specific settings</option>
+        <option value="user">User — standard access</option>
+      </select>
+    </div>
+    <div class="field-row" style="margin-bottom:8px;">
+      <select class="field-input" id="team-dept" style="cursor:pointer;">
+        <option value="">Assign to department</option>
+      </select>
+      <div></div>
+    </div>
+
+    <div class="role-explainer">
+      <div class="role-row"><strong>Super Admin</strong> — Can add/create users, access all settings, manage all departments and agents</div>
+      <div class="role-row"><strong>Dept Admin</strong> — Department-specific settings access, can manage users within their department</div>
+      <div class="role-row"><strong>User</strong> — Can use assigned agents and chat. No settings access</div>
+    </div>
+
+    <button class="btn-add" onclick="addTeamMember()" style="width:100%;">+ Invite team member</button>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(2)">← Back</button>
+      <button class="btn-primary" onclick="goStep(4)">Continue →</button>
+    </div>
+    <div class="skip-link"><a href="#" onclick="goStep(4); return false;">Skip — I'll invite later</a></div>
+  </div>
+
+  <!-- ========== STEP 4: KNOWLEDGE BASE ========== -->
+  <div class="step-view" id="step-4">
+    <div class="coaching">
+      <div class="coaching-icon">📚</div>
+      <div class="coaching-text">Your knowledge base is what makes agents smart about <strong>your</strong> business. Upload docs, connect drives — the more context, the better the answers.</div>
+    </div>
+
+    <div class="step-header">
+      <div class="step-badge">Step 4 of 7 · Knowledge Base</div>
+      <h2 class="step-title">Add your knowledge</h2>
+      <p class="step-desc">Upload files your team references daily. Agents will use this to answer questions about your business.</p>
+    </div>
+
+    <div class="upload-zone" onclick="simulateFileUpload()">
+      <div class="upload-icon">📄</div>
+      <div class="upload-text">Drop files here or click to upload</div>
+      <div class="upload-hint">PDF, DOCX, TXT, CSV · Up to 50MB each</div>
+    </div>
+
+    <div class="item-list" id="file-list"></div>
+
+    <div style="margin-top:12px;margin-bottom:4px;">
+      <label class="field-label">Or connect a cloud source</label>
+    </div>
+    <div class="integ-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="integ-card" onclick="connectSource(this, 'Google Drive')">
+        <div class="integ-icon">📁</div>
+        <div class="integ-name">Google Drive</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="connectSource(this, 'Notion')">
+        <div class="integ-icon">📝</div>
+        <div class="integ-name">Notion</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+    </div>
+
+    <button class="btn-request-connector" onclick="requestConnector()">
+      <span class="btn-request-icon">🔌</span>
+      Don't see your source? <strong>Request a connector</strong>
+    </button>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(3)">← Back</button>
+      <button class="btn-primary" onclick="goStep(5)">Continue →</button>
+    </div>
+    <div class="skip-link"><a href="#" onclick="goStep(5); return false;">Skip — I'll add knowledge later</a></div>
+  </div>
+
+  <!-- ========== STEP 5: INTEGRATIONS ========== -->
+  <div class="step-view" id="step-5">
+    <div class="coaching">
+      <div class="coaching-icon">🔗</div>
+      <div class="coaching-text">Connect the accounts your agents need to take action. <strong>This is how agents access real data</strong> and do real work. Connect what you can now — add more later.</div>
+    </div>
+
+    <div class="step-header">
+      <div class="step-badge">Step 5 of 7 · Integrations</div>
+      <h2 class="step-title">Connect your accounts</h2>
+      <p class="step-desc">These let your agents read data and take actions on your behalf.</p>
+    </div>
+
+    <div class="integ-grid">
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">📊</div>
+        <div class="integ-name">Google Ads</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">🛍️</div>
+        <div class="integ-name">Shopify</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">💬</div>
+        <div class="integ-name">Slack</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">📧</div>
+        <div class="integ-name">Gmail</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">📈</div>
+        <div class="integ-name">Meta Ads</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+      <div class="integ-card" onclick="toggleInteg(this)">
+        <div class="integ-icon">📋</div>
+        <div class="integ-name">Google Sheets</div>
+        <div class="integ-status">Click to connect</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(4)">← Back</button>
+      <button class="btn-primary" onclick="goStep(6)">Continue →</button>
+    </div>
+    <div class="skip-link"><a href="#" onclick="goStep(6); return false;">Skip — I'll connect later</a></div>
+  </div>
+
+  <!-- ========== STEP 6: CHOOSE AGENTS ========== -->
+  <div class="step-view" id="step-6">
+    <div class="coaching">
+      <div class="coaching-icon">🤖</div>
+      <div class="coaching-text"><strong>Pick 1–3 agents to start with.</strong> These are the AI tools that will power your agency. You can always add more from the marketplace later.</div>
+    </div>
+
+    <div class="step-header">
+      <div class="step-badge">Step 6 of 7 · Agents</div>
+      <h2 class="step-title">Choose your agents</h2>
+      <p class="step-desc">Pre-filtered based on your industry. Select the ones relevant to your business. You'll be able to browse the full marketplace and add more agents anytime after setup.</p>
+    </div>
+
+    <div class="agent-grid">
+      <div class="agent-card" onclick="toggleAgent(this)">
+        <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="agent-emoji">🏷️</div>
+        <div class="agent-name">Final Sale Agent</div>
+        <div class="agent-desc">Scan product catalogs to identify slow-moving inventory and recommend markdown strategies.</div>
+        <div class="agent-tags"><span class="agent-tag">Retail</span><span class="agent-tag">Shopify</span></div>
+      </div>
+      <div class="agent-card" onclick="toggleAgent(this)">
+        <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="agent-emoji">📣</div>
+        <div class="agent-name">Paid Ads Manager</div>
+        <div class="agent-desc">Analyze ad spend across Google and Meta. Identify waste, suggest reallocations, draft new ads.</div>
+        <div class="agent-tags"><span class="agent-tag">Marketing</span><span class="agent-tag">Google Ads</span><span class="agent-tag">Meta</span></div>
+      </div>
+      <div class="agent-card" onclick="toggleAgent(this)">
+        <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="agent-emoji">🧠</div>
+        <div class="agent-name">Knowledge Q&A</div>
+        <div class="agent-desc">Answer any question about your business from your connected documents and knowledge base.</div>
+        <div class="agent-tags"><span class="agent-tag">All Industries</span><span class="agent-tag">RAG</span></div>
+      </div>
+      <div class="agent-card" onclick="toggleAgent(this)">
+        <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="agent-emoji">🤝</div>
+        <div class="agent-name">Affiliate Manager</div>
+        <div class="agent-desc">Track affiliate performance, identify top partners, and optimize commission structures.</div>
+        <div class="agent-tags"><span class="agent-tag">E-Commerce</span><span class="agent-tag">Marketing</span></div>
+      </div>
+      <div class="agent-card" onclick="toggleAgent(this)">
+        <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="agent-emoji">📊</div>
+        <div class="agent-name">Revenue Reporter</div>
+        <div class="agent-desc">Generate daily/weekly revenue reports with trends, anomalies, and recommendations.</div>
+        <div class="agent-tags"><span class="agent-tag">Finance</span><span class="agent-tag">All Industries</span></div>
+      </div>
+      <div class="agent-card" onclick="toggleAgent(this)">
+        <div class="agent-card-check"><svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="agent-emoji">✉️</div>
+        <div class="agent-name">Email Drafter</div>
+        <div class="agent-desc">Draft client communications, proposals, and follow-ups from your knowledge base and CRM data.</div>
+        <div class="agent-tags"><span class="agent-tag">All Industries</span><span class="agent-tag">Gmail</span></div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="goStep(5)">← Back</button>
+      <button class="btn-primary" id="agents-continue" onclick="goStep(7)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- ========== STEP 7: LAUNCH + PREVIEW ========== -->
+  <div class="step-view" id="step-7">
+    <div class="coaching">
+      <div class="coaching-icon">🚀</div>
+      <div class="coaching-text"><strong>This is what your clients will see</strong> — except branded for them. You built this in minutes. Now test it with your own data, then go build it for your first real client.</div>
+    </div>
+
+    <div class="step-header">
+      <div class="step-badge">Step 7 of 7 · Launch</div>
+      <h2 class="step-title">Your agency OS is live</h2>
+      <p class="step-desc">Preview your client site below. Test the agents, try the chat, see the magic.</p>
+    </div>
+
+    <div class="preview-frame">
+      <div class="preview-bar">
+        <div class="preview-dot"></div>
+        <div class="preview-dot"></div>
+        <div class="preview-dot"></div>
+        <div class="preview-url" id="preview-url">your-agency.pranaos.com</div>
+      </div>
+      <div class="preview-body">
+        <div class="preview-header">
+          <div class="preview-logo-circle" id="preview-logo" style="background:var(--accent);">P</div>
+          <div>
+            <div class="preview-greeting">Good morning, Rishabh 👋</div>
+            <div class="preview-sub" id="preview-ws-name">Your Agency · 3 agents active</div>
+          </div>
+        </div>
+        <div class="preview-agents" id="preview-agents">
+          <div class="preview-agent-card">
+            <div class="preview-agent-emoji">🧠</div>
+            <div class="preview-agent-name">Knowledge Q&A</div>
+            <div class="preview-agent-status">● Active</div>
+          </div>
+          <div class="preview-agent-card">
+            <div class="preview-agent-emoji">📣</div>
+            <div class="preview-agent-name">Paid Ads Manager</div>
+            <div class="preview-agent-status">● Active</div>
+          </div>
+          <div class="preview-agent-card">
+            <div class="preview-agent-emoji">📊</div>
+            <div class="preview-agent-name">Revenue Reporter</div>
+            <div class="preview-agent-status">● Active</div>
+          </div>
+        </div>
+        <div class="preview-chat-bar">
+          <div class="preview-chat-input">Ask anything about your business…</div>
+          <button class="preview-chat-send">↑</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row" style="flex-direction:column;gap:10px;">
+      <button class="btn-primary" onclick="goToDashboard()" style="width:100%;padding:18px;font-size:16px;">Looks great — take me to my dashboard →</button>
+      <button class="btn-secondary" onclick="goStep(6)" style="width:100%;text-align:center;">← Back to edit agents</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let currentStep = 1;
+  const departments = [];
+  const teamMembers = [];
+  let selectedAgents = 0;
+
+  function goStep(step) {
+    document.getElementById('step-' + currentStep).classList.remove('active');
+
+    for (let i = 1; i <= 7; i++) {
+      const seg = document.getElementById('seg-' + i);
+      seg.classList.remove('active', 'done');
+      if (i < step) seg.classList.add('done');
+      if (i === step) seg.classList.add('active');
+    }
+
+    document.getElementById('tb-step').textContent = step + ' / 7';
+
+    const titles = ['', 'Setting up your agency', 'Creating departments', 'Inviting team', 'Adding knowledge', 'Connecting accounts', 'Choosing agents', 'Previewing your OS'];
+    document.getElementById('tb-title').textContent = titles[step];
+
+    currentStep = step;
+    const el = document.getElementById('step-' + step);
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = '';
+    el.classList.add('active');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (step === 3) populateDeptDropdown();
+    if (step === 7) buildPreview();
+  }
+
+  function updateStep1() {
+    // Could update preview or slug here
+  }
+
+  // Departments
+  function addDept(name) {
+    if (departments.includes(name)) return;
+    departments.push(name);
+    renderDepts();
+  }
+
+  function addDeptCustom() {
+    const input = document.getElementById('dept-input');
+    const name = input.value.trim();
+    if (!name || departments.includes(name)) return;
+    departments.push(name);
+    input.value = '';
+    renderDepts();
+  }
+
+  function removeDept(idx) {
+    departments.splice(idx, 1);
+    renderDepts();
+  }
+
+  function renderDepts() {
+    const list = document.getElementById('dept-list');
+    const icons = ['🏢', '📈', '🚀', '📣', '💰', '⚙️', '🎯', '📋'];
+    list.innerHTML = departments.map((d, i) =>
+      `<div class="item-row">
+        <div class="item-icon">${icons[i % icons.length]}</div>
+        <div class="item-info">
+          <div class="item-name">${d}</div>
+          <div class="item-meta">0 members · 0 agents assigned</div>
+        </div>
+        <button class="item-action" onclick="removeDept(${i})">Remove</button>
+      </div>`
+    ).join('');
+  }
+
+  // Team
+  function populateDeptDropdown() {
+    const sel = document.getElementById('team-dept');
+    sel.innerHTML = '<option value="">Assign to department</option>' +
+      departments.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
+
+  function addTeamMember() {
+    const email = document.getElementById('team-email').value.trim();
+    const dept = document.getElementById('team-dept').value;
+    const role = document.getElementById('team-role').value;
+    if (!email) return;
+    const roleLabels = { super_admin: 'Super Admin', dept_admin: 'Dept Admin', user: 'User' };
+    teamMembers.push({ email, dept: dept || 'No department', role: roleLabels[role] || 'User' });
+    document.getElementById('team-email').value = '';
+    renderTeam();
+  }
+
+  function removeTeam(idx) {
+    teamMembers.splice(idx, 1);
+    renderTeam();
+  }
+
+  function renderTeam() {
+    const list = document.getElementById('team-list');
+    list.innerHTML = teamMembers.map((m, i) =>
+      `<div class="item-row">
+        <div class="item-icon">👤</div>
+        <div class="item-info">
+          <div class="item-name">${m.email}</div>
+          <div class="item-meta">${m.role} · ${m.dept} · Invite pending</div>
+        </div>
+        <span class="item-status pending">Pending</span>
+        <button class="item-action" onclick="removeTeam(${i})">Remove</button>
+      </div>`
+    ).join('');
+  }
+
+  // Files
+  function simulateLogoUpload() {
+    document.getElementById('logo-preview').textContent = '✅';
+    document.getElementById('logo-text').textContent = 'agency-logo.png uploaded';
+  }
+
+  function simulateFileUpload() {
+    const files = ['Agency Playbook.pdf', 'Client Onboarding SOP.docx', 'Q4 Campaign Results.csv'];
+    const list = document.getElementById('file-list');
+    const randomFile = files[Math.floor(Math.random() * files.length)];
+    list.innerHTML += `<div class="item-row">
+      <div class="item-icon">📄</div>
+      <div class="item-info">
+        <div class="item-name">${randomFile}</div>
+        <div class="item-meta">Indexing…</div>
+      </div>
+      <span class="item-status connected">Ready</span>
+    </div>`;
+  }
+
+  // Sources
+  function connectSource(el, name) {
+    el.classList.add('connected');
+    el.querySelector('.integ-status').textContent = '✓ Connected';
+  }
+
+  function requestConnector() {
+    const name = prompt('What knowledge source would you like us to support?\n\ne.g. Confluence, SharePoint, Dropbox, Airtable…');
+    if (name) {
+      alert('✓ Request submitted for "' + name + '"\n\nOur team will review and notify you when it\'s available.');
+    }
+  }
+
+  // Integrations
+  function toggleInteg(el) {
+    if (el.classList.contains('connected')) {
+      el.classList.remove('connected');
+      el.querySelector('.integ-status').textContent = 'Click to connect';
+    } else {
+      el.classList.add('connected');
+      el.querySelector('.integ-status').textContent = '✓ Connected';
+    }
+  }
+
+  // Agents
+  function toggleAgent(card) {
+    card.classList.toggle('selected');
+    selectedAgents = document.querySelectorAll('.agent-card.selected').length;
+  }
+
+  // Preview
+  function buildPreview() {
+    const wsName = document.getElementById('ws-name').value || 'Your Agency';
+    document.getElementById('preview-ws-name').textContent = wsName + ' · ' + Math.max(selectedAgents, 1) + ' agent' + (selectedAgents !== 1 ? 's' : '') + ' active';
+
+    const selected = document.querySelectorAll('.agent-card.selected');
+    const container = document.getElementById('preview-agents');
+    if (selected.length > 0) {
+      container.innerHTML = Array.from(selected).map(c =>
+        `<div class="preview-agent-card">
+          <div class="preview-agent-emoji">${c.querySelector('.agent-emoji').textContent}</div>
+          <div class="preview-agent-name">${c.querySelector('.agent-name').textContent}</div>
+          <div class="preview-agent-status">● Active</div>
+        </div>`
+      ).join('');
+    }
+  }
+
+  function goToDashboard() {
+    window.location.href = 'A-03-command-center.html';
+  }
+</script>
+</body>
+</html>

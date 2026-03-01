@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Team Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-card: #fffdf9;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08);
+    --red: #c25a5a; --red-bg: rgba(194,90,90,0.08);
+    --error: #c25a5a;
+    --purple: #7c3aed; --blue: #2563eb;
+    --bg-elevated: var(--bg-warm);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; -webkit-font-smoothing: antialiased; }
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; margin-bottom: 8px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-org { padding: 0 24px; margin-bottom: 28px; }
+  .sb-org-name { font-size: 12px; color: var(--text-muted); font-weight: 500; padding: 6px 12px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background 0.2s; }
+  .sb-org-name:hover { background: var(--border-subtle); }
+  .sb-org-dot { width: 7px; height: 7px; background: var(--accent-bright); border-radius: 50%; }
+  .sb-section { margin-bottom: 24px; }
+  .sb-section-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; padding: 0 24px; margin-bottom: 6px; }
+  .sb-nav { list-style: none; }
+  .sb-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; position: relative; }
+  .sb-nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+  .sb-nav-item.active { color: var(--accent); font-weight: 600; background: var(--accent-bg); }
+  .sb-nav-item.active::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--accent); border-radius: 0 2px 2px 0; }
+  .sb-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sb-nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; color: #fff; background: var(--error); min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .sb-nav-badge.warn { background: var(--warn); }
+  .sb-footer { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .sb-user { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 0; }
+  .sb-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+  .sb-user-info { flex: 1; min-width: 0; }
+  .sb-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); font-weight: 300; }
+
+  .main { padding: 28px 32px; overflow-y: auto; min-width: 0; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .page-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .page-desc { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-top: 2px; }
+
+  .btn { padding: 8px 16px; border-radius: var(--radius-xs); font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .btn-primary:hover { filter: brightness(0.92); }
+  .btn-outline { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); }
+
+  /* Seat summary bar */
+  .seat-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+  .seat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 16px 20px; box-shadow: var(--shadow-sm); flex: 1; }
+  .seat-label { font-size: 10px; font-weight: 600; text-transform: uppercase; color: var(--text-dim); margin-bottom: 2px; }
+  .seat-val { font-size: 22px; font-weight: 800; font-family: 'IBM Plex Mono', monospace; }
+  .seat-sub { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+  .seat-meter { height: 4px; background: var(--bg-warm); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .seat-meter-fill { height: 100%; border-radius: 2px; background: var(--accent); }
+
+  /* Team table */
+  .team-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+  .tc-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .tc-search { flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg); outline: none; }
+  .tc-search:focus { border-color: var(--accent); }
+
+  .team-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .team-table th { text-align: left; padding: 10px 16px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; color: var(--text-dim); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .team-table td { padding: 14px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 12px; overflow: hidden; }
+  .team-table tr:last-child td { border-bottom: none; }
+  .team-table tr:hover { background: var(--bg); }
+  .team-table .col-member { width: 22%; }
+  .team-table .col-role { width: 12%; }
+  .team-table .col-clients { width: 20%; }
+  .team-table .col-depts { width: 18%; }
+  .team-table .col-status { width: 8%; }
+  .team-table .col-last { width: 10%; }
+  .team-table .col-action { width: 10%; text-align: right; }
+
+  .member-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .member-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .member-info { min-width: 0; }
+  .member-name { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .member-email { font-size: 10px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .role-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; }
+  .role-owner { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+  .role-admin { background: rgba(124,58,237,0.06); color: var(--purple); border: 1px solid rgba(124,58,237,0.12); }
+  .role-member { background: var(--bg-warm); color: var(--text-muted); border: 1px solid var(--border); }
+
+  .client-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .client-chip { padding: 3px 8px; border-radius: 4px; font-size: 9px; font-weight: 700; background: var(--bg); border: 1px solid var(--border-subtle); color: var(--text-muted); white-space: nowrap; }
+  .client-chip.all { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+
+  .status-dot { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; }
+  .status-dot::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+  .status-dot.active::before { background: var(--accent-bright); }
+  .status-dot.pending::before { background: var(--warn); }
+  .status-dot.deactivated::before { background: var(--red); }
+
+  .action-btn { padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); cursor: pointer; font-size: 10px; font-weight: 600; font-family: inherit; }
+  .action-btn:hover { background: var(--bg-warm); color: var(--text); }
+
+  /* Invite modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(42,31,16,0.5); backdrop-filter: blur(6px); align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--bg-card); border-radius: 20px; padding: 28px; width: 460px; max-width: calc(100vw - 40px); box-shadow: 0 20px 60px rgba(42,31,16,0.25); animation: modalIn 0.25s ease; }
+  @keyframes modalIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; } }
+  .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+  .modal-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; }
+  .modal-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); outline: none; }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); cursor: pointer; outline: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a89880' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+  .modal-checkbox-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .modal-checkbox { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: var(--radius-xs); border: 1px solid var(--border); font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer; user-select: none; }
+  .modal-checkbox:hover { border-color: var(--accent-border); color: var(--accent); }
+  .modal-checkbox.checked { background: var(--accent-bg); border-color: var(--accent-border); color: var(--accent); }
+  .modal-checkbox input { display: none; }
+  .modal-check-icon { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 8px; flex-shrink: 0; }
+  .modal-checkbox.checked .modal-check-icon { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .modal-cost { background: var(--warn-bg); border: 1px solid rgba(196,132,45,0.12); border-radius: var(--radius-xs); padding: 10px 14px; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--warn); font-weight: 600; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-btn { padding: 10px 24px; border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; border: none; }
+  .modal-btn-cancel { background: var(--bg); border: 1px solid var(--border); color: var(--text-muted); }
+  .modal-btn-primary { background: var(--accent); color: #fff; }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="screen-id"><strong>A-17</strong> Team Management</div>
+
+<!-- Edit modal -->
+<div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div class="member-avatar" id="edit-avatar" style="width:40px;height:40px;font-size:14px;background:linear-gradient(135deg,#2563eb,#60a5fa);">MR</div>
+      <div>
+        <div class="modal-title" style="margin-bottom:0;" id="edit-name">Marcus Rivera</div>
+        <div style="font-size:11px;color:var(--text-dim);" id="edit-email">marcus@pranaiq.com</div>
+      </div>
+      <span class="status-dot active" style="margin-left:auto;" id="edit-status">Active</span>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Role</div>
+      <select class="modal-select" id="edit-role">
+        <option>Member — can manage assigned clients</option>
+        <option>Admin — full access + team management</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Client Access</div>
+      <div class="modal-checkbox-row" id="edit-clients">
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> All Clients</label>
+        <label class="modal-checkbox checked" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Starbucks</label>
+        <label class="modal-checkbox checked" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> AMC</label>
+        <label class="modal-checkbox checked" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Dutch Bros</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Urban Plates</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Sip Coffee</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Board & Brew</label>
+      </div>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Departments</div>
+      <div class="modal-checkbox-row" id="edit-depts">
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> All Depts</label>
+        <label class="modal-checkbox checked" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Operations</label>
+        <label class="modal-checkbox checked" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Inventory</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Marketing</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> F&B</label>
+      </div>
+    </div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button class="modal-btn" style="background:var(--red-bg);color:var(--red);border:1px solid rgba(194,90,90,0.15);" onclick="if(confirm('Deactivate this team member? They will lose access immediately.'))document.getElementById('edit-modal').classList.remove('show')">Deactivate</button>
+      <div style="display:flex;gap:8px;">
+        <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('edit-modal').classList.remove('show')">Cancel</button>
+        <button class="modal-btn modal-btn-primary" onclick="document.getElementById('edit-modal').classList.remove('show')">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Invite modal -->
+<div class="modal-overlay" id="invite-modal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="modal">
+    <div class="modal-title">Invite Team Member</div>
+    <div class="modal-desc">They'll receive an email with a link to set up their account.</div>
+    <div class="modal-field">
+      <div class="modal-label">Email Address</div>
+      <input type="email" class="modal-input" placeholder="team@youragency.com">
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Full Name</div>
+      <input type="text" class="modal-input" placeholder="Jane Smith">
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Role</div>
+      <select class="modal-select">
+        <option>Member — can manage assigned clients</option>
+        <option>Admin — full access + team management</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Assign to Clients</div>
+      <div class="modal-checkbox-row">
+        <label class="modal-checkbox checked" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> All Clients</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Starbucks Metro</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> AMC Theatres</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Dutch Bros</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Urban Plates</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Sip Coffee & Beer</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Board & Brew</label>
+      </div>
+    </div>
+    <div class="modal-field">
+      <div class="modal-label">Assign to Departments</div>
+      <div class="modal-checkbox-row">
+        <label class="modal-checkbox checked" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> All Depts</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Operations</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Inventory</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> Marketing</label>
+        <label class="modal-checkbox" onclick="this.classList.toggle('checked')"><input type="checkbox"><div class="modal-check-icon">✓</div> F&B</label>
+      </div>
+    </div>
+    <div class="modal-cost">💰 Adding a seat will increase your subscription by $497/mo</div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="document.getElementById('invite-modal').classList.remove('show')">Cancel</button>
+      <button class="modal-btn modal-btn-primary" onclick="document.getElementById('invite-modal').classList.remove('show')">Send Invite →</button>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 512 512" fill="none" width="28" height="28">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="sb-logo-text">Prana<span>OS</span></span>
+    </div>
+    <div class="sb-org">
+      <div class="sb-org-name"><span class="sb-org-dot"></span> Prana IQ</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Main</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('dashboard')"><span class="sb-nav-icon">📊</span> Command Center</li>
+        <li class="sb-nav-item" onclick="navTo('clients')"><span class="sb-nav-icon">🏢</span> Clients <span class="sb-nav-badge warn">5</span></li>
+        <li class="sb-nav-item" onclick="navTo('decisions')"><span class="sb-nav-icon">📥</span> Decision Inbox <span class="sb-nav-badge">12</span></li>
+        <li class="sb-nav-item" onclick="navTo('marketplace')"><span class="sb-nav-icon">🤖</span> Agent Marketplace</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Manage</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('builder')"><span class="sb-nav-icon">⚡</span> Builder</li>
+        <li class="sb-nav-item" onclick="navTo('analytics')"><span class="sb-nav-icon">📈</span> Analytics</li>
+        <li class="sb-nav-item" onclick="navTo('billing')"><span class="sb-nav-icon">💳</span> Billing</li>
+        <li class="sb-nav-item active" onclick="navTo('team')"><span class="sb-nav-icon">👥</span> Team</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">System</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('settings')"><span class="sb-nav-icon">⚙️</span> Settings</li>
+      </ul>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">RK</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Rishabh K.</div>
+          <div class="sb-user-role">Owner · Growth plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+<div class="main">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Team</div>
+      <div class="page-desc">Manage your agency seats, permissions, and client assignments.</div>
+    </div>
+    <button class="btn btn-primary" onclick="document.getElementById('invite-modal').classList.add('show')">+ Invite Member</button>
+  </div>
+
+  <!-- Seat summary -->
+  <div class="seat-bar">
+    <div class="seat-card">
+      <div class="seat-label">Seats Used</div>
+      <div class="seat-val">4 <span style="font-size:13px;font-weight:400;color:var(--text-dim);">/ 5</span></div>
+      <div class="seat-sub">1 seat available</div>
+      <div class="seat-meter"><div class="seat-meter-fill" style="width:80%;"></div></div>
+    </div>
+    <div class="seat-card">
+      <div class="seat-label">Monthly Cost</div>
+      <div class="seat-val" style="color:var(--accent);">$1,988</div>
+      <div class="seat-sub">4 seats × $497/mo</div>
+    </div>
+    <div class="seat-card">
+      <div class="seat-label">Active Now</div>
+      <div class="seat-val">3</div>
+      <div class="seat-sub">Last activity 4 min ago</div>
+    </div>
+    <div class="seat-card">
+      <div class="seat-label">Pending Invites</div>
+      <div class="seat-val" style="color:var(--warn);">1</div>
+      <div class="seat-sub">Sent 2 days ago</div>
+    </div>
+  </div>
+
+  <!-- Team table -->
+  <div class="team-card">
+    <div class="tc-header">
+      <input type="text" class="tc-search" placeholder="Search team members…">
+    </div>
+    <table class="team-table">
+      <thead><tr>
+        <th class="col-member">Member</th>
+        <th class="col-role">Role</th>
+        <th class="col-clients">Client Access</th>
+        <th class="col-depts">Departments</th>
+        <th class="col-status">Status</th>
+        <th class="col-last">Last Active</th>
+        <th class="col-action"></th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#18856a,#2dd4a0);">RK</div><div class="member-info"><div class="member-name">Rishabh Kewalramani</div><div class="member-email">rishabh@pranaiq.com</div></div></div></td>
+          <td><span class="role-badge role-owner">👑 Owner</span></td>
+          <td><div class="client-chips"><span class="client-chip all">All Clients</span></div></td>
+          <td><div class="client-chips"><span class="client-chip all">All Depts</span></div></td>
+          <td><span class="status-dot active">Active</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">Just now</td>
+          <td style="text-align:right;"><button class="action-btn" onclick="openEdit('RK','Rishabh Kewalramani','rishabh@pranaiq.com','#18856a','#2dd4a0','owner')">Edit</button></td>
+        </tr>
+        <tr>
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#7c3aed,#a78bfa);">SP</div><div class="member-info"><div class="member-name">Sarah Park</div><div class="member-email">sarah@pranaiq.com</div></div></div></td>
+          <td><span class="role-badge role-admin">🔑 Admin</span></td>
+          <td><div class="client-chips"><span class="client-chip all">All Clients</span></div></td>
+          <td><div class="client-chips"><span class="client-chip all">All Depts</span></div></td>
+          <td><span class="status-dot active">Active</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">12 min ago</td>
+          <td style="text-align:right;"><button class="action-btn" onclick="openEdit('SP','Sarah Park','sarah@pranaiq.com','#7c3aed','#a78bfa','admin')">Edit</button></td>
+        </tr>
+        <tr>
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#2563eb,#60a5fa);">MR</div><div class="member-info"><div class="member-name">Marcus Rivera</div><div class="member-email">marcus@pranaiq.com</div></div></div></td>
+          <td><span class="role-badge role-member">Member</span></td>
+          <td><div class="client-chips"><span class="client-chip">Starbucks</span><span class="client-chip">AMC</span><span class="client-chip">Dutch Bros</span></div></td>
+          <td><div class="client-chips"><span class="client-chip">Ops</span><span class="client-chip">Inventory</span></div></td>
+          <td><span class="status-dot active">Active</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">4 hrs ago</td>
+          <td style="text-align:right;"><button class="action-btn" onclick="openEdit('MR','Marcus Rivera','marcus@pranaiq.com','#2563eb','#60a5fa','member')">Edit</button></td>
+        </tr>
+        <tr>
+          <td><div class="member-cell"><div class="member-avatar" style="background:linear-gradient(135deg,#c4842d,#fbbf24);">JT</div><div class="member-info"><div class="member-name">Jamie Torres</div><div class="member-email">jamie@pranaiq.com</div></div></div></td>
+          <td><span class="role-badge role-member">Member</span></td>
+          <td><div class="client-chips"><span class="client-chip">Urban Plates</span><span class="client-chip">Sip Coffee</span><span class="client-chip">Board & Brew</span></div></td>
+          <td><div class="client-chips"><span class="client-chip">Marketing</span><span class="client-chip">F&B</span></div></td>
+          <td><span class="status-dot pending">Pending</span></td>
+          <td style="font-size:11px;color:var(--text-dim);">—</td>
+          <td style="text-align:right;"><button class="action-btn" onclick="openEdit('JT','Jamie Torres','jamie@pranaiq.com','#c4842d','#fbbf24','member')">Edit</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+<script>
+function navTo(target) {
+  const routes = {
+    'dashboard': 'A-03-command-center.html',
+    'clients': 'A-10-client-management.html',
+    'decisions': 'A-11-decision-inbox-agency.html',
+    'marketplace': 'A-04-agent-marketplace.html',
+    'builder': 'A-13-agent-builder.html',
+    'analytics': 'A-16-analytics.html',
+    'billing': 'A-12-billing-management.html',
+    'team': 'A-17-team-management.html',
+    'settings': 'A-18-audit-log.html'
+  };
+  if (routes[target]) {
+    window.location.href = routes[target];
+  } else {
+    alert('\u2192 ' + target + ' (screen not yet built)');
+  }
+}
+
+var memberData = {
+  'RK': { clients: ['All Clients'], depts: ['All Depts'], role: 1, status: 'active' },
+  'SP': { clients: ['All Clients'], depts: ['All Depts'], role: 1, status: 'active' },
+  'MR': { clients: ['Starbucks','AMC','Dutch Bros'], depts: ['Operations','Inventory'], role: 0, status: 'active' },
+  'JT': { clients: ['Urban Plates','Sip Coffee','Board & Brew'], depts: ['Marketing','F&B'], role: 0, status: 'pending' }
+};
+var clientNames = ['All Clients','Starbucks','AMC','Dutch Bros','Urban Plates','Sip Coffee','Board & Brew'];
+var deptNames = ['All Depts','Operations','Inventory','Marketing','F&B'];
+
+function openEdit(initials, name, email, c1, c2, role) {
+  var av = document.getElementById('edit-avatar');
+  av.textContent = initials;
+  av.style.background = 'linear-gradient(135deg,' + c1 + ',' + c2 + ')';
+  document.getElementById('edit-name').textContent = name;
+  document.getElementById('edit-email').textContent = email;
+
+  var st = document.getElementById('edit-status');
+  var data = memberData[initials] || { clients: [], depts: [], role: 0, status: 'active' };
+  st.className = 'status-dot ' + data.status;
+  st.textContent = data.status === 'active' ? 'Active' : 'Pending';
+
+  var sel = document.getElementById('edit-role');
+  sel.selectedIndex = data.role;
+
+  // Build client checkboxes
+  var cc = document.getElementById('edit-clients');
+  cc.innerHTML = '';
+  for (var i = 0; i < clientNames.length; i++) {
+    var isChecked = data.clients.indexOf(clientNames[i]) !== -1 || data.clients.indexOf('All Clients') !== -1;
+    var lbl = document.createElement('label');
+    lbl.className = 'modal-checkbox' + (isChecked ? ' checked' : '');
+    lbl.onclick = function() { this.classList.toggle('checked'); };
+    lbl.innerHTML = '<input type="checkbox"><div class="modal-check-icon">\u2713</div> ' + clientNames[i];
+    if (clientNames[i] === 'All Clients' && isChecked) lbl.className += '';
+    cc.appendChild(lbl);
+  }
+
+  // Build dept checkboxes
+  var dc = document.getElementById('edit-depts');
+  dc.innerHTML = '';
+  for (var j = 0; j < deptNames.length; j++) {
+    var isD = data.depts.indexOf(deptNames[j]) !== -1 || data.depts.indexOf('All Depts') !== -1;
+    var dlbl = document.createElement('label');
+    dlbl.className = 'modal-checkbox' + (isD ? ' checked' : '');
+    dlbl.onclick = function() { this.classList.toggle('checked'); };
+    dlbl.innerHTML = '<input type="checkbox"><div class="modal-check-icon">\u2713</div> ' + deptNames[j];
+    dc.appendChild(dlbl);
+  }
+
+  document.getElementById('edit-modal').classList.add('show');
+}
+</script>
+</body>
+</html>

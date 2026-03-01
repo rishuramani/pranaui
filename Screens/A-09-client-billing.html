@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PranaOS — Client Billing Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf6f0; --bg-card: #fffdf9; --bg-elevated: #f0e8dc;
+    --border: #e2d5c4; --border-subtle: #ede4d6;
+    --text: #2a1f10; --text-secondary: #4a3d2a; --text-muted: #7a6348; --text-dim: #a89880;
+    --accent: #18856a; --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
+    --warn: #c4842d; --warn-bg: rgba(196,132,45,0.08); --warn-border: rgba(196,132,45,0.18);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --radius: 14px; --radius-sm: 10px; --radius-xs: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* Shell grid */
+  .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { background: var(--bg-card); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+  .sb-logo { display: flex; align-items: center; gap: 10px; padding: 0 24px; margin-bottom: 8px; }
+  .sb-logo svg { width: 28px; height: 28px; }
+  .sb-logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .sb-logo-text span { color: var(--accent); }
+  .sb-org { padding: 0 24px; margin-bottom: 28px; }
+  .sb-org-name { font-size: 12px; color: var(--text-muted); font-weight: 500; padding: 6px 12px; background: var(--bg-elevated); border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: background 0.2s; }
+  .sb-org-name:hover { background: var(--border-subtle); }
+  .sb-org-dot { width: 7px; height: 7px; background: var(--accent-bright); border-radius: 50%; }
+  .sb-section { margin-bottom: 24px; }
+  .sb-section-label { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); font-weight: 600; padding: 0 24px; margin-bottom: 6px; }
+  .sb-nav { list-style: none; }
+  .sb-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 24px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.15s; position: relative; }
+  .sb-nav-item:hover { background: var(--bg-elevated); color: var(--text); }
+  .sb-nav-item.active { color: var(--accent); font-weight: 600; background: var(--accent-bg); }
+  .sb-nav-item.active::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; background: var(--accent); border-radius: 0 2px 2px 0; }
+  .sb-nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sb-nav-badge { margin-left: auto; font-size: 10px; font-weight: 700; color: #fff; background: var(--error); min-width: 18px; height: 18px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 5px; }
+  .sb-nav-badge.warn { background: var(--warn); }
+  .sb-footer { margin-top: auto; padding: 16px 24px; border-top: 1px solid var(--border); }
+  .sb-user { display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 8px 0; }
+  .sb-avatar { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; }
+  .sb-user-info { flex: 1; min-width: 0; }
+  .sb-user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sb-user-role { font-size: 10px; color: var(--text-dim); font-weight: 300; }
+
+  /* Main */
+  .main { padding: 28px 36px 80px; }
+
+  /* Breadcrumb */
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); margin-bottom: 20px; }
+  .breadcrumb a { color: var(--accent); text-decoration: none; font-weight: 500; cursor: pointer; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  /* Page header */
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+  .page-header-left { display: flex; align-items: center; gap: 14px; }
+  .client-badge { width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #c41e3a, #e94560); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; }
+  .page-title { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .page-subtitle { font-size: 12px; color: var(--text-muted); font-weight: 400; margin-top: 1px; }
+  .header-actions { display: flex; gap: 8px; }
+  .btn { padding: 9px 18px; border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; border: none; }
+  .btn-secondary { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); }
+  .btn-secondary:hover { background: var(--bg-elevated); color: var(--text); }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(24,133,106,0.2); }
+  .btn-primary:hover { filter: brightness(0.92); }
+
+  /* Template bar */
+  .template-bar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: var(--bg-elevated); border-radius: var(--radius-xs); margin-bottom: 20px; border: 1px solid var(--border-subtle); }
+  .template-label { font-size: 11px; font-weight: 600; color: var(--text-dim); white-space: nowrap; }
+  .template-select { padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-card); font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text); cursor: pointer; outline: none; }
+  .template-select:focus { border-color: var(--accent); }
+  .template-spacer { flex: 1; }
+  .template-btn { padding: 5px 12px; border: 1px solid var(--border); border-radius: 6px; background: none; font-family: inherit; font-size: 11px; color: var(--text-muted); cursor: pointer; font-weight: 500; }
+  .template-btn:hover { background: var(--bg-card); color: var(--text); }
+
+  /* Two-column layout */
+  .billing-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+  @media (max-width: 960px) { .billing-layout { grid-template-columns: 1fr; } }
+
+  /* Form cards */
+  .form-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow-sm); margin-bottom: 14px; }
+  .form-card-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .form-card-desc { font-size: 11px; color: var(--text-dim); margin-bottom: 16px; }
+  .form-row { display: flex; gap: 16px; margin-bottom: 14px; }
+  .form-row:last-child { margin-bottom: 0; }
+  .form-field { flex: 1; }
+  .form-label { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block; }
+  .form-input-wrap { position: relative; }
+  .form-input-wrap .prefix { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-dim); font-weight: 600; pointer-events: none; }
+  .form-input-wrap .suffix { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text-dim); font-weight: 600; pointer-events: none; }
+  .form-input { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--text); background: var(--bg); outline: none; transition: border-color 0.15s; }
+  .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .form-input.has-prefix { padding-left: 28px; }
+  .form-input.has-suffix { padding-right: 32px; }
+  .form-hint { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+  .form-select { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 13px; color: var(--text); background: var(--bg); outline: none; cursor: pointer; }
+  .form-select:focus { border-color: var(--accent); }
+
+  /* Line items */
+  .line-items-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+  .line-items-table th { font-size: 10px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--border); }
+  .line-items-table td { padding: 6px 8px; border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
+  .li-input { width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; color: var(--text); background: var(--bg); outline: none; }
+  .li-input:focus { border-color: var(--accent); }
+  .li-input.amount { width: 100px; }
+  .li-freq { width: 110px; padding: 7px 8px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 11px; color: var(--text); background: var(--bg); cursor: pointer; }
+  .li-remove { width: 32px; text-align: center; cursor: pointer; color: var(--text-dim); font-size: 16px; transition: color 0.15s; padding: 0 !important; }
+  .li-remove:hover { color: #c25a5a; }
+  .add-line-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px dashed var(--border); border-radius: var(--radius-xs); font-family: inherit; font-size: 12px; font-weight: 600; color: var(--text-dim); cursor: pointer; margin-top: 10px; background: none; transition: all 0.15s; }
+  .add-line-btn:hover { border-color: var(--accent-border); color: var(--accent); background: var(--accent-bg); }
+
+  /* Preview card (sticky sidebar) */
+  .preview-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); position: sticky; top: 28px; overflow: hidden; }
+  .preview-header { padding: 18px 22px; border-bottom: 1px solid var(--border-subtle); }
+  .preview-title { font-size: 14px; font-weight: 700; }
+  .preview-subtitle { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .preview-body { padding: 16px 22px; }
+  .preview-row { display: flex; justify-content: space-between; padding: 9px 0; font-size: 13px; }
+  .preview-row + .preview-row { border-top: 1px solid var(--border-subtle); }
+  .preview-row-label { color: var(--text-muted); font-weight: 400; }
+  .preview-row-value { font-weight: 700; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+  .preview-row-sub { font-size: 10px; color: var(--text-dim); margin-top: 1px; }
+  .preview-divider { border: none; border-top: 2px solid var(--border); margin: 8px 0; }
+  .preview-total { display: flex; justify-content: space-between; padding: 10px 0 0; font-size: 14px; font-weight: 800; }
+  .preview-total-amount { color: var(--accent); font-size: 22px; font-family: 'IBM Plex Mono', monospace; font-weight: 700; }
+  .preview-footer { padding: 16px 22px; background: var(--accent-bg); border-top: 1px solid var(--accent-border); }
+  .preview-margin-row { display: flex; justify-content: space-between; align-items: center; }
+  .preview-margin-label { font-size: 12px; color: var(--text-muted); }
+  .preview-margin-value { font-size: 18px; font-weight: 800; color: var(--accent); }
+  .preview-margin-desc { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+
+  .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
+  .screen-id strong { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="screen-id"><strong>A-09</strong> Client Billing Setup</div>
+
+<div class="shell">
+
+<!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sb-logo">
+      <svg viewBox="0 0 512 512" fill="none" width="28" height="28">
+        <circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/>
+        <path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="256" cy="256" r="21" fill="#18856a"/>
+      </svg>
+      <span class="sb-logo-text">Prana<span>OS</span></span>
+    </div>
+    <div class="sb-org">
+      <div class="sb-org-name"><span class="sb-org-dot"></span> Prana IQ</div>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Main</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('dashboard')"><span class="sb-nav-icon">📊</span> Command Center</li>
+        <li class="sb-nav-item" onclick="navTo('clients')"><span class="sb-nav-icon">🏢</span> Clients <span class="sb-nav-badge warn">5</span></li>
+        <li class="sb-nav-item" onclick="navTo('decisions')"><span class="sb-nav-icon">📥</span> Decision Inbox <span class="sb-nav-badge">12</span></li>
+        <li class="sb-nav-item" onclick="navTo('marketplace')"><span class="sb-nav-icon">🤖</span> Agent Marketplace</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">Manage</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('builder')"><span class="sb-nav-icon">⚡</span> Builder</li>
+        <li class="sb-nav-item" onclick="navTo('analytics')"><span class="sb-nav-icon">📈</span> Analytics</li>
+        <li class="sb-nav-item active" onclick="navTo('billing')"><span class="sb-nav-icon">💳</span> Billing</li>
+        <li class="sb-nav-item" onclick="navTo('team')"><span class="sb-nav-icon">👥</span> Team</li>
+      </ul>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">System</div>
+      <ul class="sb-nav">
+        <li class="sb-nav-item" onclick="navTo('settings')"><span class="sb-nav-icon">⚙️</span> Settings</li>
+      </ul>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">RK</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name">Rishabh K.</div>
+          <div class="sb-user-role">Owner · Growth plan</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+<!-- Main -->
+<div class="main">
+
+  <div class="breadcrumb">
+    <a onclick="window.location.href='A-10-client-management.html'">Clients</a>
+    <span>/</span>
+    <a onclick="window.location.href='A-08-agency-admin-view.html'">AMC Theatres</a>
+    <span>/</span>
+    <span>Billing Setup</span>
+  </div>
+
+  <div class="page-header">
+    <div class="page-header-left">
+      <div class="client-badge">AMC</div>
+      <div>
+        <div class="page-title">Billing Configuration</div>
+        <div class="page-subtitle">AMC Theatres &middot; 6 seats &middot; 6 agents deployed</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="alert('Discard changes')">Cancel</button>
+      <button class="btn btn-primary" onclick="alert('Saved to partition.billing_config')">Save Configuration</button>
+    </div>
+  </div>
+
+  <!-- Template bar -->
+  <div class="template-bar">
+    <span class="template-label">Template:</span>
+    <select class="template-select" id="template-select" onchange="applyTemplate(this.value)">
+      <option value="custom">Custom Configuration</option>
+      <option value="ecom" selected>Standard E-Commerce Client</option>
+      <option value="enterprise">Enterprise Client</option>
+      <option value="starter">Starter / Pilot</option>
+    </select>
+    <div class="template-spacer"></div>
+    <button class="template-btn" onclick="alert('Save current config as new template')">Save as Template</button>
+    <button class="template-btn" onclick="alert('Manage templates: rename, delete, set defaults')">Manage</button>
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="billing-layout">
+
+    <!-- Left: Form -->
+    <div class="form-column">
+
+      <!-- Base Fee -->
+      <div class="form-card">
+        <div class="form-card-title">Monthly Base Fee</div>
+        <div class="form-card-desc">Fixed monthly charge for this client, independent of usage.</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label class="form-label">Base amount</label>
+            <div class="form-input-wrap">
+              <span class="prefix">$</span>
+              <input type="text" class="form-input has-prefix" id="base-fee" value="997" oninput="updatePreview()">
+            </div>
+            <div class="form-hint">Per month, per seat pricing. 6 seats &times; $997 = $5,982/mo base</div>
+          </div>
+          <div class="form-field" style="max-width: 180px;">
+            <label class="form-label">Billing cycle</label>
+            <select class="form-select" id="billing-cycle">
+              <option value="monthly" selected>Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="annual">Annual (10% off)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usage Markup -->
+      <div class="form-card">
+        <div class="form-card-title">Usage Markup</div>
+        <div class="form-card-desc">Percentage markup on PranaOS platform costs (messages, actions, API calls) passed through to client.</div>
+        <div class="form-row">
+          <div class="form-field" style="max-width: 200px;">
+            <label class="form-label">Markup percentage</label>
+            <div class="form-input-wrap">
+              <input type="text" class="form-input has-suffix" id="markup-pct" value="100" oninput="updatePreview()">
+              <span class="suffix">%</span>
+            </div>
+            <div class="form-hint">100% = 2&times; passthrough (you keep half)</div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Current monthly platform cost</label>
+            <div class="form-input-wrap">
+              <span class="prefix">$</span>
+              <input type="text" class="form-input has-prefix" id="platform-cost" value="312" oninput="updatePreview()" style="background: var(--bg-elevated); color: var(--text-dim);" readonly>
+            </div>
+            <div class="form-hint">Auto-calculated from last 30 days of usage</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Partition Fee -->
+      <div class="form-card">
+        <div class="form-card-title">Infrastructure</div>
+        <div class="form-card-desc">Platform partition fees for isolated client environment.</div>
+        <div class="form-row">
+          <div class="form-field" style="max-width: 200px;">
+            <label class="form-label">Partition fee</label>
+            <div class="form-input-wrap">
+              <span class="prefix">$</span>
+              <input type="text" class="form-input has-prefix" value="50" style="background: var(--bg-elevated); color: var(--text-dim);" readonly>
+            </div>
+            <div class="form-hint">Fixed per-client platform fee</div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Pass through to client?</label>
+            <select class="form-select" id="partition-pass" onchange="updatePreview()">
+              <option value="yes" selected>Yes &mdash; add to invoice</option>
+              <option value="no">No &mdash; absorb cost</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom Line Items -->
+      <div class="form-card">
+        <div class="form-card-title">Custom Line Items</div>
+        <div class="form-card-desc">Additional recurring or one-time charges for this client.</div>
+        <table class="line-items-table" id="line-items-table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th style="width:100px;">Amount</th>
+              <th style="width:110px;">Frequency</th>
+              <th style="width:32px;"></th>
+            </tr>
+          </thead>
+          <tbody id="line-items-body">
+            <tr>
+              <td><input type="text" class="li-input" value="Implementation & onboarding" oninput="updatePreview()"></td>
+              <td><input type="text" class="li-input amount" value="1,500" oninput="updatePreview()"></td>
+              <td><select class="li-freq" onchange="updatePreview()"><option value="once" selected>One-time</option><option value="monthly">Monthly</option></select></td>
+              <td class="li-remove" onclick="removeRow(this)">&times;</td>
+            </tr>
+            <tr>
+              <td><input type="text" class="li-input" value="Priority support" oninput="updatePreview()"></td>
+              <td><input type="text" class="li-input amount" value="200" oninput="updatePreview()"></td>
+              <td><select class="li-freq" onchange="updatePreview()"><option value="once">One-time</option><option value="monthly" selected>Monthly</option></select></td>
+              <td class="li-remove" onclick="removeRow(this)">&times;</td>
+            </tr>
+          </tbody>
+        </table>
+        <button class="add-line-btn" onclick="addRow()">+ Add line item</button>
+      </div>
+
+    </div>
+
+    <!-- Right: Preview -->
+    <div class="preview-column">
+      <div class="preview-card">
+        <div class="preview-header">
+          <div class="preview-title">Invoice Preview</div>
+          <div class="preview-subtitle">Estimated next month based on current usage</div>
+        </div>
+        <div class="preview-body">
+          <div class="preview-row">
+            <div>
+              <div class="preview-row-label">Base fee</div>
+              <div class="preview-row-sub">6 seats &times; $997/seat</div>
+            </div>
+            <div class="preview-row-value" id="prev-base">$5,982</div>
+          </div>
+          <div class="preview-row">
+            <div>
+              <div class="preview-row-label">Usage (with markup)</div>
+              <div class="preview-row-sub" id="prev-usage-sub">$312 platform &times; 2.0x</div>
+            </div>
+            <div class="preview-row-value" id="prev-usage">$624</div>
+          </div>
+          <div class="preview-row" id="prev-partition-row">
+            <div>
+              <div class="preview-row-label">Partition fee</div>
+            </div>
+            <div class="preview-row-value">$50</div>
+          </div>
+          <div class="preview-row" id="prev-line-priority">
+            <div>
+              <div class="preview-row-label">Priority support</div>
+              <div class="preview-row-sub">Monthly</div>
+            </div>
+            <div class="preview-row-value">$200</div>
+          </div>
+
+          <hr class="preview-divider">
+
+          <div class="preview-total">
+            <span>Monthly total</span>
+            <span class="preview-total-amount" id="prev-total">$6,856</span>
+          </div>
+        </div>
+
+        <div class="preview-footer">
+          <div class="preview-margin-row">
+            <span class="preview-margin-label">Your margin</span>
+            <span class="preview-margin-value" id="prev-margin">$6,494</span>
+          </div>
+          <div class="preview-margin-desc" id="prev-margin-desc">Revenue after $312 platform cost + $50 partition = $362 cost basis</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /shell -->
+
+<script>
+function navTo(target) {
+  const routes = {
+    'dashboard': 'A-03-command-center.html',
+    'clients': 'A-10-client-management.html',
+    'decisions': 'A-11-decision-inbox-agency.html',
+    'marketplace': 'A-04-agent-marketplace.html',
+    'builder': 'A-13-agent-builder.html',
+    'analytics': 'A-16-analytics.html',
+    'billing': 'A-12-billing-management.html',
+    'team': 'A-17-team-management.html',
+    'settings': 'A-18-audit-log.html'
+  };
+  if (routes[target]) {
+    window.location.href = routes[target];
+  } else {
+    alert('→ ' + target + ' (screen not yet built)');
+  }
+}
+
+function updatePreview() {
+  var baseFee = parseFloat((document.getElementById('base-fee').value || '0').replace(/,/g, ''));
+  var seats = 6;
+  var baseTotal = baseFee * seats;
+
+  var markupPct = parseFloat(document.getElementById('markup-pct').value || '0');
+  var platformCost = parseFloat((document.getElementById('platform-cost').value || '0').replace(/,/g, ''));
+  var usageTotal = platformCost * (1 + markupPct / 100);
+
+  var partitionPass = document.getElementById('partition-pass').value === 'yes';
+  var partitionFee = partitionPass ? 50 : 0;
+
+  // Calculate monthly line items
+  var monthlyLineItems = 0;
+  var rows = document.querySelectorAll('#line-items-body tr');
+  rows.forEach(function(row) {
+    var freq = row.querySelector('.li-freq');
+    var amt = row.querySelector('.li-input.amount');
+    if (freq && amt && freq.value === 'monthly') {
+      monthlyLineItems += parseFloat((amt.value || '0').replace(/,/g, ''));
+    }
+  });
+
+  var total = baseTotal + usageTotal + partitionFee + monthlyLineItems;
+  var costBasis = platformCost + 50;
+  var margin = total - costBasis;
+
+  // Update preview
+  document.getElementById('prev-base').textContent = '$' + Math.round(baseTotal).toLocaleString();
+  document.querySelector('#prev-base + .preview-row-sub, [id="prev-base"]').parentElement;
+  document.getElementById('prev-usage').textContent = '$' + Math.round(usageTotal).toLocaleString();
+  document.getElementById('prev-usage-sub').textContent = '$' + platformCost + ' platform \u00d7 ' + (1 + markupPct / 100).toFixed(1) + 'x';
+  document.getElementById('prev-partition-row').style.display = partitionPass ? 'flex' : 'none';
+  document.getElementById('prev-total').textContent = '$' + Math.round(total).toLocaleString();
+  document.getElementById('prev-margin').textContent = '$' + Math.round(margin).toLocaleString();
+  document.getElementById('prev-margin-desc').textContent = 'Revenue after $' + platformCost + ' platform cost + $50 partition = $' + costBasis + ' cost basis';
+}
+
+function addRow() {
+  var tbody = document.getElementById('line-items-body');
+  var tr = document.createElement('tr');
+  tr.style.animation = 'fadeIn 0.3s ease';
+  tr.innerHTML =
+    '<td><input type="text" class="li-input" placeholder="Description" oninput="updatePreview()"></td>' +
+    '<td><input type="text" class="li-input amount" placeholder="0" oninput="updatePreview()"></td>' +
+    '<td><select class="li-freq" onchange="updatePreview()"><option value="once">One-time</option><option value="monthly" selected>Monthly</option></select></td>' +
+    '<td class="li-remove" onclick="removeRow(this)">&times;</td>';
+  tbody.appendChild(tr);
+}
+
+function removeRow(el) {
+  var row = el.closest('tr');
+  row.style.opacity = '0';
+  row.style.transition = 'opacity 0.2s';
+  setTimeout(function() { row.remove(); updatePreview(); }, 200);
+}
+
+function applyTemplate(val) {
+  var configs = {
+    ecom: { base: '997', markup: '100' },
+    enterprise: { base: '1,497', markup: '75' },
+    starter: { base: '497', markup: '150' },
+    custom: { base: '997', markup: '100' }
+  };
+  var c = configs[val] || configs.custom;
+  document.getElementById('base-fee').value = c.base;
+  document.getElementById('markup-pct').value = c.markup;
+  updatePreview();
+}
+
+// Add fadeIn animation
+var s = document.createElement('style');
+s.textContent = '@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }';
+document.head.appendChild(s);
+</script>
+</body>
+</html>
