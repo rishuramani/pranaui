@@ -1,21 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PranaOS — Pricing</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #faf6f0; --bg-warm: #f5ede0; --bg-dark: #2a1f10; --bg-card: #fffdf9;
-    --border: #e2d5c4; --border-subtle: #ede4d6;
-    --text: #2a1f10; --text-muted: #7a6348; --text-dim: #a89880; --text-on-dark: #f5ede0;
-    --accent: #18856a; --accent-bright: #2dd4a0;
-    --accent-bg: rgba(45,212,160,0.07); --accent-border: rgba(24,133,106,0.18);
-    --gold: #c4842d; --gold-light: rgba(196,132,45,0.1);
-    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04); --shadow-md: 0 4px 20px rgba(42,31,16,0.08); --shadow-lg: 0 12px 40px rgba(42,31,16,0.12);
-    --radius: 16px; --radius-sm: 10px; --radius-xs: 8px;
+    :root {
+    --radius: 16px;
+    --radius-sm: 10px;
+    --radius-xs: 8px;
   }
+
+  [data-theme="light"] {
+    --bg: #faf6f0;
+    --bg-warm: #f5ede0;
+    --bg-dark: #2a1f10;
+    --bg-card: #fffdf9;
+    --border: #e2d5c4;
+    --border-subtle: #ede4d6;
+    --text: #2a1f10;
+    --text-muted: #7a6348;
+    --text-dim: #a89880;
+    --text-on-dark: #f5ede0;
+    --accent: #18856a;
+    --accent-bright: #2dd4a0;
+    --accent-bg: rgba(45,212,160,0.07);
+    --accent-border: rgba(24,133,106,0.18);
+    --gold: #c4842d;
+    --gold-light: rgba(196,132,45,0.1);
+    --shadow-sm: 0 1px 3px rgba(42,31,16,0.04);
+    --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
+    --shadow-lg: 0 12px 40px rgba(42,31,16,0.12);
+  }
+
+  [data-theme="dark"] {
+    --bg: #0c0e0d;
+    --bg-warm: #141716;
+    --bg-dark: #0a0c0b;
+    --bg-card: #141716;
+    --border: #232826;
+    --border-subtle: #1e2220;
+    --text: #e4e8e6;
+    --text-muted: #8a9490;
+    --text-dim: #4a5450;
+    --text-on-dark: #e4e8e6;
+    --accent: #2dd4a0;
+    --accent-bright: #6eecd0;
+    --accent-bg: rgba(45,212,160,0.06);
+    --accent-border: rgba(45,212,160,0.12);
+    --gold: #d4973a;
+    --gold-light: rgba(212,151,58,0.08);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 14px rgba(0,0,0,0.25);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.35);
+  }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--bg); color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
 
@@ -148,6 +188,13 @@
   .footer-link { font-size: 12px; color: var(--text-dim); text-decoration: none; cursor: pointer; }
   .footer-copy { font-size: 11px; color: var(--text-dim); }
 
+  /* Tooltip */
+  .info-tip { position: relative; display: inline-flex; align-items: center; cursor: help; }
+  .info-tip .tip-icon { width: 14px; height: 14px; border-radius: 50%; background: var(--accent-bg); border: 1px solid var(--accent-border); display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: var(--accent); margin-left: 4px; flex-shrink: 0; }
+  .info-tip .tip-bubble { position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%); background: var(--bg-dark); color: var(--text-on-dark); font-size: 11px; font-weight: 400; line-height: 1.5; padding: 10px 14px; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 50; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+  .info-tip .tip-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--bg-dark); }
+  .info-tip:hover .tip-bubble { opacity: 1; }
+
   .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
   .screen-id strong { color: var(--accent); }
 
@@ -159,6 +206,20 @@
     .content { padding: 30px 20px 0; }
     .footer-inner { flex-direction: column; gap: 16px; text-align: center; }
   }
+
+  /* === Dark mode support === */
+  body { transition: background 0.4s ease, color 0.3s ease; }
+  [data-theme="dark"] svg circle[stroke="#18856a"] { stroke: #2dd4a0; }
+  [data-theme="dark"] svg path[stroke="#18856a"] { stroke: #2dd4a0; }
+  [data-theme="dark"] svg circle[fill="#18856a"] { fill: #2dd4a0; }
+
+  .dm-toggle { position:fixed; bottom:58px; right:20px; z-index:9998; width:36px; height:36px; border-radius:10px; border:1px solid var(--border); background:var(--bg-card); cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-md); transition:all 0.3s; padding:0; }
+  .dm-toggle:hover { border-color:var(--accent); transform:scale(1.08); }
+  .dm-toggle .dm-sun, .dm-toggle .dm-moon { position:absolute; width:18px; height:18px; transition:opacity 0.3s, transform 0.3s; }
+  .dm-toggle .dm-sun { opacity:1; transform:rotate(0deg); }
+  .dm-toggle .dm-moon { opacity:0; transform:rotate(-90deg); }
+  [data-theme="dark"] .dm-toggle .dm-sun { opacity:0; transform:rotate(90deg); }
+  [data-theme="dark"] .dm-toggle .dm-moon { opacity:1; transform:rotate(0deg); }
 </style>
 </head>
 <body>
@@ -180,7 +241,7 @@
   </div>
   <div class="nav-spacer"></div>
   <a class="nav-login" onclick="window.location.href='S-05-login.html'">Log in</a>
-  <button class="nav-cta" onclick="window.location.href='S-04-signup-checkout.html'">Get Started Free</button>
+  <button class="nav-cta" onclick="window.location.href='S-04-signup-checkout.html'">Get Started</button>
 </div>
 
 <!-- Hero -->
@@ -204,8 +265,8 @@
     <div class="pricing-card" id="card-starter" onclick="selectTier('starter')">
       <div class="pc-name">Starter</div>
       <div class="pc-desc">For agencies launching their first AI clients</div>
-      <div class="pc-price"><span class="pc-price-amount" id="price-starter">$497</span><span class="pc-price-unit">/ seat / mo</span></div>
-      <div class="pc-price-note">+ $50/partition + usage &middot; Up to 5 clients</div>
+      <div class="pc-price"><span class="pc-price-amount" id="price-starter">$497</span><span class="pc-price-unit">/ partner seat / mo</span></div>
+      <div class="pc-price-note">+ <span class="info-tip">$50/workspace<span class="tip-icon">?</span><span class="tip-bubble">Workspaces = your clients + their departments</span></span> + usage &middot; Up to 5 clients</div>
       <button class="pc-cta pc-cta-secondary" onclick="window.location.href='S-04-signup-checkout.html'">Start free trial</button>
       <ul class="pc-features">
         <li>Up to 5 client workspaces</li>
@@ -225,8 +286,8 @@
     <div class="pricing-card featured selected" id="card-growth" onclick="selectTier('growth')">
       <div class="pc-name">Growth</div>
       <div class="pc-desc">For agencies scaling their AI practice</div>
-      <div class="pc-price"><span class="pc-price-amount" id="price-growth">$997</span><span class="pc-price-unit">/ seat / mo</span></div>
-      <div class="pc-price-note">+ $50/partition + usage &middot; Up to 15 clients</div>
+      <div class="pc-price"><span class="pc-price-amount" id="price-growth">$997</span><span class="pc-price-unit">/ partner seat / mo</span></div>
+      <div class="pc-price-note">+ <span class="info-tip">$50/workspace<span class="tip-icon">?</span><span class="tip-bubble">Workspaces = your clients + their departments</span></span> + usage &middot; Up to 15 clients</div>
       <button class="pc-cta pc-cta-primary" onclick="window.location.href='S-04-signup-checkout.html'">Start building free →</button>
       <ul class="pc-features">
         <li>Up to 15 client workspaces</li>
@@ -273,7 +334,7 @@
     <div class="section-label">Margin Calculator</div>
     <div class="section-title">See what you could earn</div>
     <div class="section-sub">Adjust the sliders to model your revenue, costs, and margin. Most partners charge clients per department.</div>
-    <div class="calc-plan-badge"><span id="calc-plan-label">📊 Calculating with <strong>Growth</strong> plan — $997/seat</span></div>
+    <div class="calc-plan-badge"><span id="calc-plan-label">📊 Calculating with <strong>Growth</strong> plan — $997/partner seat</span></div>
     <div class="calc-enterprise-overlay" id="calc-enterprise">
       <div class="ceo-title">Enterprise pricing is custom</div>
       <div class="ceo-desc">We'll build a plan around your specific needs — volume, security, integrations.</div>
@@ -282,8 +343,16 @@
     <div class="calc-layout">
       <div class="calc-inputs">
         <div class="calc-input-group">
+          <div class="cig-label">Partner seats</div>
+          <div class="cig-desc">Agency-level logins — team members who manage clients on PranaOS</div>
+          <div class="cig-slider-row">
+            <input type="range" class="cig-slider" id="slider-seats" min="1" max="10" value="1" oninput="calculate()">
+            <div class="cig-value" id="val-seats">1</div>
+          </div>
+        </div>
+        <div class="calc-input-group">
           <div class="cig-label">Number of clients</div>
-          <div class="cig-desc">How many client workspaces will you deploy?</div>
+          <div class="cig-desc">How many client accounts will you manage?</div>
           <div class="cig-slider-row">
             <input type="range" class="cig-slider" id="slider-clients" min="1" max="15" value="5" oninput="calculate()">
             <div class="cig-value" id="val-clients">5</div>
@@ -291,7 +360,7 @@
         </div>
         <div class="calc-input-group">
           <div class="cig-label">Departments per client</div>
-          <div class="cig-desc">Each department is a partition with its own agents and users</div>
+          <div class="cig-desc">Each department is a workspace with its own agents and users</div>
           <div class="cig-slider-row">
             <input type="range" class="cig-slider" id="slider-depts" min="1" max="8" value="3" oninput="calculate()">
             <div class="cig-value" id="val-depts">3</div>
@@ -317,13 +386,13 @@
       <div class="calc-results">
         <div class="cr-title">Your monthly numbers</div>
         <div class="cr-rows">
-          <div class="cr-row"><span class="cr-row-label">Total partitions</span><span class="cr-row-value" id="cr-partitions-count">15</span></div>
+          <div class="cr-row"><span class="cr-row-label"><span class="info-tip">Total workspaces<span class="tip-icon">?</span><span class="tip-bubble">Workspaces = your clients + their departments</span></span></span><span class="cr-row-value" id="cr-partitions-count">15</span></div>
           <div class="cr-row" style="border-bottom:none;padding-bottom:4px;"><span class="cr-row-label" style="font-weight:700;color:var(--text);">What you charge clients</span><span class="cr-row-value"></span></div>
           <div class="cr-row" style="padding-top:0;"><span class="cr-row-label">&nbsp;&nbsp;Client fees (5 × $5,000)</span><span class="cr-row-value" id="cr-revenue">$25,000</span></div>
           <div class="cr-row"><span class="cr-row-label">&nbsp;&nbsp;Usage pass-through + markup</span><span class="cr-row-value" id="cr-usage-rev">$1,800</span></div>
           <div class="cr-row" style="border-bottom:none;padding-bottom:4px;"><span class="cr-row-label" style="font-weight:700;color:var(--text);">Your costs to PranaOS</span><span class="cr-row-value"></span></div>
-          <div class="cr-row" style="padding-top:0;"><span class="cr-row-label" id="cr-seat-label">&nbsp;&nbsp;Seat fees (Growth: $997/seat)</span><span class="cr-row-value" id="cr-seat-cost" style="color:var(--warn);">$4,985</span></div>
-          <div class="cr-row"><span class="cr-row-label">&nbsp;&nbsp;Partition fees (15 × $50)</span><span class="cr-row-value" id="cr-part-cost" style="color:var(--warn);">$750</span></div>
+          <div class="cr-row" style="padding-top:0;"><span class="cr-row-label" id="cr-seat-label">&nbsp;&nbsp;Partner seat fees (1 × $997)</span><span class="cr-row-value" id="cr-seat-cost" style="color:var(--warn);">$997</span></div>
+          <div class="cr-row"><span class="cr-row-label" id="cr-part-label">&nbsp;&nbsp;Workspace fees (15 × $50)</span><span class="cr-row-value" id="cr-part-cost" style="color:var(--warn);">$750</span></div>
           <div class="cr-row"><span class="cr-row-label">&nbsp;&nbsp;Usage costs (passthrough)</span><span class="cr-row-value" id="cr-usage-cost" style="color:var(--warn);">$1,500</span></div>
           <div class="cr-row highlight">
             <span class="cr-row-label">Your monthly margin</span>
@@ -347,8 +416,8 @@
   <div class="section-title" style="margin-bottom:28px;">Common questions</div>
 
   <div class="faq-item" onclick="toggleFaq(this)">
-    <div class="faq-q"><span class="faq-q-text">What's included in a "seat"?</span><span class="faq-q-icon">+</span></div>
-    <div class="faq-a"><div class="faq-a-text">A seat is one agency-level login. Each seat gives you access to manage client workspaces, deploy agents, and oversee decisions. Most agencies charge clients per department — each department gets its own partition with dedicated agents, users, and data isolation.</div></div>
+    <div class="faq-q"><span class="faq-q-text">What's a "partner seat"?</span><span class="faq-q-icon">+</span></div>
+    <div class="faq-a"><div class="faq-a-text">A partner seat is one agency-level login — a team member at your agency who manages clients on PranaOS. Partner seats are separate from your clients: the per-seat fee covers your agency's access, while workspaces (billed at $50 each) cover every client and department you manage. A workspace is any client or department on PranaOS.</div></div>
   </div>
   <div class="faq-item" onclick="toggleFaq(this)">
     <div class="faq-q"><span class="faq-q-text">What are usage costs?</span><span class="faq-q-icon">+</span></div>
@@ -421,7 +490,7 @@ function selectTier(tier) {
     if (parseInt(slider.value) > t.maxClients) slider.value = t.maxClients;
     // Update plan badge
     var price = annual ? t.annual : t.monthly;
-    document.getElementById('calc-plan-label').innerHTML = '📊 Calculating with <strong>' + t.name + '</strong> plan — $' + price + '/seat';
+    document.getElementById('calc-plan-label').innerHTML = '📊 Calculating with <strong>' + t.name + '</strong> plan — $' + price + '/partner seat';
     calculate();
   }
 }
@@ -437,12 +506,13 @@ function setBilling(isAnnual) {
   if (selectedTier !== 'enterprise') {
     var t = tiers[selectedTier];
     var price = annual ? t.annual : t.monthly;
-    document.getElementById('calc-plan-label').innerHTML = '📊 Calculating with <strong>' + t.name + '</strong> plan — $' + price + '/seat';
+    document.getElementById('calc-plan-label').innerHTML = '📊 Calculating with <strong>' + t.name + '</strong> plan — $' + price + '/partner seat';
   }
   calculate();
 }
 
 function calculate() {
+  var seats = parseInt(document.getElementById('slider-seats').value);
   var clients = parseInt(document.getElementById('slider-clients').value);
   var depts = parseInt(document.getElementById('slider-depts').value);
   var price = parseInt(document.getElementById('slider-price').value);
@@ -450,9 +520,9 @@ function calculate() {
   var t = tiers[selectedTier];
   var costPerSeat = annual ? t.annual : t.monthly;
 
-  var totalPartitions = clients * depts;
-  var totalSeats = clients;
+  var totalWorkspaces = clients + (clients * depts);
 
+  document.getElementById('val-seats').textContent = seats;
   document.getElementById('val-clients').textContent = clients;
   document.getElementById('val-depts').textContent = depts;
   document.getElementById('val-price').textContent = '$' + price.toLocaleString();
@@ -460,26 +530,27 @@ function calculate() {
 
   // Revenue
   var clientRevenue = clients * price;
-  var usageBase = totalPartitions * 100;
+  var usageBase = totalWorkspaces * 100;
   var usageMarkupRev = Math.round(usageBase * (markup / 100));
   var totalRevenue = clientRevenue + usageBase + usageMarkupRev;
 
   // Costs
-  var seatCost = totalSeats * costPerSeat;
-  var partitionCost = totalPartitions * 50;
+  var seatCost = seats * costPerSeat;
+  var workspaceCost = totalWorkspaces * 50;
   var usageCost = usageBase;
-  var totalCost = seatCost + partitionCost + usageCost;
+  var totalCost = seatCost + workspaceCost + usageCost;
 
   // Margin
   var margin = totalRevenue - totalCost;
   var marginPct = totalRevenue > 0 ? ((margin / totalRevenue) * 100) : 0;
 
-  document.getElementById('cr-partitions-count').textContent = totalPartitions;
+  document.getElementById('cr-partitions-count').textContent = totalWorkspaces;
   document.getElementById('cr-revenue').textContent = '$' + clientRevenue.toLocaleString();
   document.getElementById('cr-usage-rev').textContent = '$' + (usageBase + usageMarkupRev).toLocaleString();
   document.getElementById('cr-seat-cost').textContent = '$' + seatCost.toLocaleString();
-  document.getElementById('cr-seat-label').innerHTML = '&nbsp;&nbsp;Seat fees (' + t.name + ': $' + costPerSeat + '/seat)';
-  document.getElementById('cr-part-cost').textContent = '$' + partitionCost.toLocaleString();
+  document.getElementById('cr-seat-label').innerHTML = '&nbsp;&nbsp;Partner seat fees (' + seats + ' × $' + costPerSeat + ')';
+  document.getElementById('cr-part-label').innerHTML = '&nbsp;&nbsp;Workspace fees (' + totalWorkspaces + ' × $50)';
+  document.getElementById('cr-part-cost').textContent = '$' + workspaceCost.toLocaleString();
   document.getElementById('cr-usage-cost').textContent = '$' + usageCost.toLocaleString();
   document.getElementById('cr-margin').textContent = '$' + margin.toLocaleString();
   document.getElementById('cr-margin-pct').textContent = marginPct.toFixed(1) + '%';
@@ -490,5 +561,6 @@ function toggleFaq(el) { el.classList.toggle('open'); }
 
 selectTier('growth');
 </script>
+<button class="dm-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode"><svg class="dm-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--text-dim)"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg><svg class="dm-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--accent)"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
 </body>
 </html>

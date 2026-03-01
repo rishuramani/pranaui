@@ -1,12 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PranaOS — Client Setup</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
+    :root {
+    --radius: 14px;
+    --radius-sm: 10px;
+    --radius-xs: 8px;
+  }
+
+  [data-theme="light"] {
     --bg: #faf6f0;
     --bg-card: #fffdf9;
     --bg-elevated: #f0e8dc;
@@ -24,15 +30,38 @@
     --shadow-sm: 0 1px 3px rgba(42,31,16,0.04);
     --shadow-md: 0 4px 20px rgba(42,31,16,0.08);
     --shadow-lg: 0 12px 40px rgba(42,31,16,0.12);
-    --radius: 14px;
-    --radius-sm: 10px;
-    --radius-xs: 8px;
     --error: #c25a5a;
     --error-bg: rgba(194,90,90,0.06);
     --error-border: rgba(194,90,90,0.15);
     --warn: #c4842d;
     --sidebar-w: 240px;
   }
+
+  [data-theme="dark"] {
+    --bg: #0c0e0d;
+    --bg-card: #141716;
+    --bg-elevated: #1a1e1c;
+    --border: #232826;
+    --border-subtle: #1e2220;
+    --text: #e4e8e6;
+    --text-secondary: #c0c8c4;
+    --text-muted: #8a9490;
+    --text-dim: #4a5450;
+    --accent: #2dd4a0;
+    --accent-hover: #26b889;
+    --accent-bright: #6eecd0;
+    --accent-bg: rgba(45,212,160,0.06);
+    --accent-border: rgba(45,212,160,0.12);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 14px rgba(0,0,0,0.25);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.35);
+    --error: #f87171;
+    --error-bg: rgba(248,113,113,0.08);
+    --error-border: rgba(248,113,113,0.12);
+    --warn: #fbbf24;
+    --sidebar-w: 240px;
+  }
+
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -398,6 +427,20 @@
     .invite-row { grid-template-columns: 1fr; }
     .step-dot span { display: none; }
   }
+
+  /* === Dark mode support === */
+  body { transition: background 0.4s ease, color 0.3s ease; }
+  [data-theme="dark"] svg circle[stroke="#18856a"] { stroke: #2dd4a0; }
+  [data-theme="dark"] svg path[stroke="#18856a"] { stroke: #2dd4a0; }
+  [data-theme="dark"] svg circle[fill="#18856a"] { fill: #2dd4a0; }
+
+  .dm-toggle { position:fixed; bottom:58px; right:20px; z-index:9998; width:36px; height:36px; border-radius:10px; border:1px solid var(--border); background:var(--bg-card); cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-md); transition:all 0.3s; padding:0; }
+  .dm-toggle:hover { border-color:var(--accent); transform:scale(1.08); }
+  .dm-toggle .dm-sun, .dm-toggle .dm-moon { position:absolute; width:18px; height:18px; transition:opacity 0.3s, transform 0.3s; }
+  .dm-toggle .dm-sun { opacity:1; transform:rotate(0deg); }
+  .dm-toggle .dm-moon { opacity:0; transform:rotate(-90deg); }
+  [data-theme="dark"] .dm-toggle .dm-sun { opacity:0; transform:rotate(90deg); }
+  [data-theme="dark"] .dm-toggle .dm-moon { opacity:1; transform:rotate(0deg); }
 </style>
 </head>
 <body>
@@ -936,5 +979,6 @@
     if (e.target.closest('#line-items')) updateBilling();
   });
 </script>
+<button class="dm-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode"><svg class="dm-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--text-dim)"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg><svg class="dm-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--accent)"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
 </body>
 </html>
