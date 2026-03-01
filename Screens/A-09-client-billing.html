@@ -173,6 +173,65 @@
   .preview-margin-value { font-size: 18px; font-weight: 800; color: var(--accent); }
   .preview-margin-desc { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
 
+
+  /* Invoice actions */
+  .invoice-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .invoice-btn { flex: 1; padding: 10px 8px; border-radius: var(--radius-xs); border: 1px solid var(--border); background: var(--bg-card); font-family: inherit; font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+  .invoice-btn:hover { background: var(--bg-elevated); color: var(--text); border-color: var(--accent-border); }
+  .invoice-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .invoice-btn.primary:hover { filter: brightness(0.92); }
+  .invoice-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* Invoice history */
+  .invoice-history { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); margin-top: 10px; overflow: hidden; }
+  .ih-header { padding: 14px 18px; border-bottom: 1px solid var(--border-subtle); }
+  .ih-title { font-size: 13px; font-weight: 700; }
+  .ih-row { display: flex; align-items: center; padding: 10px 18px; border-bottom: 1px solid var(--border-subtle); font-size: 12px; transition: background 0.1s; }
+  .ih-row:last-child { border-bottom: none; }
+  .ih-row:hover { background: var(--bg-elevated); }
+  .ih-date { width: 80px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+  .ih-desc { flex: 1; color: var(--text-muted); }
+  .ih-amount { width: 80px; text-align: right; font-weight: 700; font-family: 'IBM Plex Mono', monospace; color: var(--accent); }
+  .ih-status { width: 60px; text-align: center; }
+  .ih-badge { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 4px; display: inline-block; }
+  .ih-badge.paid { background: var(--accent-bg); color: var(--accent); }
+  .ih-action { width: 40px; text-align: center; }
+  .ih-dl { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 4px; border-radius: 4px; }
+  .ih-dl:hover { color: var(--accent); }
+
+  /* Invoice modal */
+  .invoice-modal-overlay { display: none; position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center; }
+  .invoice-modal-overlay.show { display: flex; }
+  .invoice-modal { background: var(--bg-card); border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 580px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.25s ease; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .inv-header { padding: 24px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; }
+  .inv-brand { display: flex; align-items: center; gap: 10px; }
+  .inv-brand-name { font-size: 18px; font-weight: 800; }
+  .inv-brand-name span { color: var(--accent); }
+  .inv-meta { text-align: right; }
+  .inv-number { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; color: var(--accent); }
+  .inv-date { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+  .inv-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 20px 28px; border-bottom: 1px solid var(--border-subtle); }
+  .inv-party-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 6px; }
+  .inv-party-name { font-size: 14px; font-weight: 700; }
+  .inv-party-detail { font-size: 11px; color: var(--text-muted); line-height: 1.6; }
+  .inv-table { width: 100%; border-collapse: collapse; }
+  .inv-table th { text-align: left; padding: 10px 28px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); background: var(--bg); border-bottom: 1px solid var(--border); }
+  .inv-table th:last-child { text-align: right; }
+  .inv-table td { padding: 12px 28px; font-size: 13px; border-bottom: 1px solid var(--border-subtle); }
+  .inv-table td:last-child { text-align: right; font-family: 'IBM Plex Mono', monospace; font-weight: 600; }
+  .inv-table tr:last-child td { border-bottom: none; }
+  .inv-totals { padding: 16px 28px; background: var(--bg); border-top: 1px solid var(--border); }
+  .inv-total-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 13px; }
+  .inv-total-row.grand { font-size: 18px; font-weight: 800; padding-top: 10px; border-top: 2px solid var(--border); margin-top: 6px; }
+  .inv-total-row.grand .inv-total-val { color: var(--accent); font-family: 'IBM Plex Mono', monospace; }
+  .inv-footer { padding: 16px 28px; border-top: 1px solid var(--border-subtle); }
+  .inv-footer-note { font-size: 10px; color: var(--text-dim); line-height: 1.6; }
+  .inv-actions { display: flex; gap: 8px; padding: 16px 28px; border-top: 1px solid var(--border); }
+  .inv-actions .invoice-btn { padding: 11px 16px; }
+  .inv-close { background: none; border: none; font-size: 20px; color: var(--text-dim); cursor: pointer; padding: 4px; line-height: 1; }
+  .inv-close:hover { color: var(--text); }
+
   .screen-id { position: fixed; bottom: 20px; right: 20px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; z-index: 200; box-shadow: var(--shadow-sm); }
   .screen-id strong { color: var(--accent); }
 
@@ -267,7 +326,7 @@
     </div>
     <div class="header-actions">
       <button class="btn btn-secondary" onclick="alert('Discard changes')">Cancel</button>
-      <button class="btn btn-primary" onclick="alert('Saved to partition.billing_config')">Save Configuration</button>
+      <button class="btn btn-primary" onclick="alert('Billing configuration saved')">Save Configuration</button>
     </div>
   </div>
 
@@ -309,7 +368,7 @@
             <select class="form-select" id="billing-cycle">
               <option value="monthly" selected>Monthly</option>
               <option value="quarterly">Quarterly</option>
-              <option value="annual">Annual (10% off)</option>
+              <option value="annual">Annual (20% off)</option>
             </select>
           </div>
         </div>
@@ -341,20 +400,20 @@
 
       <!-- Per Client Department Fee -->
       <div class="form-card">
-        <div class="form-card-title">Department Fees</div>
-        <div class="form-card-desc">Fixed monthly fee per client department on the platform.</div>
+        <div class="form-card-title">Workspace Fees</div>
+        <div class="form-card-desc">Fixed monthly fee per client workspace on the platform.</div>
         <div class="form-row">
           <div class="form-field" style="max-width: 200px;">
-            <label class="form-label">Per department fee</label>
+            <label class="form-label">Per workspace fee</label>
             <div class="form-input-wrap">
               <span class="prefix">$</span>
               <input type="text" class="form-input has-prefix" value="50" style="background: var(--bg-elevated); color: var(--text-dim);" readonly>
             </div>
-            <div class="form-hint">Fixed per client department</div>
+            <div class="form-hint">Fixed per client workspace</div>
           </div>
           <div class="form-field">
             <label class="form-label">Pass through to client?</label>
-            <select class="form-select" id="partition-pass" onchange="updatePreview()">
+            <select class="form-select" id="workspace-pass" onchange="updatePreview()">
               <option value="yes" selected>Yes &mdash; add to invoice</option>
               <option value="no">No &mdash; absorb cost</option>
             </select>
@@ -417,9 +476,9 @@
             </div>
             <div class="preview-row-value" id="prev-usage">$624</div>
           </div>
-          <div class="preview-row" id="prev-partition-row">
+          <div class="preview-row" id="prev-workspace-row">
             <div>
-              <div class="preview-row-label">Per department fee</div>
+              <div class="preview-row-label">Per workspace fee</div>
             </div>
             <div class="preview-row-value">$50</div>
           </div>
@@ -444,7 +503,49 @@
             <span class="preview-margin-label">Your margin</span>
             <span class="preview-margin-value" id="prev-margin">$6,494</span>
           </div>
-          <div class="preview-margin-desc" id="prev-margin-desc">Revenue after $312 platform cost + $50/dept = $362 cost basis</div>
+          <div class="preview-margin-desc" id="prev-margin-desc">Revenue after $312 platform cost + $50/workspace = $362 cost basis</div>
+        </div>
+      </div>
+    
+      <!-- Invoice Actions -->
+      <div class="invoice-actions">
+        <button class="invoice-btn primary" onclick="openInvoiceModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Preview Invoice
+        </button>
+        <button class="invoice-btn" onclick="downloadInvoice()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PDF
+        </button>
+        <button class="invoice-btn" onclick="sendInvoice()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Send
+        </button>
+      </div>
+
+      <!-- Invoice History -->
+      <div class="invoice-history">
+        <div class="ih-header"><div class="ih-title">Invoice History</div></div>
+        <div class="ih-row">
+          <span class="ih-date">Mar 1</span>
+          <span class="ih-desc">March subscription + Feb usage</span>
+          <span class="ih-amount">$6,856</span>
+          <span class="ih-status"><span class="ih-badge paid">Paid</span></span>
+          <span class="ih-action"><button class="ih-dl" title="Download PDF" onclick="downloadInvoice()">&#11015;</button></span>
+        </div>
+        <div class="ih-row">
+          <span class="ih-date">Feb 1</span>
+          <span class="ih-desc">February subscription + Jan usage</span>
+          <span class="ih-amount">$6,412</span>
+          <span class="ih-status"><span class="ih-badge paid">Paid</span></span>
+          <span class="ih-action"><button class="ih-dl" title="Download PDF" onclick="downloadInvoice()">&#11015;</button></span>
+        </div>
+        <div class="ih-row">
+          <span class="ih-date">Jan 1</span>
+          <span class="ih-desc">January subscription + onboarding</span>
+          <span class="ih-amount">$7,482</span>
+          <span class="ih-status"><span class="ih-badge paid">Paid</span></span>
+          <span class="ih-action"><button class="ih-dl" title="Download PDF" onclick="downloadInvoice()">&#11015;</button></span>
         </div>
       </div>
     </div>
@@ -453,6 +554,72 @@
 </div>
 
 </div><!-- /shell -->
+
+<!-- Invoice Modal -->
+<div class="invoice-modal-overlay" id="invoice-modal" onclick="if(event.target===this)closeInvoiceModal()">
+  <div class="invoice-modal">
+    <div class="inv-header">
+      <div class="inv-brand">
+        <svg viewBox="0 0 512 512" fill="none" width="28" height="28"><circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/><path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="256" r="21" fill="#18856a"/></svg>
+        <div>
+          <div class="inv-brand-name">Prana<span>IQ</span></div>
+          <div style="font-size:10px;color:var(--text-dim);">Powered by PranaOS</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:16px;">
+        <div class="inv-meta">
+          <div class="inv-number">INV-2026-0312</div>
+          <div class="inv-date">Issued: April 1, 2026</div>
+          <div class="inv-date">Due: April 1, 2026</div>
+        </div>
+        <button class="inv-close" onclick="closeInvoiceModal()">&times;</button>
+      </div>
+    </div>
+    <div class="inv-parties">
+      <div>
+        <div class="inv-party-label">From</div>
+        <div class="inv-party-name">Prana IQ</div>
+        <div class="inv-party-detail">123 Innovation Blvd<br>San Diego, CA 92101<br>billing@pranaiq.com</div>
+      </div>
+      <div>
+        <div class="inv-party-label">Bill To</div>
+        <div class="inv-party-name">AMC Theatres</div>
+        <div class="inv-party-detail">Attn: Accounts Payable<br>billing@amctheatres.com</div>
+      </div>
+    </div>
+    <table class="inv-table">
+      <thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Growth Plan &mdash; Partner Seat</td><td>6</td><td>$997.00</td><td>$5,982.00</td></tr>
+        <tr><td>AI Usage (with 100% markup)</td><td>&mdash;</td><td>&mdash;</td><td>$624.00</td></tr>
+        <tr><td>Workspace Fee</td><td>1</td><td>$50.00</td><td>$50.00</td></tr>
+        <tr><td>Priority Support</td><td>1</td><td>$200.00</td><td>$200.00</td></tr>
+      </tbody>
+    </table>
+    <div class="inv-totals">
+      <div class="inv-total-row"><span>Subtotal</span><span>$6,856.00</span></div>
+      <div class="inv-total-row"><span>Tax</span><span>$0.00</span></div>
+      <div class="inv-total-row grand"><span>Amount Due</span><span class="inv-total-val">$6,856.00</span></div>
+    </div>
+    <div class="inv-footer">
+      <div class="inv-footer-note">Payment is due upon receipt. For questions about this invoice, contact billing@pranaiq.com. Auto-charged to card on file (&bull;&bull;&bull;&bull; 4242) on the due date via Stripe.</div>
+    </div>
+    <div class="inv-actions">
+      <button class="invoice-btn primary" style="flex:1;" onclick="downloadInvoice()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download PDF
+      </button>
+      <button class="invoice-btn" style="flex:1;" onclick="sendInvoice()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Email to Client
+      </button>
+      <button class="invoice-btn" style="flex:1;" onclick="alert('Link copied: https://app.pranaos.com/invoices/INV-2026-0312')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Copy Link
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
 function navTo(target) {
@@ -483,8 +650,8 @@ function updatePreview() {
   var platformCost = parseFloat((document.getElementById('platform-cost').value || '0').replace(/,/g, ''));
   var usageTotal = platformCost * (1 + markupPct / 100);
 
-  var partitionPass = document.getElementById('partition-pass').value === 'yes';
-  var partitionFee = partitionPass ? 50 : 0;
+  var workspacePass = document.getElementById('workspace-pass').value === 'yes';
+  var workspaceFee = workspacePass ? 50 : 0;
 
   // Calculate monthly line items
   var monthlyLineItems = 0;
@@ -497,7 +664,7 @@ function updatePreview() {
     }
   });
 
-  var total = baseTotal + usageTotal + partitionFee + monthlyLineItems;
+  var total = baseTotal + usageTotal + workspaceFee + monthlyLineItems;
   var costBasis = platformCost + 50;
   var margin = total - costBasis;
 
@@ -506,10 +673,10 @@ function updatePreview() {
   document.querySelector('#prev-base + .preview-row-sub, [id="prev-base"]').parentElement;
   document.getElementById('prev-usage').textContent = '$' + Math.round(usageTotal).toLocaleString();
   document.getElementById('prev-usage-sub').textContent = '$' + platformCost + ' platform \u00d7 ' + (1 + markupPct / 100).toFixed(1) + 'x';
-  document.getElementById('prev-partition-row').style.display = partitionPass ? 'flex' : 'none';
+  document.getElementById('prev-workspace-row').style.display = workspacePass ? 'flex' : 'none';
   document.getElementById('prev-total').textContent = '$' + Math.round(total).toLocaleString();
   document.getElementById('prev-margin').textContent = '$' + Math.round(margin).toLocaleString();
-  document.getElementById('prev-margin-desc').textContent = 'Revenue after $' + platformCost + ' platform cost + $50/dept = $' + costBasis + ' cost basis';
+  document.getElementById('prev-margin-desc').textContent = 'Revenue after $' + platformCost + ' platform cost + $50/workspace = $' + costBasis + ' cost basis';
 }
 
 function addRow() {
@@ -542,6 +709,28 @@ function applyTemplate(val) {
   document.getElementById('base-fee').value = c.base;
   document.getElementById('markup-pct').value = c.markup;
   updatePreview();
+}
+
+
+// Invoice functions
+function openInvoiceModal() {
+  document.getElementById('invoice-modal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeInvoiceModal() {
+  document.getElementById('invoice-modal').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function downloadInvoice() {
+  alert('Downloading INV-2026-0312.pdf...');
+}
+
+function sendInvoice() {
+  if (confirm('Send invoice INV-2026-0312 ($6,856.00) to billing@amctheatres.com?')) {
+    alert('Invoice sent to billing@amctheatres.com');
+  }
 }
 
 // Add fadeIn animation
