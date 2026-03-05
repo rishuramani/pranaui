@@ -133,9 +133,9 @@
   .modal-header { padding: 24px 28px 0; display: flex; align-items: flex-start; gap: 14px; }
   .modal-close { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text-dim); margin-left: auto; transition: all 0.15s; flex-shrink: 0; }
   .modal-close:hover { background: var(--bg-warm); color: var(--text); }
-  .modal-agency-logo { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; }
-  .modal-agency-name { font-size: 18px; font-weight: 800; }
-  .modal-agency-loc { font-size: 12px; color: var(--text-dim); }
+  .modal-partner-logo { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; }
+  .modal-partner-name { font-size: 18px; font-weight: 800; }
+  .modal-partner-loc { font-size: 12px; color: var(--text-dim); }
   .modal-body { padding: 20px 28px 28px; }
   .modal-intro { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-bottom: 20px; line-height: 1.6; }
   .form-group { margin-bottom: 14px; }
@@ -271,7 +271,7 @@
         </div>
         <span class="pc-tier platinum">Platinum</span>
       </div>
-      <div class="pc-desc">AI implementation agency specializing in agentic operating systems for non-technical businesses. Deep expertise in food & beverage, retail automation, and operational AI.</div>
+      <div class="pc-desc">AI implementation partner specializing in agentic operating systems for non-technical businesses. Deep expertise in food & beverage, retail automation, and operational AI.</div>
       <div class="pc-tags">
         <span class="pc-tag industry">Food & Beverage</span>
         <span class="pc-tag industry">Retail</span>
@@ -356,7 +356,7 @@
         </div>
         <span class="pc-tier silver">Silver</span>
       </div>
-      <div class="pc-desc">Hospitality-focused agency that deploys AI concierge, feedback analysis, and revenue management agents for hotel groups and restaurant chains.</div>
+      <div class="pc-desc">Hospitality-focused partner that deploys AI concierge, feedback analysis, and revenue management agents for hotel groups and restaurant chains.</div>
       <div class="pc-tags">
         <span class="pc-tag industry">Hospitality</span>
         <span class="pc-tag industry">Food & Beverage</span>
@@ -412,7 +412,7 @@
         </div>
         <span class="pc-tier silver">Silver</span>
       </div>
-      <div class="pc-desc">Full-service digital agency adding AI capabilities for restaurant groups, entertainment venues, and lifestyle brands across Southern California.</div>
+      <div class="pc-desc">Full-service digital partner adding AI capabilities for restaurant groups, entertainment venues, and lifestyle brands across Southern California.</div>
       <div class="pc-tags">
         <span class="pc-tag industry">Food & Beverage</span>
         <span class="pc-tag industry">Retail</span>
@@ -490,7 +490,7 @@
 
   <!-- Become a partner -->
   <div class="become-partner">
-    <div class="bp-title">Are you an agency? Become a partner.</div>
+    <div class="bp-title">Are you an partner? Become a partner.</div>
     <div class="bp-sub">Join the PranaOS partner network, get certified, and start deploying AI agents to your own clients.</div>
     <button class="bp-btn" onclick="window.location.href='S-04-signup-checkout.html'">Apply to become a partner →</button>
   </div>
@@ -583,8 +583,8 @@ function openContact(name, loc, c1, c2, initials) {
   currentPartner = name;
   var header = document.getElementById('modal-header');
   header.innerHTML =
-    '<div class="modal-agency-logo" style="background:linear-gradient(135deg,'+c1+','+c2+');">'+initials+'</div>' +
-    '<div><div class="modal-agency-name">Contact '+name+'</div><div class="modal-agency-loc">'+loc+'</div></div>' +
+    '<div class="modal-partner-logo" style="background:linear-gradient(135deg,'+c1+','+c2+');">'+initials+'</div>' +
+    '<div><div class="modal-partner-name">Contact '+name+'</div><div class="modal-partner-loc">'+loc+'</div></div>' +
     '<div class="modal-close" onclick="closeModal()">&times;</div>';
 
   document.getElementById('modal-form-body').style.display = '';

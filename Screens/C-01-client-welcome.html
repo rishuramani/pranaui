@@ -75,8 +75,8 @@
   /* ===== MAIN ===== */
   .welcome-wrap { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; padding: 60px 40px 80px; }
 
-  /* Agency branding strip */
-  .agency-strip {
+  /* Partner branding strip */
+  .partner-strip {
     display: flex; align-items: center; gap: 10px;
     padding: 10px 20px; border-radius: 40px;
     background: var(--bg-card); border: 1px solid var(--border);
@@ -84,10 +84,10 @@
     animation: fadeDown 0.5s ease;
   }
   @keyframes fadeDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-  .agency-strip-logo { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; }
-  .agency-strip-logo svg { width: 16px; height: 16px; }
-  .agency-strip-text { font-size: 12px; color: var(--text-muted); font-weight: 500; }
-  .agency-strip-text strong { color: var(--text); font-weight: 700; }
+  .partner-strip-logo { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent-bright)); display: flex; align-items: center; justify-content: center; }
+  .partner-strip-logo svg { width: 16px; height: 16px; }
+  .partner-strip-text { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+  .partner-strip-text strong { color: var(--text); font-weight: 700; }
 
   /* Hero section */
   .hero { text-align: center; max-width: 580px; margin-bottom: 48px; animation: fadeUp 0.6s ease 0.1s both; }
@@ -217,12 +217,12 @@
 
 <div class="welcome-wrap">
 
-  <!-- Agency brand strip -->
-  <div class="agency-strip">
-    <div class="agency-strip-logo">
+  <!-- Partner brand strip -->
+  <div class="partner-strip">
+    <div class="partner-strip-logo">
       <svg viewBox="0 0 512 512" fill="none"><circle cx="256" cy="256" r="196" stroke="#18856a" stroke-width="8.5" opacity="0.28"/><path d="M154 256C154 256 179 188 256 188C333 188 307 256 307 256C307 256 333 324 256 324C179 324 154 256 154 256Z" stroke="#18856a" stroke-width="10.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="256" cy="256" r="21" fill="#18856a"/></svg>
     </div>
-    <div class="agency-strip-text">Set up by <strong>Prana IQ</strong></div>
+    <div class="partner-strip-text">Set up by <strong>Prana IQ</strong></div>
   </div>
 
   <!-- Hero -->

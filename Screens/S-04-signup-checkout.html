@@ -1031,7 +1031,7 @@
 
         <div class="field-group">
           <label class="field-label">Email address</label>
-          <input type="email" class="field-input" id="email-input" placeholder="you@agency.com">
+          <input type="email" class="field-input" id="email-input" placeholder="you@partner.com">
         </div>
 
         <div class="field-group">
@@ -1049,13 +1049,13 @@
 
       <!-- ========== STEP 2: ORG NAME ========== -->
       <div class="step-view" id="step-2">
-        <h2 class="step-title">Name your agency</h2>
+        <h2 class="step-title">Name your partner</h2>
         <p class="step-desc">This is how your clients will see you. You can change it later.</p>
 
         <div class="field-group">
-          <label class="field-label">Agency name</label>
-          <input type="text" class="field-input" id="org-name-input" placeholder="e.g. Bright Digital Agency" oninput="updateSlug()">
-          <div class="slug-preview" id="slug-preview">app.pranaos.com/<span id="slug-text">your-agency</span></div>
+          <label class="field-label">Partner name</label>
+          <input type="text" class="field-input" id="org-name-input" placeholder="e.g. Bright Digital Partner" oninput="updateSlug()">
+          <div class="slug-preview" id="slug-preview">app.pranaos.com/<span id="slug-text">your-partner</span></div>
         </div>
 
         <div class="field-group">
@@ -1159,7 +1159,7 @@
             <span class="checkout-line-value" id="checkout-plan-price">1 seat × $997/mo</span>
           </div>
           <div class="checkout-line">
-            <span class="checkout-line-label">Free internal workspace (your agency)</span>
+            <span class="checkout-line-label">Free internal workspace (your partner)</span>
             <span class="checkout-line-value" style="color:var(--accent);">Included</span>
           </div>
           <div class="checkout-line">
@@ -1234,10 +1234,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
           <h2 class="success-title">You're in! 🎉</h2>
-          <p class="success-desc">Your account is live with <span id="success-seats">1 seat</span>. Let's set up your first AI-powered operating system — starting with your own agency.</p>
-          <div class="success-org" id="success-org-name">bright-digital-agency.pranaos.com</div>
+          <p class="success-desc">Your account is live with <span id="success-seats">1 seat</span>. Let's set up your first AI-powered operating system — starting with your own partner.</p>
+          <div class="success-org" id="success-org-name">bright-digital-partner.pranaos.com</div>
           <br><br>
-          <button class="btn-primary" onclick="goToOnboarding()">Let's build your agency OS →</button>
+          <button class="btn-primary" onclick="goToOnboarding()">Let's build your partner OS →</button>
           <div class="form-footer" style="margin-top:16px;">
             This takes about 10 minutes. We'll walk you through every step.
           </div>
@@ -1340,7 +1340,7 @@
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
     
-    slugText.textContent = slug || 'your-agency';
+    slugText.textContent = slug || 'your-partner';
     btn.disabled = !slug;
   }
 

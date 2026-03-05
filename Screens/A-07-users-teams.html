@@ -207,9 +207,9 @@
   .user-action-btn:hover { border-color: var(--text-dim); color: var(--text); }
   .user-action-btn.danger:hover { border-color: var(--error-border); color: var(--error); }
 
-  /* ===== AGENCY TEAM TAB ===== */
-  .agency-note { padding: 14px 18px; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
-  .agency-note strong { color: var(--accent); }
+  /* ===== PARTNER TEAM TAB ===== */
+  .partner-note { padding: 14px 18px; background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
+  .partner-note strong { color: var(--accent); }
 
   /* ===== INVITE MODAL ===== */
   .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(42,31,16,0.4); z-index: 300; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
@@ -355,7 +355,7 @@
       <div class="page-header">
         <div>
           <div class="page-title">Users & Teams</div>
-          <div class="page-subtitle">Manage your agency team and client users. Create departments, assign access, and send invites.</div>
+          <div class="page-subtitle">Manage your partner team and client users. Create departments, assign access, and send invites.</div>
         </div>
       </div>
 
@@ -363,7 +363,7 @@
       <div class="scope-bar">
         <span class="scope-label">Viewing:</span>
         <select class="scope-select" id="scope-select" onchange="switchScope(this.value)">
-          <option value="agency">🏠 Prana IQ (Agency Team)</option>
+          <option value="partner">🏠 Prana IQ (Partner Team)</option>
           <option value="amc" selected>🏢 AMC Theatres</option>
           <option value="sip">🏢 Sip Coffee & Beer</option>
           <option value="dutch">🏢 Dutch Bros Region 14</option>
@@ -757,7 +757,7 @@
     const routes = {
       'dashboard': 'A-03-command-center.html',
       'clients': 'A-10-client-management.html',
-      'decisions': 'A-11-decision-inbox-agency.html',
+      'decisions': 'A-11-decision-inbox-partner.html',
       'marketplace': 'A-04-agent-marketplace.html',
       'builder': 'A-13-agent-builder.html',
       'analytics': 'A-16-analytics.html',
@@ -842,7 +842,7 @@
   }
 
   function switchScope(val) {
-    if (val === 'agency') {
+    if (val === 'partner') {
       document.getElementById('scope-dept-count').textContent = '\u2014';
       document.getElementById('scope-user-count').textContent = '3';
       document.getElementById('scope-pending-count').textContent = '0';
